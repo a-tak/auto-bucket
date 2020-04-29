@@ -1,13 +1,13 @@
 {
-
   "manifest_version": 2,
   "name": "AutoBacket",
-  "version": "0.1.0",
+  "version": "0.0.5",
   "author": "A-tak",
   "description": "メールをベイジアンフィルターで複数のバケツに分類してタグを付ける拡張機能です",
   "homepage_url": "https://github.com/a-tak/auto-backet",
   "icons": {
-    "48": "icons/beasts-48.png"
+    "48": "icons/icon_48.png",
+    "128": "icons/icon_128.png"
   },
   "applications": {
     "gecko": {
@@ -15,22 +15,28 @@
       "strict_min_version": "68.0"
     }
   },
-
   "permissions": [
-    "messagesRead"
+    "messagesRead",
+    "menus"
   ],
-
   "browser_action": {
-    "default_icon": "icons/beasts-32.png",
-    "default_title": "AutoBacket"
+    "default_title": "AutoBacket",
+    "default_popup": "popup/popup.html"
   },
-
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "chrome_style": true
   },
   "commands": {
     "toggle-feature": {
-      "suggested_key": { "default": "Alt+Shift+B" },
+      "suggested_key": {
+        "default": "Alt+Shift+B"
+      },
       "description": "AutoBacketの呼び出し"
     }
   }
