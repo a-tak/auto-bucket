@@ -19,13 +19,13 @@ export default class backgroud {
       id: "doLearn",
       title: "このメールを「仕事」として学習",
       contexts: ["message_list"],
-      async onclick(info: browser.menus.OnClickData) {
+      onclick : async (info: browser.menus.OnClickData) => {
         // メールをとりあえず本文だけを対象にする
         // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
         if (info.selectedMessages == undefined) return
         let id = info.selectedMessages.messages[0].id
         let messagePart = await browser.messages.getFull(id)
-        let body = await backgroud.getBody(messagePart)
+        let body = await this.getBody(messagePart)
         console.log("result=" + body)
       },
     })
@@ -45,7 +45,7 @@ export default class backgroud {
    * @param   {MessagePart} messagePart ThunderbirdのMessagePartオブジェクト
    * @returns {string}                  メールのBody
    */
-  private static async getBody(messagePart: browser.messages.MessagePart) {
+  private async getBody(messagePart: browser.messages.MessagePart) {
   console.log(messagePart)
   let body = ""
   if ('parts' in messagePart) {
@@ -70,7 +70,7 @@ async doLearn(info: browser.menus.OnClickData) {
     if (info.selectedMessages == undefined) return
     let id = info.selectedMessages.messages[0].id
     let messagePart = await browser.messages.getFull(id)
-    let body = await backgroud.getBody(messagePart)
+    let body = await this.getBody(messagePart)
     console.log("result=" + body)
 }
 
