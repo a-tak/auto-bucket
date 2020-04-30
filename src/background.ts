@@ -1,12 +1,19 @@
 import 'webextension-polyfill'
+import Bayes from 'bayes-classifier' 
 
 export default class backgroud {
+
+  private classifier: Bayes
+
   constructor() {
     // エントリーポイント
     browser.browserAction.onClicked.addListener(this.doClassification)
     browser.commands.onCommand.addListener((command) => {
       obj.doClassification()
     })
+
+    // ベイジアンフィルター初期化
+    this.classifier = new Bayes()
 
     this.createMenu()
   }
@@ -20,13 +27,8 @@ export default class backgroud {
       title: "このメールを「仕事」として学習",
       contexts: ["message_list"],
       onclick : async (info: browser.menus.OnClickData) => {
-        // メールをとりあえず本文だけを対象にする
-        // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
         if (info.selectedMessages == undefined) return
-        let id = info.selectedMessages.messages[0].id
-        let messagePart = await browser.messages.getFull(id)
-        let body = await this.getBody(messagePart)
-        console.log("result=" + body)
+        this.doLearn(info.selectedMessages.messages[0].id, "work")
       },
     })
 
@@ -34,7 +36,9 @@ export default class backgroud {
       id: "doLearn2",
       title: "このメールを「広告」として学習",
       contexts: ["message_list"],
-      async onclick(info: browser.menus.OnClickData) {
+      onclick : async (info: browser.menus.OnClickData) => {
+        if (info.selectedMessages == undefined) return
+        this.doLearn(info.selectedMessages.messages[0].id, "promotion")
       },
     })
   }
@@ -63,15 +67,20 @@ export default class backgroud {
 
 /**
  * メール分類学習実行 メイン処理
+ * @param {string}  classification  分類名
  */
-async doLearn(info: browser.menus.OnClickData) {
+async doLearn(messageId: number, classification: string) {
     // メールをとりあえず本文だけを対象にする
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
-    if (info.selectedMessages == undefined) return
-    let id = info.selectedMessages.messages[0].id
-    let messagePart = await browser.messages.getFull(id)
-    let body = await this.getBody(messagePart)
-    console.log("result=" + body)
+    const messagePart = await browser.messages.getFull(messageId)
+    const body = await this.getBody(messagePart)
+    console.log("result2=" + body)
+    console.log("gogo1")
+    this.classifier.addDocument(body, classification)
+    this.classifier.train()
+    console.log("gogo")
+    console.log("classiffier=" + this.classifier)
+
 }
 
 /**

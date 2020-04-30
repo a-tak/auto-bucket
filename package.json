@@ -22,6 +22,7 @@
     }
   },
   "dependencies": {
+    "bayes-classifier": "0.0.5",
     "vue": "^2.6.10",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1",
@@ -32,6 +33,7 @@
     "@babel/plugin-proposal-optional-chaining": "^7.0.0",
     "@babel/preset-env": "^7.1.0",
     "@babel/runtime-corejs3": "^7.4.0",
+    "@types/bayes-classifier": "0.0.0",
     "archiver": "^3.0.0",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.2",
