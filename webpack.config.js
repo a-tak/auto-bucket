@@ -26,8 +26,14 @@ const config = {
       {
         test:  /\.ts$/,
         // TypeScript をコンパイルする
-        use: "ts-loader"
-      },
+        use: [
+          {
+            loader: "ts-loader",
+            options: {
+              appendTsSuffixTo: [/\.vue$/]
+            }
+          }
+        ]      },
       {
         test: /\.vue$/,
         loader: 'vue-loader',
