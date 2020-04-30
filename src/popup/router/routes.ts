@@ -1,4 +1,4 @@
-import PageIndex from './pages/Index';
+import PageIndex from './pages/Index.vue';
 
 export default [
   {
