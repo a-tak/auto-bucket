@@ -1,7 +1,4 @@
-declare var global: any
-declare var browser: any
-
-global.browser = require('webextension-polyfill');
+import 'webextension-polyfill'
 
 /**
  * 右クリックメニュー作成
@@ -10,9 +7,10 @@ browser.menus.create({
     id: "doLearn",
     title: "このメールを「仕事」として学習",
     contexts: ["message_list"],
-    async onclick(info) {
+    async onclick(info: browser.menus.OnClickData) {
       // メールをとりあえず本文だけを対象にする
       // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
+      if (info.selectedMessages == undefined) return
       let id = info.selectedMessages.messages[0].id
       let messagePart = await browser.messages.getFull(id)
       let body = await getBody(messagePart)
@@ -24,8 +22,7 @@ browser.menus.create({
     id: "doLearn2",
     title: "このメールを「広告」として学習",
     contexts: ["message_list"],
-    async onclick(info) {
-      let message = info.selectedMessages.messages[0]
+    async onclick(info: browser.menus.OnClickData) {
     },
   })
   
@@ -35,7 +32,7 @@ browser.menus.create({
    * @param   {MessagePart} messagePart ThunderbirdのMessagePartオブジェクト
    * @returns {string}                  メールのBody
    */
-  async function getBody(messagePart) {
+  async function getBody(messagePart: browser.messages.MessagePart) {
     console.log(messagePart)
     let body = ""
     if ('parts' in messagePart) {
@@ -69,16 +66,6 @@ browser.menus.create({
   
     // タグづけする
   
-    let messages = await browser.mailTabs.getSelectedMessages()
-    
-    messages.messages.forEach(async (message) => {
-      let messagePart = await browser.messages.getFull(message.id)
-      messagePart.headers['x-popfile-link'].forEach((link) => {
-        browser.tabs.create({
-          url: link
-        })
-      })
-    })
   }
   
   /**
@@ -86,17 +73,17 @@ browser.menus.create({
    * @param   {String}  message 仮メッセージ本文
    * @return  {String}          分類名
    */
-  async function getClassification(message) {
-    return ""
-  }
+  // async function getClassification(message) {
+  //   return ""
+  // }
   
   /**
    * タグ付け
    * @param {Message} message 仮)メッセージオブジェクト
    */
-  async function setTag(message) {
+  // async function setTag(message) {
   
-  }
+  // }
   
   // エントリーポイント
   browser.browserAction.onClicked.addListener(doClassification)
