@@ -1,5 +1,5 @@
 import 'webextension-polyfill'
-import Bayes from 'bayes-classifier' 
+import Bayes from 'bayes' 
 import Segmenter from 'tiny-segmenter'
 
 export default class backgroud {
@@ -79,12 +79,12 @@ async doLearn(messageId: number, classification: string) {
     
     const seg = new Segmenter()
     const words: Array<string> = seg.segment(body)
-    const text: string = words.join(" ")
-    console.log("text=" + text)
+    // const text: string = words.join(" ")
+    // console.log("text=" + text)
 
-    this.classifier.addDocument(text, classification)
-    this.classifier.train()
-    console.log("classiffier=" + JSON.stringify(this.classifier))
+    const text = "テスト ですが"
+    await this.classifier.learn(text, classification)
+    console.log("classiffier=" + this.classifier.toJson())
 
 }
 

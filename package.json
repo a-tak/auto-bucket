@@ -22,6 +22,7 @@
     }
   },
   "dependencies": {
+    "bayes": "^1.0.0",
     "bayes-classifier": "0.0.5",
     "tiny-segmenter": "^0.2.0",
     "vue": "^2.6.10",
