@@ -33,7 +33,8 @@ const config = {
               appendTsSuffixTo: [/\.vue$/]
             }
           }
-        ]      },
+        ]
+      },
       {
         test: /\.vue$/,
         loader: 'vue-loader',
