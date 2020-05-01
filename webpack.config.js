@@ -16,7 +16,7 @@ const config = {
   },
   output: {
     path: __dirname + '/dist',
-    filename: '[name].ts',
+    filename: '[name].js',
   },
   resolve: {
     extensions: ['.js', '.ts', '.vue'],
