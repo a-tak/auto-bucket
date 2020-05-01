@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "bayes-classifier": "0.0.5",
+    "tiny-segmenter": "^0.2.0",
     "vue": "^2.6.10",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1",

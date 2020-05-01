@@ -1,5 +1,6 @@
 import 'webextension-polyfill'
 import Bayes from 'bayes-classifier' 
+import Segmenter from 'tiny-segmenter'
 
 export default class backgroud {
 
@@ -74,12 +75,16 @@ async doLearn(messageId: number, classification: string) {
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
     const messagePart = await browser.messages.getFull(messageId)
     const body = await this.getBody(messagePart)
-    console.log("result2=" + body)
-    console.log("gogo1")
-    this.classifier.addDocument(body, classification)
+    console.log("result=" + body)
+    
+    const seg = new Segmenter()
+    const words: Array<string> = seg.segment(body)
+    const text: string = words.join(" ")
+    console.log("text=" + text)
+
+    this.classifier.addDocument(text, classification)
     this.classifier.train()
-    console.log("gogo")
-    console.log("classiffier=" + this.classifier)
+    console.log("classiffier=" + JSON.stringify(this.classifier))
 
 }
 
