@@ -25,7 +25,7 @@
     "default_popup": "popup/popup.html"
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.ts"]
   },
   "options_ui": {
     "page": "options/options.html",
