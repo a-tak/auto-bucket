@@ -47,6 +47,11 @@ export default class backgroud {
     })
   }
 
+  private async removeSetting(): Promise<void> {
+    console.log("設定削除")
+    await browser.storage.sync.clear()
+  }
+
   private createMenu(): void {
     /**
      * 右クリックメニュー作成
@@ -83,11 +88,10 @@ export default class backgroud {
 
     browser.menus.create({
       id: "learn_clear",
-      title: "学習状況をクリア",
+      title: "学習状況と設定をクリア",
       contexts: ["message_list"],
       onclick: async (info: browser.menus.OnClickData) => {
-        if (info.selectedMessages == undefined) return
-        this.scoring(info.selectedMessages.messages[0].id)
+        this.clearLearn()
       },
     })
   }
@@ -134,7 +138,7 @@ export default class backgroud {
   async clearLearn() {
     // ベイジアンフィルター初期化
     this.classifier = new BayesianClassifier()
-    this.saveSetting()
+    this.removeSetting()
   }
 
   /**

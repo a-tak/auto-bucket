@@ -3,4 +3,6 @@ declare namespace browser.storage.sync {
     function get(setting: object|string|Array<string>|null): Promise<object>
     // https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/API/storage/StorageArea/set
     function set(setting: object): Promise<void>
+    // https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/API/storage/StorageArea/clear
+    function clear(): Promise<void>
 }
