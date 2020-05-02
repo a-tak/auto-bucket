@@ -7,7 +7,7 @@ export default class backgroud {
   private classifier: BayesianClassifier
 
   constructor() {
-    // エントリーポイント
+    // イベント
     browser.browserAction.onClicked.addListener(this.doClassification)
     browser.commands.onCommand.addListener((command) => {
       obj.doClassification()
@@ -16,7 +16,35 @@ export default class backgroud {
     // ベイジアンフィルター初期化
     this.classifier = new BayesianClassifier()
 
+    // モデル読み込み
+    this.loadSetting()
+
+    // メニュー作成
     this.createMenu()
+  }
+
+  /**
+   * 設定の読み込み
+   */
+  private async loadSetting(): Promise<void> {
+    console.log("設定ロード")
+    this.classifier.data = await browser.storage.sync.get("data")
+    // objectで保存しているのでタイプアサーションで型を指定している
+    this.classifier.totalCount = 
+      (await browser.storage.sync.get("totalCount") as {
+        totalCount: number
+      }).totalCount
+
+    console.log("classiffier=" + JSON.stringify(this.classifier.data, null, 4))
+    console.log("totalcount=" + this.classifier.totalCount)
+  }
+
+  private async saveSetting(): Promise<void> {
+    console.log("設定セーブ")
+    await browser.storage.sync.set({
+      data: this.classifier.data,
+      totalCount: this.classifier.totalCount
+    })
   }
 
   private createMenu(): void {
@@ -46,6 +74,16 @@ export default class backgroud {
     browser.menus.create({
       id: "scoring",
       title: "このメールを判定",
+      contexts: ["message_list"],
+      onclick: async (info: browser.menus.OnClickData) => {
+        if (info.selectedMessages == undefined) return
+        this.scoring(info.selectedMessages.messages[0].id)
+      },
+    })
+
+    browser.menus.create({
+      id: "learn_clear",
+      title: "学習状況をクリア",
       contexts: ["message_list"],
       onclick: async (info: browser.menus.OnClickData) => {
         if (info.selectedMessages == undefined) return
@@ -87,7 +125,16 @@ export default class backgroud {
       this.classifier.train({ word: word }, category)
     }
     console.log("classiffier=" + JSON.stringify(this.classifier.data, null, 4))
+    this.saveSetting()
+  }
 
+  /**
+   * 学習状況をクリアする
+   */
+  async clearLearn() {
+    // ベイジアンフィルター初期化
+    this.classifier = new BayesianClassifier()
+    this.saveSetting()
   }
 
   /**

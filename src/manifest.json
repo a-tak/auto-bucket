@@ -18,7 +18,8 @@
 
   "permissions": [
     "messagesRead",
-    "menus"
+    "menus",
+    "storage"
     ],
   "browser_action": {
     "default_title": "AutoBacket",
