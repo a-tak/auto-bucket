@@ -1,10 +1,10 @@
 import 'webextension-polyfill'
-import Bayes from 'bayes' 
+import {BayesianClassifier} from 'simple-statistics' 
 import Segmenter from 'tiny-segmenter'
 
 export default class backgroud {
 
-  private classifier: Bayes
+  private classifier: BayesianClassifier
 
   constructor() {
     // エントリーポイント
@@ -14,7 +14,7 @@ export default class backgroud {
     })
 
     // ベイジアンフィルター初期化
-    this.classifier = new Bayes()
+    this.classifier = new BayesianClassifier()
 
     this.createMenu()
   }
@@ -68,9 +68,9 @@ export default class backgroud {
 
 /**
  * メール分類学習実行 メイン処理
- * @param {string}  classification  分類名
+ * @param {string}  category  分類名
  */
-async doLearn(messageId: number, classification: string) {
+async doLearn(messageId: number, category: string) {
     // メールをとりあえず本文だけを対象にする
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
     const messagePart = await browser.messages.getFull(messageId)
@@ -79,12 +79,9 @@ async doLearn(messageId: number, classification: string) {
     
     const seg = new Segmenter()
     const words: Array<string> = seg.segment(body)
-    // const text: string = words.join(" ")
-    // console.log("text=" + text)
 
-    const text = "テスト ですが"
-    await this.classifier.learn(text, classification)
-    console.log("classiffier=" + this.classifier.toJson())
+    await this.classifier.train(words,category)
+    console.log("classiffier=" + JSON.stringify(this.classifier.data, null, 4))
 
 }
 
