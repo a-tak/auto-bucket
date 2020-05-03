@@ -117,7 +117,6 @@ export default class backgroud {
    * @returns {string}                  メールのBody
    */
   private async getBody(messagePart: browser.messages.MessagePart) {
-    console.log(messagePart)
     let body = ""
     if ('parts' in messagePart) {
       for (var part of messagePart.parts) {
@@ -190,11 +189,11 @@ export default class backgroud {
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
     const messagePart = await browser.messages.getFull(messageId)
     const body = await this.getBody(messagePart)
-    console.log("result=" + body)
+    // console.log("result=" + body)
 
     const seg = new Segmenter()
     const words: Array<string> = seg.segment(body)
-    console.log("words=" + words)
+    // console.log("words=" + words)
     return words
   }
 
