@@ -96,7 +96,7 @@ export default class backgroud {
       contexts: ["message_list"],
       onclick: async (info: browser.menus.OnClickData) => {
         if (info.selectedMessages == undefined) return
-        this.scoring(info.selectedMessages.messages[0].id)
+        this.classificationMessage(info.selectedMessages.messages[0].id)
       },
     })
 
@@ -158,7 +158,7 @@ export default class backgroud {
    * メールのスコアリング
    * @param {number}  messageId 対象のメールid
    */
-  private async scoring(messageId: number) {
+  private async scoring(messageId: number): Promise<ScoreTotal[]> {
     const totalScore: Score = {}
     const words = await this.divideMessage(messageId)
   for (const word of words) {
@@ -181,6 +181,7 @@ export default class backgroud {
     }
 
     console.log("score=" + JSON.stringify(resultScores, null, 4))
+    return resultScores
 
   }
 
@@ -202,9 +203,29 @@ export default class backgroud {
    * @param messageId 対象のメッセージid
    */
   private async classificationMessage(messageId: number) {
-    this.scoring(messageId)
+    const scores: ScoreTotal[] = await this.scoring(messageId)
+    const tag: string|undefined = this.ranking(scores)
+    if (tag==undefined) return
+    console.log("Tagged " + tag)
+    this.setClassificationTag(messageId, tag)
 
   }
+
+  /**
+   *  最も高いスコアを返す
+   * @param scores スコア一覧
+   */
+  private ranking(scores: ScoreTotal[]): string|undefined {
+    if (scores.length == 0) return undefined
+
+    const sortedScore = scores.sort((a, b) => {
+      // 降順
+      return b.score - a.score
+    })
+
+    return sortedScore[0].category
+  }
+
   /**
    * 分類用タグのセット
    * @param {number} messageId 対象メールのid
