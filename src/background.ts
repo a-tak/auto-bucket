@@ -214,6 +214,7 @@ export default class backgroud {
   /**
    *  最も高いスコアを返す
    * @param scores スコア一覧
+   * @returns 最も高いスコアのタグ文字列を返す。スコアが何も指定されていない場合はundefinedを返す。
    */
   private ranking(scores: ScoreTotal[]): string|undefined {
     if (scores.length == 0) return undefined
