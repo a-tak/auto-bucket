@@ -96,7 +96,7 @@ export default class backgroud {
       contexts: ["message_list"],
       onclick: async (info: browser.menus.OnClickData) => {
         if (info.selectedMessages == undefined) return
-        this.classificationMessage(info.selectedMessages.messages[0].id)
+        this.classificationMessage(info.selectedMessages.messages)
       },
     })
 
@@ -202,13 +202,15 @@ export default class backgroud {
    * 指定したメールをスコアリングし分類タグをセットする
    * @param messageId 対象のメッセージid
    */
-  private async classificationMessage(messageId: number) {
-    const scores: ScoreTotal[] = await this.scoring(messageId)
-    const tag: string|undefined = this.ranking(scores)
-    if (tag==undefined) return
-    console.log("Tagged " + tag)
-    this.setClassificationTag(messageId, tag)
-
+  private async classificationMessage(messages: browser.messages.MessageHeader[]) {
+    for (const message of messages) {
+      const messageId = message.id
+      const scores: ScoreTotal[] = await this.scoring(messageId)
+      const tag: string|undefined = this.ranking(scores)
+      if (tag==undefined) return
+      console.log("Tagged " + tag)
+      this.setClassificationTag(messageId, tag)
+    }
   }
 
   /**
