@@ -5,13 +5,14 @@ import Segmenter from 'tiny-segmenter'
 export default class backgroud {
 
   private classifier: BayesianClassifier
+  private categories: Array<string> = new Array(0)
 
   constructor() {
     // イベント
-    browser.browserAction.onClicked.addListener(this.doClassification)
-    browser.commands.onCommand.addListener((command) => {
-      obj.doClassification()
-    })
+    // browser.browserAction.onClicked.addListener(this.doClassification)
+    // browser.commands.onCommand.addListener((command) => {
+    //   obj.doClassification()
+    // })
 
     // ベイジアンフィルター初期化
     this.classifier = new BayesianClassifier()
@@ -28,15 +29,24 @@ export default class backgroud {
    */
   private async loadSetting(): Promise<void> {
     console.log("設定ロード")
-    this.classifier.data = await browser.storage.sync.get("data")
-    // objectで保存しているのでタイプアサーションで型を指定している
+    // objectで保存されているのでタイプアサーションで型を指定している
+    const resultObj = await browser.storage.sync.get("data") as {
+      data: object
+    }
+    this.classifier.data = resultObj.data
+
+    // objectで保存されているのでタイプアサーションで型を指定している
     this.classifier.totalCount = 
       (await browser.storage.sync.get("totalCount") as {
         totalCount: number
       }).totalCount
 
-    console.log("classiffier=" + JSON.stringify(this.classifier.data, null, 4))
-    console.log("totalcount=" + this.classifier.totalCount)
+    // todo カテゴリの設定読み込み
+    this.categories.push("work")
+    this.categories.push("promotion")
+
+    // console.log("classiffier=" + JSON.stringify(this.classifier.data, null, 4))
+    // console.log("totalcount=" + this.classifier.totalCount)
   }
 
   private async saveSetting(): Promise<void> {
@@ -45,11 +55,15 @@ export default class backgroud {
       data: this.classifier.data,
       totalCount: this.classifier.totalCount
     })
+
+    // console.log("save classiffier=" + JSON.stringify(await browser.storage.sync.get(null), null, 4))
+
   }
 
   private async removeSetting(): Promise<void> {
     console.log("設定削除")
     await browser.storage.sync.clear()
+    this.classifier = new BayesianClassifier()
   }
 
   private createMenu(): void {
@@ -128,7 +142,6 @@ export default class backgroud {
       // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
       this.classifier.train({ word: word }, category)
     }
-    console.log("classiffier=" + JSON.stringify(this.classifier.data, null, 4))
     this.saveSetting()
   }
 
@@ -142,13 +155,11 @@ export default class backgroud {
   }
 
   /**
-   * 
-   * @param messageId メールのScoring
+   * メールのスコアリング
+   * @param {number}  messageId 対象のメールid
    */
-  async scoring(messageId: number) {
-    const totalScore: Score = {
-      "": 0
-    }
+  private async scoring(messageId: number) {
+    const totalScore: Score = {}
     const words = await this.divideMessage(messageId)
   for (const word of words) {
       // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
@@ -161,7 +172,15 @@ export default class backgroud {
       }
     }
 
-    console.log("score=" + JSON.stringify(totalScore, null, 4))
+    let resultScores: Array<ScoreTotal> = new Array(0)
+    for (const category in totalScore) {
+      resultScores.push({
+        category: category,
+        score: totalScore[category]
+      })
+    }
+
+    console.log("score=" + JSON.stringify(resultScores, null, 4))
 
   }
 
@@ -179,35 +198,42 @@ export default class backgroud {
   }
 
   /**
-   * メール分類メイン処理
+   * 指定したメールをスコアリングし分類タグをセットする
+   * @param messageId 対象のメッセージid
    */
-  async doClassification() {
-
-    // フォルダ内のメールをすべて取得
-
-    // ベイジアンフィルタにかける
-
-    // タグづけする
+  private async classificationMessage(messageId: number) {
+    this.scoring(messageId)
 
   }
-
   /**
-   * 分類実施
-   * @param   {String}  message 仮メッセージ本文
-   * @return  {String}          分類名
+   * 分類用タグのセット
+   * @param {number} messageId 対象メールのid
+   * @param {string} tagName  設定する分類用タグ
    */
-  // async function getClassification(message) {
-  //   return ""
-  // }
+  private async setClassificationTag(messageId: number, tagName: string): Promise<void> {
+    // 現在のメッセージのプロパティ取得
+    const header = await browser.messages.get(messageId)
+    
+    // 分類用タグをすべて取り除く
+    const newTags = header.tags.filter((item: string) => {
+      for (const tag of this.categories) {
+        if ( tag == item) {
+          return false
+        }
+      }
+      return true
+    })
 
-  /**
-   * タグ付け
-   * @param {Message} message 仮)メッセージオブジェクト
-   */
-  // async function setTag(message) {
-
-  // }
-
+    // 新しいメッセージのプロパティをセット
+    newTags.push(tagName)
+    const newProp: NewProperties = {
+      flagged: header.flagged,
+      junk: header.junk,
+      read: header.read,
+      tags: newTags,
+    }
+    await browser.messages.update(messageId, newProp)
+  }
 }
 
 /**
@@ -215,6 +241,24 @@ export default class backgroud {
  */
 interface Score {
   [key: string]: number
+}
+
+/** 
+ * スコアリング結果応答用オブジェクト
+ */
+interface ScoreTotal {
+  category: string
+  score: number
+}
+
+/**
+ * メッセージプロパティ設定用オブジェクト
+ */
+interface NewProperties {
+  flagged: boolean
+  junk: boolean
+  read: boolean
+  tags: Array<string>
 }
 
 const obj = new backgroud()
