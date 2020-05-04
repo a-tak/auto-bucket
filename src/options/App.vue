@@ -8,22 +8,30 @@
           </v-btn>
           <div id="list" v-bind="listClass">
             <div id="title" class="title ma-3">分類用タグ設定</div>
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-btn v-on="on" icon @click.stop="save()">
-                  <v-icon color="accent">content-save</v-icon>
-                </v-btn>
-              </template>
-              <span>分類タグ設定を保存</span>
-            </v-tooltip>
-            <v-tooltip top>
-              <template v-slot:activator="{ on }">
-                <v-btn v-on="on" icon @click.stop="cancel()">
-                  <v-icon color="accent">cancel</v-icon>
-                </v-btn>
-              </template>
-              <span>編集をキャンセルする</span>
-            </v-tooltip>
+            <v-layout fill-height align-center justify-space-between>
+              <v-flex>
+                <v-layout row>
+                  <v-flex ma-2>
+                    <v-tooltip top>
+                      <template v-slot:activator="{ on }">
+                        <v-btn v-on="on" color="accent" @click.stop="save()">SAVE</v-btn>
+                      </template>
+                      <span>分類タグ設定を保存</span>
+                    </v-tooltip>
+                  </v-flex>
+                </v-layout>
+                <v-layout row>
+                  <v-flex ma-2>
+                    <v-tooltip top>
+                      <template v-slot:activator="{ on }">
+                        <v-btn v-on="on" @click.stop="cancel()">CANCEL</v-btn>
+                      </template>
+                      <span>編集をキャンセルする</span>
+                    </v-tooltip>
+                  </v-flex>
+                </v-layout>
+              </v-flex>
+            </v-layout>
             <v-slide-y-transition class="py-0" group>
               <TagRow
                 v-for="(tag, index) in tags"
