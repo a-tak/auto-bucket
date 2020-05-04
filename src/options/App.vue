@@ -12,7 +12,7 @@
               <TagRow
                 v-for="(tag, index) in tags"
                 :key="tag.id"
-                :tag_= tag
+                :tag_="tag"
                 :index_="index"
                 v-on:clickDeleteButtomEvent="deleteRow"
               ></TagRow>
@@ -25,39 +25,37 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from 'vue-property-decorator'
-import TagRow from "../components/TagRow.vue"
-import Tag from '../lib/Tag'
+import { Component, Vue, Watch } from "vue-property-decorator";
+import TagRow from "../components/TagRow.vue";
+import Tag from "../lib/Tag";
 
 @Component({
   components: {
-    TagRow,
+    TagRow
   }
 })
-
 export default class App extends Vue {
-  private tags_: Tag[] = []
-  private tagCounter_: number = 0
+  private tags_: Tag[] = [];
+  private tagCounter_: number = 0;
 
   private get tags(): Tag[] {
-    return this.tags_
+    return this.tags_;
   }
 
-  private created(): void {
-  }
+  private created(): void {}
 
   private addRow(): void {
     // カウント増加させてIDにセット
-    this.tags_.push(new Tag(this.tagCounter_ += 1, ""))
+    this.tags_.push(new Tag((this.tagCounter_ += 1), ""));
   }
 
   private deleteRow(tag: Tag): void {
-    if (tag==undefined) {
-      console.log("Delete target Tag is undefined")
-    }    
-    const index = this.tags_.indexOf(tag)
-    console.log("index=" + index + "/id=" + tag.id + "/name=" + tag.name)
-    this.tags_.splice(index, 1)
+    if (tag == undefined) {
+      console.log("Delete target Tag is undefined");
+    }
+    const index = this.tags_.indexOf(tag);
+    console.log("index=" + index + "/id=" + tag.id + "/name=" + tag.name);
+    this.tags_.splice(index, 1);
   }
 }
 </script>
