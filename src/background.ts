@@ -30,7 +30,6 @@ export default class backgroud {
    * 設定の読み込み
    */
   private async loadSetting(): Promise<void> {
-    console.log("設定ロード")
     // objectで保存されているのでタイプアサーションで型を指定している
     const resultObj = (await browser.storage.sync.get("data")) as {
       data: object
@@ -41,24 +40,65 @@ export default class backgroud {
       this.classifier_.data = resultObj.data
     }
 
-    // objectで保存されているのでタイプアサーションで型を指定している
-    this.classifier_.totalCount = ((await browser.storage.sync.get(
-      "totalCount"
-    )) as {
-      totalCount: number
-    }).totalCount
+    // // objectで保存されているのでタイプアサーションで型を指定している
+    // this.classifier_.totalCount = ((await browser.storage.sync.get(
+    //   "totalCount"
+    // )) as {
+    //   totalCount: number
+    // }).totalCount
 
     // タグ設定読み込み
     // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
     this.categories_ = await TagUtil.loadByArray()
     this.tags_ = await TagUtil.load()
 
+    // 学習モデルの整理
+    this.garbageCollection()
+
     // console.log("classiffier=" + JSON.stringify(this.classifier_.data, null, 4))
-    // console.log("totalcount=" + this.classifier_.totalCount)
+    console.log("設定ロード totalcount : " + this.classifier_.totalCount)
+  }
+
+  /**
+   * 存在しないタグまたは分類対象外のタグの学習結果を削除する
+   *
+   * 事前にclassifier_.dataに整理対象の学習データとtags_にタグ情報をセットしておくこと
+   */
+  private async garbageCollection() {
+    const target = this.classifier_.data as ClassiffierObj
+
+    // 既に存在しないタグの学習結果は削除
+    for (const obj in target) {
+      if (
+        this.tags_.findIndex((tag) => {
+          if (obj == tag.key) {
+            if (tag.useClassification) {
+              return true
+            }
+          }
+          return false
+        }) == -1
+      ) {
+        // 見つからなかった
+        console.log("parge lean model : " + obj)
+        delete target[obj]
+      }
+    }
+
+    // トータルカウントを更新
+    let count = 0
+    for (const obj in target) {
+      for (const word in target[obj].word) {
+        count += target[obj].word[word]
+      }
+    }
+
+    this.classifier_.data = target
+    this.classifier_.totalCount = count
   }
 
   private async saveSetting(): Promise<void> {
-    console.log("設定セーブ")
+    console.log("設定セーブ トータルカウント=" + this.classifier_.totalCount)
     await browser.storage.sync.set({
       data: this.classifier_.data,
       totalCount: this.classifier_.totalCount,
@@ -290,6 +330,14 @@ interface NewProperties {
   junk: boolean
   read: boolean
   tags: Array<string>
+}
+
+interface ClassiffierObj {
+  [key: string]: {
+    word: {
+      [key: string]: number
+    }
+  }
 }
 
 const obj = new backgroud()

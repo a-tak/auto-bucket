@@ -112,7 +112,7 @@ export default class App extends Vue {
       this.snackbarDisplay_ = false
       this.$nextTick(() => {
         // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
-        this.snackbarText_ = "設定を保存しました"
+        this.snackbarText_ = "設定を保存しました。Thunderbirdを再起動してください。"
         this.snackbarDisplay_ = true
       })
       // TODO: メニューを更新するコード
