@@ -5,8 +5,9 @@
         <div id="main">
           <div id="list" v-bind="listClass">
             <div id="title" class="title ma-3">分類用タグ設定</div>
+            <div class="body-1 ma-3">分類用タグを変更したらThunderbirdを再起動してください</div>
             <div class="d-flex flex-row">
-              <div class="ma-2">
+              <div class="ma-3">
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
                     <v-btn v-on="on" color="accent" @click.stop="save()"
@@ -16,7 +17,7 @@
                   <span>分類タグ設定を保存</span>
                 </v-tooltip>
               </div>
-              <div class="ma-2">
+              <div class="ma-3">
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
                     <v-btn v-on="on" @click.stop="cancel()">CANCEL</v-btn>
