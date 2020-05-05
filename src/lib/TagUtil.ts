@@ -9,9 +9,9 @@ export default class TagUtil {
    * ストレージから分類用タグを読み込む
    * @returns Tagクラスの配列の参照。idも設定済み
    */
-  public static async load(): Promise<Tag[]>{
+  public static async load(): Promise<Tag[]> {
     const tags: Tag[] = []
-    const resultObj = await browser.storage.sync.get("tags") as {
+    const resultObj = (await browser.storage.sync.get("tags")) as {
       tags: string[]
     }
 
@@ -20,24 +20,37 @@ export default class TagUtil {
         tags.push(new Tag(index, tag))
       })
     }
-    console.log("Load Tags = " + JSON.stringify(tags, null, 4))
+    // console.log("Load Tags = " + JSON.stringify(tags, null, 4))
     return tags
   }
 
-  public static async save(tags: Tag[]){
-    const tagArray: string[] = [] 
+  public static async loadByArray(): Promise<Array<string>> {
+    const tags = await this.load()
+    const tagsArray: string[] = []
+    for (const tag of tags) {
+      tagsArray.push(tag.name)
+    }
+    return tagsArray
+  }
+
+  public static async save(tags: Tag[]) {
+    const tagArray: string[] = []
     for (const tag of tags) {
       tagArray.push(tag.name)
     }
 
     await browser.storage.sync.set({
-      tags: tagArray
+      tags: tagArray,
     })
 
-    console.log("Save Tags = " + JSON.stringify(await browser.storage.sync.get("tags") as {
-      tags: string[]
-    }))
-
+    // console.log(
+    //   "Save Tags = " +
+    //     JSON.stringify(
+    //       (await browser.storage.sync.get("tags")) as {
+    //         tags: string[]
+    //       }
+    //     )
+    // )
   }
 
   public static getRemovedList(tags: Tag[], tag: Tag): Tag[] {
@@ -47,16 +60,18 @@ export default class TagUtil {
   }
 
   public static getAddedList(tags: Tag[]): Tag[] {
-    const max: number = tags.reduce((a, b) => {
-      if (a.id > b.id) {
-        return a
-      }else{
-        return b
-      }
-    }).id
-
+    let max: number = 0
+    if (tags.length != 0) {
+      max = tags.reduce((a, b) => {
+        if (a.id > b.id) {
+          return a
+        } else {
+          return b
+        }
+      }).id
+    }
     tags.push(new Tag(max + 1, ""))
-    
+
     return tags
- }
+  }
 }

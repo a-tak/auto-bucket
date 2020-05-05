@@ -82,7 +82,10 @@ export default class App extends Vue {
   }
 
   private save() {
-    TagUtil.save(this.tags_)
+    TagUtil.save(this.tags_).then(() => {
+      // TODO: メニューを更新するコード 
+    })
+
   }
 
   private cancel() {
