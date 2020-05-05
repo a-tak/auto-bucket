@@ -90,7 +90,7 @@ export default class App extends Vue {
   }
 
   private addRow(): void {
-    this.tags_.push(TagUtil.getNewTag(this.tags_))
+    this.tags_ = TagUtil.getAddedList(this.tags_)
   }
 
   private deleteRow(tag: Tag): void {

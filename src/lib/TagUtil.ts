@@ -46,7 +46,7 @@ export default class TagUtil {
     return tags
   }
 
-  public static getNewTag(tags: Tag[]) {
+  public static getAddedList(tags: Tag[]): Tag[] {
     const max: number = tags.reduce((a, b) => {
       if (a.id > b.id) {
         return a
@@ -55,6 +55,8 @@ export default class TagUtil {
       }
     }).id
 
-    return new Tag(max + 1, "")
+    tags.push(new Tag(max + 1, ""))
+    
+    return tags
  }
 }
