@@ -178,10 +178,24 @@ export default class backgroud {
    */
   async doLearn(messageId: number, category: string) {
     const words = await this.divideMessage(messageId)
-    for (const word of words) {
-      // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
-      this.classifier_.train({ word: word }, category)
-    }
+    let relearn: number = 0
+    do {
+      relearn += 1
+      console.log("re-learn count:" + relearn)
+      for (const word of words) {
+        // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
+        this.classifier_.train({ word: word }, category)
+      }
+    } while (
+      // 再度判定して指定したタグとして判定されるまで繰り返し学習する
+      (await this.getClassificationTag(messageId)) != category
+    )
+
+    // タグ付けも実施する
+    const headers: browser.messages.MessageHeader[] = []
+    headers.push(await browser.messages.get(messageId))
+    await this.classificationMessage(headers)
+
     this.saveSetting()
   }
 
@@ -249,21 +263,29 @@ export default class backgroud {
   ) {
     for (const message of messages) {
       const messageId = message.id
-      const scores: ScoreTotal[] = await this.scoring(messageId)
-      const tag: string | undefined = this.ranking(scores)
-      if (tag == undefined) return
+      const tag: string = await this.getClassificationTag(messageId)
+      if (tag == "") return
       console.log("Tagged " + tag)
       this.setClassificationTag(messageId, tag)
     }
   }
 
   /**
+   * 指定したメッセージを評価して分類タグを返す
+   * @param messageId 対象のメッセージid
+   */
+  private async getClassificationTag(messageId: number): Promise<string> {
+    const scores: ScoreTotal[] = await this.scoring(messageId)
+    return this.ranking(scores)
+  }
+
+  /**
    *  最も高いスコアのタグを返す
    * @param scores スコア一覧
-   * @returns 最も高いスコアのタグ文字列を返す。スコアが何も指定されていない場合はundefinedを返す。
+   * @returns 最も高いスコアのタグ文字列を返す。スコアが何も指定されていない場合は0バイト文字列を返す。
    */
-  private ranking(scores: ScoreTotal[]): string | undefined {
-    if (scores.length == 0) return undefined
+  private ranking(scores: ScoreTotal[]): string {
+    if (scores.length == 0) return ""
 
     const sortedScore = scores.sort((a, b) => {
       // 降順
