@@ -73,6 +73,10 @@ export default class App extends Vue {
   }
 
   private created(): void {
+    this.initialize()
+  }
+
+  private initialize(): void {
     TagUtil.load().then((value) => {
       this.tags_ = value
     })
@@ -80,6 +84,10 @@ export default class App extends Vue {
 
   private save() {
     TagUtil.save(this.tags_)
+  }
+
+  private cancel() {
+    this.initialize()
   }
 
   private addRow(): void {
