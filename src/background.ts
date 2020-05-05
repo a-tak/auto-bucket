@@ -56,7 +56,7 @@ export default class backgroud {
     this.garbageCollection()
 
     // console.log("classiffier=" + JSON.stringify(this.classifier_.data, null, 4))
-    console.log("設定ロード totalcount : " + this.classifier_.totalCount)
+    console.log("load settings totalcount : " + this.classifier_.totalCount)
   }
 
   /**
