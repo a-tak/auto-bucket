@@ -49,7 +49,7 @@ export default class backgroud {
     // タグ設定読み込み
     this.categories_ = await TagUtil.loadByArray()
 
-    console.log("classiffier=" + JSON.stringify(this.classifier_.data, null, 4))
+    // console.log("classiffier=" + JSON.stringify(this.classifier_.data, null, 4))
     // console.log("totalcount=" + this.classifier_.totalCount)
   }
 

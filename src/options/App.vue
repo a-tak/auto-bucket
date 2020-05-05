@@ -3,18 +3,6 @@
     <v-content>
       <v-container fluid pa-0>
         <div id="main">
-          <v-btn
-            fab
-            dark
-            color="accent"
-            fixed
-            floating
-            bottom
-            right
-            @click="addRow()"
-          >
-            <v-icon dark>add</v-icon>
-          </v-btn>
           <div id="list" v-bind="listClass">
             <div id="title" class="title ma-3">分類用タグ設定</div>
             <div class="d-flex flex-row">
@@ -37,15 +25,14 @@
                 </v-tooltip>
               </div>
             </div>
-            <v-slide-y-transition class="py-0" group>
-              <TagRow
-                v-for="(tag, index) in tags"
-                :key="tag.id"
-                :tag_="tag"
-                :index_="index"
-                v-on:clickDeleteButtomEvent="deleteRow"
-              ></TagRow>
-            </v-slide-y-transition>
+            <v-select
+              v-model="values"
+              :items="tagNames"
+              attach
+              chips
+              label="分類用タグ"
+              multiple
+            ><v-select>
           </div>
         </div>
       </v-container>
@@ -55,20 +42,28 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator"
-import TagRow from "../components/TagRow.vue"
 import Tag from "../lib/Tag"
 import TagUtil from "../lib/TagUtil"
 
-@Component({
-  components: {
-    TagRow,
-  },
-})
+@Component
 export default class App extends Vue {
   private tags_: Tag[] = []
+  private values_: string[] = []
+  private tagNames_ : string[] = []
+
+  public get tagNames() : string[] {
+    return this.tagNames_
+  }
+  public set tagNames(v : string[]) {
+    this.tagNames_ = v
+  }
   
   private get tags(): Tag[] {
     return this.tags_
+  }
+
+  private get values() : string[] {
+    return this.values_
   }
 
   private created(): void {
@@ -78,10 +73,22 @@ export default class App extends Vue {
   private initialize(): void {
     TagUtil.load().then((value) => {
       this.tags_ = value
+      for(const tag of value) {
+        this.tagNames_.push(tag.name)
+        if (tag.useClassification) {
+          this.values_.push(tag.name)
+        }
+      }
+    })
+    browser.messages.listTags().then(value => {
+      console.log("タグ一覧" + JSON.stringify(value, null, 4))
     })
   }
 
   private save() {
+    for (const values of this.values_) {
+      this.tags_
+    }
     TagUtil.save(this.tags_).then(() => {
       // TODO: メニューを更新するコード 
     })
@@ -90,17 +97,6 @@ export default class App extends Vue {
 
   private cancel() {
     this.initialize()
-  }
-
-  private addRow(): void {
-    this.tags_ = TagUtil.getAddedList(this.tags_)
-  }
-
-  private deleteRow(tag: Tag): void {
-    if (tag == undefined) {
-      throw new Error("Delete target Tag is undefined")
-    }
-    this.tags_ = TagUtil.getRemovedList(this.tags_, tag)
   }
 }
 </script>

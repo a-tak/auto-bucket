@@ -1,12 +1,12 @@
 import Tag from "./Tag"
 
 /**
- * 分類用タグを管理するクラス
- * 内部参照をそのまま返しているがVue.jsの画面とリンクさせるため仕方ない
+ * タグユーティリティークラス
  */
 export default class TagUtil {
   /**
-   * ストレージから分類用タグを読み込む
+   * 設定画面用にタグ一覧を返す
+   * またストレージから設定を読み込み分類につかうタグにフラグをつけて返す
    * @returns Tagクラスの配列の参照。idも設定済み
    */
   public static async load(): Promise<Tag[]> {
@@ -15,12 +15,22 @@ export default class TagUtil {
       tags: string[]
     }
 
-    if (resultObj != undefined) {
-      resultObj.tags.forEach((tag, index) => {
-        tags.push(new Tag(index, tag))
-      })
-    }
-    // console.log("Load Tags = " + JSON.stringify(tags, null, 4))
+    // Thunderbirdのタグを読み込み
+    const headers = await browser.messages.listTags()
+
+    headers.forEach((header, index) => {
+      let useClassification = false
+      if (resultObj != undefined) {
+        // 分類用タグ設定の判定
+        if (resultObj.tags.indexOf(header.key) >=0) {
+          useClassification = true
+        }
+      }
+
+      tags.push(new Tag(index, header.key, header.tag, useClassification))
+    })
+
+    console.log("Load Tags = " + JSON.stringify(tags, null, 4))
     return tags
   }
 
@@ -36,7 +46,9 @@ export default class TagUtil {
   public static async save(tags: Tag[]) {
     const tagArray: string[] = []
     for (const tag of tags) {
-      tagArray.push(tag.name)
+      if (tag.useClassification) {
+        tagArray.push(tag.name)
+      }
     }
 
     await browser.storage.sync.set({
@@ -51,27 +63,5 @@ export default class TagUtil {
     //       }
     //     )
     // )
-  }
-
-  public static getRemovedList(tags: Tag[], tag: Tag): Tag[] {
-    const index = tags.indexOf(tag)
-    tags.splice(index, 1)
-    return tags
-  }
-
-  public static getAddedList(tags: Tag[]): Tag[] {
-    let max: number = 0
-    if (tags.length != 0) {
-      max = tags.reduce((a, b) => {
-        if (a.id > b.id) {
-          return a
-        } else {
-          return b
-        }
-      }).id
-    }
-    tags.push(new Tag(max + 1, ""))
-
-    return tags
   }
 }
