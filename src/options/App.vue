@@ -66,8 +66,7 @@ import TagUtil from "../lib/TagUtil"
 })
 export default class App extends Vue {
   private tags_: Tag[] = []
-  private tagCounter_: number = 0
-
+  
   private get tags(): Tag[] {
     return this.tags_
   }
@@ -91,8 +90,7 @@ export default class App extends Vue {
   }
 
   private addRow(): void {
-    // カウント増加させてIDにセット
-    this.tags_.push(new Tag((this.tagCounter_ += 1), ""))
+    this.tags_.push(TagUtil.getNewTag(this.tags_))
   }
 
   private deleteRow(tag: Tag): void {

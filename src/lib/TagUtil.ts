@@ -45,16 +45,15 @@ export default class TagUtil {
   //   this._tags.splice(index, 1)
   // }
 
-  // public add() {
-  //   const max: number = this._tags.reduce((a, b) => {
-  //     if (a.id > b.id) {
-  //       return a
-  //     }else{
-  //       return b
-  //     }
-  //   }).id
+  public static getNewTag(tags: Tag[]) {
+    const max: number = tags.reduce((a, b) => {
+      if (a.id > b.id) {
+        return a
+      }else{
+        return b
+      }
+    }).id
 
-  //   this._tags.push(new Tag(max + 1, ""))
-  //   console.log("add?")
-//  }
+    return new Tag(max + 1, "")
+ }
 }
