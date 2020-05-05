@@ -6,6 +6,7 @@ export default class Tag {
 
   /**
    * コンストラクタ
+  public set value(v : string) {
    */
   constructor(
     id: number,
@@ -19,6 +20,19 @@ export default class Tag {
     this.useClassification_ = useClassification
   }
 
+  /**
+   * valueとtextはv-selectのitems用プロパティ
+   * 一旦、keyとnameと同じ値を返すようにする
+   */
+  public get value() : Tag {
+    return this
+  }
+  public get text() : string {
+    return this.name_
+  }
+  public set text(v : string) {
+    this.name_ = v
+  }
   public get useClassification(): boolean {
     return this.useClassification_
   }

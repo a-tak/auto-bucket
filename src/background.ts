@@ -2,10 +2,12 @@ import "webextension-polyfill"
 import { BayesianClassifier } from "simple-statistics"
 import Segmenter from "tiny-segmenter"
 import TagUtil from "./lib/TagUtil"
+import Tag from "./lib/Tag"
 
 export default class backgroud {
   private classifier_: BayesianClassifier
-  private categories_: Array<string> = new Array(0)
+  private categories_: string[] = []
+  private tags_: Tag[] = []
 
   constructor() {
     // イベント
@@ -33,9 +35,9 @@ export default class backgroud {
     const resultObj = (await browser.storage.sync.get("data")) as {
       data: object
     }
-    if (resultObj.data==undefined) {
+    if (resultObj.data == undefined) {
       this.classifier_.data = {}
-    }else{
+    } else {
       this.classifier_.data = resultObj.data
     }
 
@@ -47,7 +49,9 @@ export default class backgroud {
     }).totalCount
 
     // タグ設定読み込み
+    // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
     this.categories_ = await TagUtil.loadByArray()
+    this.tags_ = await TagUtil.load()
 
     // console.log("classiffier=" + JSON.stringify(this.classifier_.data, null, 4))
     // console.log("totalcount=" + this.classifier_.totalCount)
@@ -74,16 +78,18 @@ export default class backgroud {
      * 右クリックメニュー作成
      */
 
-    for (const tag of this.categories_) {
-      browser.menus.create({
-        id: "doLearn" + tag,
-        title: "このメールを「" + tag + "」として学習",
-        contexts: ["message_list"],
-        onclick: async (info: browser.menus.OnClickData) => {
-          if (info.selectedMessages == undefined) return
-          this.doLearn(info.selectedMessages.messages[0].id, tag)
-        },
-      })
+    for (const tag of this.tags_) {
+      if (tag.useClassification) {
+        browser.menus.create({
+          id: "doLearn" + tag.key,
+          title: "このメールを「" + tag.name + "」として学習",
+          contexts: ["message_list"],
+          onclick: async (info: browser.menus.OnClickData) => {
+            if (info.selectedMessages == undefined) return
+            this.doLearn(info.selectedMessages.messages[0].id, tag.key)
+          },
+        })
+      }
     }
 
     browser.menus.create({
@@ -157,6 +163,8 @@ export default class backgroud {
     const words = await this.divideMessage(messageId)
     for (const word of words) {
       // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
+      // TODO: 現状、モデルに入っている分類名をそのままタグのkeyとして後続処理で使っている。
+      //       モデルに古いキーが残っていると誤動作する可能性がある(何も起きないというパターンが正しいか)
       const categories_ = this.classifier_.score({ word: word }) as Score
       for (const category in categories_) {
         if (totalScore[category] == undefined) {
@@ -209,7 +217,7 @@ export default class backgroud {
   }
 
   /**
-   *  最も高いスコアを返す
+   *  最も高いスコアのタグを返す
    * @param scores スコア一覧
    * @returns 最も高いスコアのタグ文字列を返す。スコアが何も指定されていない場合はundefinedを返す。
    */

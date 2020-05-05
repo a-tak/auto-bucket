@@ -17,20 +17,21 @@ export default class TagUtil {
 
     // Thunderbirdのタグを読み込み
     const headers = await browser.messages.listTags()
-
-    headers.forEach((header, index) => {
-      let useClassification = false
-      if (resultObj != undefined) {
-        // 分類用タグ設定の判定
-        if (resultObj.tags.indexOf(header.key) >=0) {
-          useClassification = true
+    if (headers != undefined) {
+      headers.forEach((header, index) => {
+        let useClassification = false
+        if (resultObj.tags != undefined) {
+          // 分類用タグ設定の判定
+          if (resultObj.tags.indexOf(header.key) >= 0) {
+            useClassification = true
+          }
         }
-      }
 
-      tags.push(new Tag(index, header.key, header.tag, useClassification))
-    })
+        tags.push(new Tag(index, header.key, header.tag, useClassification))
+      })
+    }
 
-    console.log("Load Tags = " + JSON.stringify(tags, null, 4))
+    // console.log("Load Tags = " + JSON.stringify(tags, null, 4))
     return tags
   }
 
@@ -38,17 +39,30 @@ export default class TagUtil {
     const tags = await this.load()
     const tagsArray: string[] = []
     for (const tag of tags) {
-      tagsArray.push(tag.name)
+      // TODO: ここは名前とキーを返すようにしないといけないかもしれない
+      tagsArray.push(tag.key)
     }
     return tagsArray
   }
 
+  /**
+   * 分類対象タグの設定を保存する
+   *
+   * 渡されたTagオブジェクトをストレージに保存する。
+   * loadは分類対象のタグとThunderbird内に設定されている全てのタグを返すが、
+   * このメソッドは分類対象タグかどうかを判断していないので分類対象のタグのみを渡さなくてはいけない(loadとは非対称な動きなので注意)
+   * このような動作としているのは保存する対象を渡せば良いというシンプルな動きにしたかったため。
+   * TODO: いずれ現在のloadメソッドはThunderbird内のタグをすべて返さない形にしてsaveと対象な動きになるようにする。
+   *       現在と同じ動作のメソッドは名称を変更して別に作成する。
+   *
+   * @param tags
+   */
   public static async save(tags: Tag[]) {
     const tagArray: string[] = []
     for (const tag of tags) {
-      if (tag.useClassification) {
-        tagArray.push(tag.name)
-      }
+      // useClassificationは見ずにオブジェクトが渡ってきたら保存対象にする
+      tagArray.push(tag.key)
+      // console.log("target tag=" + JSON.stringify(tag,null, 4))
     }
 
     await browser.storage.sync.set({

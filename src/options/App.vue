@@ -26,8 +26,8 @@
               </div>
             </div>
             <v-select
-              v-model="values"
-              :items="tagNames"
+              v-model="values_"
+              :items="tags_"
               attach
               chips
               label="分類用タグ"
@@ -48,22 +48,18 @@ import TagUtil from "../lib/TagUtil"
 @Component
 export default class App extends Vue {
   private tags_: Tag[] = []
-  private values_: string[] = []
-  private tagNames_ : string[] = []
-
-  public get tagNames() : string[] {
-    return this.tagNames_
-  }
-  public set tagNames(v : string[]) {
-    this.tagNames_ = v
-  }
+  private values_: Tag[] = []
   
   private get tags(): Tag[] {
     return this.tags_
   }
 
-  private get values() : string[] {
+  private get values() : Tag[] {
     return this.values_
+  }
+
+  private set values(v: Tag[]) {
+    this.values_ = v
   }
 
   private created(): void {
@@ -71,25 +67,22 @@ export default class App extends Vue {
   }
 
   private initialize(): void {
+    // 初期化
+    this.tags_ = []
+    this.values_ = []
+
     TagUtil.load().then((value) => {
       this.tags_ = value
       for(const tag of value) {
-        this.tagNames_.push(tag.name)
         if (tag.useClassification) {
-          this.values_.push(tag.name)
+          this.values_.push(tag)
         }
       }
-    })
-    browser.messages.listTags().then(value => {
-      console.log("タグ一覧" + JSON.stringify(value, null, 4))
     })
   }
 
   private save() {
-    for (const values of this.values_) {
-      this.tags_
-    }
-    TagUtil.save(this.tags_).then(() => {
+    TagUtil.save(this.values_).then(() => {
       // TODO: メニューを更新するコード 
     })
 
