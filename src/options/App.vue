@@ -79,7 +79,7 @@ export default class App extends Vue {
   }
 
   private save() {
-    
+    TagUtil.save(this.tags_)
   }
 
   private addRow(): void {
