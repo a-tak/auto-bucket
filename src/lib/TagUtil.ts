@@ -1,0 +1,60 @@
+import Tag from "./Tag"
+
+/**
+ * 分類用タグを管理するクラス
+ * 内部参照をそのまま返しているがVue.jsの画面とリンクさせるため仕方ない
+ */
+export default class TagUtil {
+  /**
+   * ストレージから分類用タグを読み込む
+   * @returns Tagクラスの配列の参照。idも設定済み
+   */
+  public static async load(): Promise<Tag[]>{
+    const tags: Tag[] = []
+    const resultObj = await browser.storage.sync.get("tags") as {
+      tags: string[]
+    }
+
+    if (resultObj != undefined) {
+      resultObj.tags.forEach((tag, index) => {
+        tags.push(new Tag(index, tag))
+      })
+    }
+    console.log("Load Tags = " + JSON.stringify(tags, null, 4))
+    return tags
+  }
+
+  public static async save(tags: Tag[]){
+    const tagArray: string[] = [] 
+    for (const tag of tags) {
+      tagArray.push(tag.name)
+    }
+
+    await browser.storage.sync.set({
+      tags: tagArray
+    })
+
+    console.log("Save Tags = " + JSON.stringify(await browser.storage.sync.get("tags") as {
+      tags: string[]
+    }))
+
+  }
+
+  // public remove(tag: Tag) {
+  //   const index = this._tags.indexOf(tag)
+  //   this._tags.splice(index, 1)
+  // }
+
+  // public add() {
+  //   const max: number = this._tags.reduce((a, b) => {
+  //     if (a.id > b.id) {
+  //       return a
+  //     }else{
+  //       return b
+  //     }
+  //   }).id
+
+  //   this._tags.push(new Tag(max + 1, ""))
+  //   console.log("add?")
+//  }
+}
