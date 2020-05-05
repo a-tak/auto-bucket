@@ -5,7 +5,9 @@
         <div id="main">
           <div id="list" v-bind="listClass">
             <div id="title" class="title ma-3">分類用タグ設定</div>
-            <div class="body-1 ma-3">分類用タグを変更したらThunderbirdを再起動してください</div>
+            <div class="body-1 ma-3">
+              分類用タグを変更したらThunderbirdを再起動してください
+            </div>
             <div class="d-flex flex-row">
               <div class="ma-3">
                 <v-tooltip top>
@@ -33,9 +35,17 @@
               chips
               label="分類用タグ"
               multiple
-            ><v-select>
+            ></v-select>
           </div>
         </div>
+        <v-snackbar
+          v-model="snackbarDisplay"
+          :top="true"
+          :timeout="3000"
+          :multi-line="multiLine"
+        >
+          {{ snackbarText }}
+        </v-snackbar>
       </v-container>
     </v-content>
   </v-app>
@@ -50,12 +60,26 @@ import TagUtil from "../lib/TagUtil"
 export default class App extends Vue {
   private tags_: Tag[] = []
   private values_: Tag[] = []
-  
+  private snackbarDisplay_: boolean = false
+  private snackbarText_: string = ""
+
+  private get snackbarDisplay(): boolean {
+    return this.snackbarDisplay_
+  }
+
+  private set snackbarDisplay(value: boolean) {
+    this.snackbarDisplay_ = value
+  }
+
+  public get snackbarText(): string {
+    return this.snackbarText_
+  }
+
   private get tags(): Tag[] {
     return this.tags_
   }
 
-  private get values() : Tag[] {
+  private get values(): Tag[] {
     return this.values_
   }
 
@@ -74,7 +98,7 @@ export default class App extends Vue {
 
     TagUtil.load().then((value) => {
       this.tags_ = value
-      for(const tag of value) {
+      for (const tag of value) {
         if (tag.useClassification) {
           this.values_.push(tag)
         }
@@ -84,13 +108,23 @@ export default class App extends Vue {
 
   private save() {
     TagUtil.save(this.values_).then(() => {
-      // TODO: メニューを更新するコード 
+      // タイムアウトリセットするため一度消す
+      this.snackbarDisplay_ = false
+      this.$nextTick(() => {
+        // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
+        this.snackbarText_ = "設定を保存しました"
+        this.snackbarDisplay_ = true
+      })
+      // TODO: メニューを更新するコード
     })
-
   }
 
   private cancel() {
     this.initialize()
+    this.$nextTick(() => {
+      this.snackbarText_ = "設定を元に戻しました"
+      this.snackbarDisplay_ = true
+    })
   }
 }
 </script>

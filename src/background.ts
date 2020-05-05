@@ -151,6 +151,7 @@ export default class backgroud {
   async clearLearn() {
     // ベイジアンフィルター初期化
     this.classifier_ = new BayesianClassifier()
+    // TODO: ストレージの設定は全部消しているがオプション画面のインスタンスは破棄していないので不整合がある
     this.removeSetting()
   }
 
