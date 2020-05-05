@@ -95,11 +95,9 @@ export default class App extends Vue {
 
   private deleteRow(tag: Tag): void {
     if (tag == undefined) {
-      console.log("Delete target Tag is undefined")
+      throw new Error("Delete target Tag is undefined")
     }
-    const index = this.tags_.indexOf(tag)
-    console.log("index=" + index + "/id=" + tag.id + "/name=" + tag.name)
-    this.tags_.splice(index, 1)
+    this.tags_ = TagUtil.getRemovedList(this.tags_, tag)
   }
 }
 </script>

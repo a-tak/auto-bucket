@@ -40,10 +40,11 @@ export default class TagUtil {
 
   }
 
-  // public remove(tag: Tag) {
-  //   const index = this._tags.indexOf(tag)
-  //   this._tags.splice(index, 1)
-  // }
+  public static getRemovedList(tags: Tag[], tag: Tag): Tag[] {
+    const index = tags.indexOf(tag)
+    tags.splice(index, 1)
+    return tags
+  }
 
   public static getNewTag(tags: Tag[]) {
     const max: number = tags.reduce((a, b) => {
