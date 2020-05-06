@@ -41,13 +41,6 @@ export default class backgroud {
       this.classifier_.data = resultObj.data
     }
 
-    // // objectで保存されているのでタイプアサーションで型を指定している
-    // this.classifier_.totalCount = ((await browser.storage.sync.get(
-    //   "totalCount"
-    // )) as {
-    //   totalCount: number
-    // }).totalCount
-
     // タグ設定読み込み
     // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
     this.categories_ = await TagUtil.loadByArray()
@@ -59,7 +52,6 @@ export default class backgroud {
         body_max_length: number
       }).body_max_length
     })
-
 
     // 学習モデルの整理
     this.garbageCollection()
@@ -147,7 +139,7 @@ export default class backgroud {
       contexts: ["message_list"],
       onclick: async (info: browser.menus.OnClickData) => {
         if (info.selectedMessages == undefined) return
-        this.classificationMessage(info.selectedMessages.messages)
+        this.classificationMessage(info.selectedMessages)
       },
     })
 
@@ -159,6 +151,25 @@ export default class backgroud {
         this.clearLearn()
       },
     })
+  }
+
+  /**
+   * メッセージを順次返すジェネレーター関数
+   * .next()で次の値を返す
+   * @param messageList
+   */
+  async *listMessages(messageList: browser.messages.MessageList) {
+    let page = messageList
+    for (let message of page.messages) {
+      yield message
+    }
+
+    while (page.id) {
+      page = await browser.messages.continueList(page.id)
+      for (let message of page.messages) {
+        yield message
+      }
+    }
   }
 
   /**
@@ -201,9 +212,15 @@ export default class backgroud {
     )
 
     // タグ付けも実施する
-    const headers: browser.messages.MessageHeader[] = []
-    headers.push(await browser.messages.get(messageId))
-    await this.classificationMessage(headers)
+    const messageHeader = await browser.messages.get(
+      messageId
+    )
+    const messages: browser.messages.MessageHeader[] = [messageHeader]
+    const page: browser.messages.MessageList = {
+      id: "1",
+      messages: messages,
+    }
+    await this.classificationMessage(page)
 
     this.saveSetting()
   }
@@ -248,11 +265,11 @@ export default class backgroud {
       })
     }
 
-    performance.measure("本文分割処理","本文分割開始","本文分割終了")
-    performance.measure("スコア集計処理","本文分割終了","スコア集計終了")
+    performance.measure("本文分割処理", "本文分割開始", "本文分割終了")
+    performance.measure("スコア集計処理", "本文分割終了", "スコア集計終了")
     console.log(performance.getEntriesByName("本文分割処理"))
     console.log(performance.getEntriesByName("スコア集計処理"))
-    
+
     console.log("score=" + JSON.stringify(resultScores, null, 4))
     return resultScores
   }
@@ -266,7 +283,7 @@ export default class backgroud {
     let body = await this.getBody(messagePart)
     performance.mark("C")
     // 本文の最初の方だけを対象にする
-    body = body.slice(0,this.bodymaxlength_ * 1024)
+    body = body.slice(0, this.bodymaxlength_ * 1024)
     console.log("result=" + body)
 
     const seg = new Segmenter()
@@ -275,12 +292,12 @@ export default class backgroud {
     performance.mark("E")
     console.log("divide count = " + words.length)
     // console.log("words=" + words)
-    performance.measure("メッセージパート取得","A","B")
-    performance.measure("メッセージボディー取得","B","C")
-    performance.measure("Segmenter new","C","D")
-    performance.measure("Segmenter処理","D","E")
+    performance.measure("メッセージパート取得", "A", "B")
+    performance.measure("メッセージボディー取得", "B", "C")
+    performance.measure("Segmenter new", "C", "D")
+    performance.measure("Segmenter処理", "D", "E")
     // console.log(performance.getEntriesByName(""))
-    console.log(performance.getEntriesByType("measure")) 
+    console.log(performance.getEntriesByType("measure"))
     return words
   }
 
@@ -288,21 +305,26 @@ export default class backgroud {
    * 指定したメールをスコアリングし分類タグをセットする
    * @param messageId 対象のメッセージid
    */
-  private async classificationMessage(
-    messages: browser.messages.MessageHeader[]
-  ) {
+  private async classificationMessage(messages: browser.messages.MessageList) {
     performance.mark("分類開始")
-    for (const message of messages) {
-      const messageId = message.id
-      const tag: string = await this.getClassificationTag(messageId)
-      performance.mark("分類判定終了")
-      if (tag == "") return
-      console.log("Tagged " + tag)
-      this.setClassificationTag(messageId, tag)
+    const generator = this.listMessages(messages)
+    let result = generator.next()
+    while (!(await result).done) {
+      const message = (await result).value
+      // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
+      if (typeof message != "undefined") {
+        const messageId = message.id
+        const tag: string = await this.getClassificationTag(messageId)
+        performance.mark("分類判定終了")
+        if (tag == "") return
+        console.log("Tagged " + tag)
+        this.setClassificationTag(messageId, tag)
+      }
+      result = generator.next()
     }
     performance.mark("分類終了")
-    performance.measure("分類メイン","分類開始","分類終了")
-    performance.measure("分類判定処理","分類開始","分類判定終了")
+    performance.measure("分類メイン", "分類開始", "分類終了")
+    performance.measure("分類判定処理", "分類開始", "分類判定終了")
     console.log(performance.getEntriesByName("分類メイン"))
     console.log(performance.getEntriesByName("分類判定処理"))
   }
