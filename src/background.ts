@@ -56,7 +56,6 @@ export default class backgroud {
     // 学習モデルの整理
     this.garbageCollection()
 
-    // console.log("classiffier=" + JSON.stringify(this.classifier_.data, null, 4))
     console.log("load settings totalcount : " + this.classifier_.totalCount)
   }
 
@@ -99,17 +98,13 @@ export default class backgroud {
   }
 
   private async saveSetting(): Promise<void> {
-    console.log("設定セーブ トータルカウント=" + this.classifier_.totalCount)
     await browser.storage.sync.set({
       data: this.classifier_.data,
       totalCount: this.classifier_.totalCount,
     })
-
-    // console.log("save classiffier=" + JSON.stringify(await browser.storage.sync.get(null), null, 4))
   }
 
   private async removeSetting(): Promise<void> {
-    console.log("設定削除")
     await browser.storage.sync.clear()
     this.classifier_ = new BayesianClassifier()
   }
@@ -280,7 +275,6 @@ export default class backgroud {
     console.log(performance.getEntriesByName("本文分割処理"))
     console.log(performance.getEntriesByName("スコア集計処理"))
 
-    console.log("score=" + JSON.stringify(resultScores, null, 4))
     return resultScores
   }
 
@@ -294,19 +288,15 @@ export default class backgroud {
     performance.mark("C")
     // 本文の最初の方だけを対象にする
     body = body.slice(0, this.bodymaxlength_ * 1024)
-    // console.log("result=" + body)
 
     const seg = new Segmenter()
     performance.mark("D")
     const words: Array<string> = seg.segment(body)
     performance.mark("E")
-    console.log("divide count = " + words.length)
-    // console.log("words=" + words)
     performance.measure("メッセージパート取得", "A", "B")
     performance.measure("メッセージボディー取得", "B", "C")
     performance.measure("Segmenter new", "C", "D")
     performance.measure("Segmenter処理", "D", "E")
-    // console.log(performance.getEntriesByName(""))
     console.log(performance.getEntriesByType("measure"))
     return words
   }
@@ -321,7 +311,6 @@ export default class backgroud {
     const tag: string = await this.getClassificationTag(messageId)
     performance.mark("分類判定終了")
     if (tag == "") return
-    console.log("Tagged " + tag)
     this.setClassificationTag(messageId, tag)
     performance.mark("分類終了")
     performance.measure("分類メイン", "分類開始", "分類終了")
