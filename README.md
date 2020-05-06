@@ -1,15 +1,27 @@
 # auto-backet
  Thunderbird用ベイジアンフィルターによる自動メール分類拡張機能
 
-## 注意
-
-現在未完成です
-
-## ビルド
-
---overwrite-destをつけないと2回目のビルド以降更新されない
+## ビルド環境準備(Build Environment)
 
 ```bash
+# Macの場合
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+brew install nodebrew
+nodebrew install v13.13.0
+nodebrew use v13.13.0
+```
+
+```bash
+npm install -g @vue/cli
+npm install -g @vue/cli-init
+npm i
+```
+
+## ビルド(Build)
+
+```
+npm run build
+cd dist
 web-ext build --overwrite-dest  
 ```
 
