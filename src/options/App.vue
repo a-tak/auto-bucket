@@ -35,6 +35,8 @@
               chips
               label="分類用タグ"
               multiple
+              hint="分類に使用するタグを選択してください。AutoBacketはここで指定されたタグのどれかをメールにセットします。"
+              persistent-hint
               class="ma-3"
             ></v-select>
             <v-text-field
@@ -43,8 +45,8 @@
               single-line
               outline
               v-model="bodymaxlength_"
-              suffix="kb"
-              hint="学習対象とする上限サイズを指定してください。<br>メール本文の最初から指定されたサイズまでを学習、判定の条件にします。"
+              suffix="KByte"
+              hint="学習対象とする上限サイズを指定してください。メール本文の最初から指定されたサイズまでを学習、判定の条件にします。数値を大きくしすぎると長いメールの処理に時間がかかるようになります。"
               :rules="[rules.isNumeric]"
             ></v-text-field>
           </v-form>
