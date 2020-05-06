@@ -127,7 +127,16 @@ export default class backgroud {
           contexts: ["message_list"],
           onclick: async (info: browser.menus.OnClickData) => {
             if (info.selectedMessages == undefined) return
-            this.doLearn(info.selectedMessages.messages[0].id, tag.key)
+            const generator = this.listMessages(info.selectedMessages)
+            let result = generator.next()
+            while (!(await result).done) {
+              const message = (await result).value
+              // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
+              if (typeof message != "undefined") {
+                this.doLearn(message, tag.key)
+              }
+              result = generator.next()
+            }
           },
         })
       }
@@ -139,7 +148,16 @@ export default class backgroud {
       contexts: ["message_list"],
       onclick: async (info: browser.menus.OnClickData) => {
         if (info.selectedMessages == undefined) return
-        this.classificationMessage(info.selectedMessages)
+        const generator = this.listMessages(info.selectedMessages)
+        let result = generator.next()
+        while (!(await result).done) {
+          const message = (await result).value
+          // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
+          if (typeof message != "undefined") {
+            this.classificationMessage(message)
+          }
+          result = generator.next()
+        }
       },
     })
 
@@ -196,7 +214,8 @@ export default class backgroud {
    * メール分類学習実行 メイン処理
    * @param {string}  category  分類名
    */
-  async doLearn(messageId: number, category: string) {
+  async doLearn(message: browser.messages.MessageHeader, category: string) {
+    const messageId = message.id
     const words = await this.divideMessage(messageId)
     let relearn: number = 0
     do {
@@ -212,16 +231,7 @@ export default class backgroud {
     )
 
     // タグ付けも実施する
-    const messageHeader = await browser.messages.get(
-      messageId
-    )
-    const messages: browser.messages.MessageHeader[] = [messageHeader]
-    const page: browser.messages.MessageList = {
-      id: "1",
-      messages: messages,
-    }
-    await this.classificationMessage(page)
-
+    await this.classificationMessage(message)
     this.saveSetting()
   }
 
@@ -284,7 +294,7 @@ export default class backgroud {
     performance.mark("C")
     // 本文の最初の方だけを対象にする
     body = body.slice(0, this.bodymaxlength_ * 1024)
-    console.log("result=" + body)
+    // console.log("result=" + body)
 
     const seg = new Segmenter()
     performance.mark("D")
@@ -305,23 +315,14 @@ export default class backgroud {
    * 指定したメールをスコアリングし分類タグをセットする
    * @param messageId 対象のメッセージid
    */
-  private async classificationMessage(messages: browser.messages.MessageList) {
+  private async classificationMessage(message: browser.messages.MessageHeader) {
     performance.mark("分類開始")
-    const generator = this.listMessages(messages)
-    let result = generator.next()
-    while (!(await result).done) {
-      const message = (await result).value
-      // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
-      if (typeof message != "undefined") {
-        const messageId = message.id
-        const tag: string = await this.getClassificationTag(messageId)
-        performance.mark("分類判定終了")
-        if (tag == "") return
-        console.log("Tagged " + tag)
-        this.setClassificationTag(messageId, tag)
-      }
-      result = generator.next()
-    }
+    const messageId = message.id
+    const tag: string = await this.getClassificationTag(messageId)
+    performance.mark("分類判定終了")
+    if (tag == "") return
+    console.log("Tagged " + tag)
+    this.setClassificationTag(messageId, tag)
     performance.mark("分類終了")
     performance.measure("分類メイン", "分類開始", "分類終了")
     performance.measure("分類判定処理", "分類開始", "分類判定終了")
