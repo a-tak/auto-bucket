@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "AutoBacket",
-  "version": "0.7.0",
+  "version": "0.0.0",
   "author": "A-tak",
   "description": "メールをベイジアンフィルターで複数のバケツに分類してタグを付ける拡張機能です",
   "homepage_url": "https://github.com/a-tak/auto-backet",

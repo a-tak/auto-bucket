@@ -25,7 +25,8 @@ cd dist
 # zip compress
 ```
 
-Addonとして公開する場合は同じバージョンはアップし直せないので、manifest.jsonのバージョンを変えること
+Addonとして公開する場合は同じバージョンはアップし直せないので、package.jsonのバージョンを変えること
+(manifest.jsonのバージョンはpackage.jsonのバージョンで書き換えられる)
 
 ## Linter
 
