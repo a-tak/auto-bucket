@@ -3,11 +3,11 @@
     <v-content>
       <v-container fluid pa-0>
         <div id="main">
-          <div id="list" v-bind="listClass">
-            <div id="title" class="title ma-3">分類用タグ設定</div>
-            <div class="body-1 ma-3">
-              分類用タグを変更したらThunderbirdを再起動してください
-            </div>
+          <div id="title" class="title ma-3">分類用タグ設定</div>
+          <div class="body-1 ma-3">
+            分類用タグを変更したらThunderbirdを再起動してください
+          </div>
+          <v-form v-model="valid">
             <div class="d-flex flex-row">
               <div class="ma-3">
                 <v-tooltip top>
@@ -35,8 +35,19 @@
               chips
               label="分類用タグ"
               multiple
+              class="ma-3"
             ></v-select>
-          </div>
+            <v-text-field
+              class="ma-3"
+              placeholder="100"
+              single-line
+              outline
+              v-model="bodymaxlength_"
+              suffix="kb"
+              hint="学習対象とする上限サイズを指定してください。<br>メール本文の最初から指定されたサイズまでを学習、判定の条件にします。"
+              :rules="[rules.isNumeric]"
+            ></v-text-field>
+          </v-form>
         </div>
         <v-snackbar
           v-model="snackbarDisplay"
@@ -55,6 +66,7 @@
 import { Component, Vue, Watch } from "vue-property-decorator"
 import Tag from "../lib/Tag"
 import TagUtil from "../lib/TagUtil"
+import { numericSort } from "simple-statistics"
 
 @Component
 export default class App extends Vue {
@@ -62,6 +74,31 @@ export default class App extends Vue {
   private values_: Tag[] = []
   private snackbarDisplay_: boolean = false
   private snackbarText_: string = ""
+  private bodymaxlength_: number = 100
+
+  private valid_: boolean = false
+  public get valid(): boolean {
+    return this.valid_
+  }
+  public set valid(v: boolean) {
+    this.valid_ = v
+  }
+  private get bodymaxlength(): number {
+    return this.bodymaxlength_
+  }
+  private set bodymaxlength(v: number) {
+    this.bodymaxlength_ = v
+  }
+
+  private get rules(): {} {
+    return {
+      isNumeric: (value: string) => {
+        console.log("validate value = " + value)
+        if (isNaN(Number(value))) return "数字を入力してください"
+        return true
+      },
+    }
+  }
 
   private get snackbarDisplay(): boolean {
     return this.snackbarDisplay_
@@ -97,6 +134,11 @@ export default class App extends Vue {
     this.values_ = []
 
     TagUtil.load().then((value) => {
+      browser.storage.sync.get("body_max_length").then((value) => {
+        this.bodymaxlength_ = (value as {
+          body_max_length: number
+        }).body_max_length
+      })
       this.tags_ = value
       for (const tag of value) {
         if (tag.useClassification) {
@@ -107,12 +149,29 @@ export default class App extends Vue {
   }
 
   private save() {
-    TagUtil.save(this.values_).then(() => {
+    if (!this.valid_) {
       // タイムアウトリセットするため一度消す
       this.snackbarDisplay_ = false
       this.$nextTick(() => {
         // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
-        this.snackbarText_ = "設定を保存しました。Thunderbirdを再起動してください。"
+        this.snackbarText_ = "エラーをご確認ください"
+        this.snackbarDisplay_ = true
+      })
+
+      return
+    }
+    TagUtil.save(this.values_).then(() => {
+      // 学習対象の上限サイズ保存
+      browser.storage.sync.set({
+        body_max_length: this.bodymaxlength_,
+      })
+
+      // タイムアウトリセットするため一度消す
+      this.snackbarDisplay_ = false
+      this.$nextTick(() => {
+        // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
+        this.snackbarText_ =
+          "設定を保存しました。Thunderbirdを再起動してください。"
         this.snackbarDisplay_ = true
       })
       // TODO: メニューを更新するコード

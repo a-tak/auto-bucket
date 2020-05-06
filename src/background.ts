@@ -215,7 +215,9 @@ export default class backgroud {
    */
   private async scoring(messageId: number): Promise<ScoreTotal[]> {
     const totalScore: Score = {}
+    performance.mark("本文分割開始")
     const words = await this.divideMessage(messageId)
+    performance.mark("本文分割終了")
     for (const word of words) {
       // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
       // TODO: 現状、モデルに入っている分類名をそのままタグのkeyとして後続処理で使っている。
@@ -228,7 +230,7 @@ export default class backgroud {
         totalScore[category] += categories_[category]
       }
     }
-
+    performance.mark("スコア集計終了")
     let resultScores: Array<ScoreTotal> = new Array(0)
     for (const category in totalScore) {
       resultScores.push({
@@ -237,6 +239,11 @@ export default class backgroud {
       })
     }
 
+    performance.measure("本文分割処理","本文分割開始","本文分割終了")
+    performance.measure("スコア集計処理","本文分割終了","スコア集計終了")
+    console.log(performance.getEntriesByName("本文分割処理"))
+    console.log(performance.getEntriesByName("スコア集計処理"))
+    
     console.log("score=" + JSON.stringify(resultScores, null, 4))
     return resultScores
   }
@@ -244,13 +251,27 @@ export default class backgroud {
   private async divideMessage(messageId: number): Promise<Array<string>> {
     // メールをとりあえず本文だけを対象にする
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
+    performance.mark("A")
     const messagePart = await browser.messages.getFull(messageId)
-    const body = await this.getBody(messagePart)
+    performance.mark("B")
+    let body = await this.getBody(messagePart)
+    performance.mark("C")
+    // 本文の最初の方だけを対象にする
+    body = body.slice(0,1024*100)
     // console.log("result=" + body)
 
     const seg = new Segmenter()
+    performance.mark("D")
     const words: Array<string> = seg.segment(body)
+    performance.mark("E")
+    console.log("divide count = " + words.length)
     // console.log("words=" + words)
+    performance.measure("メッセージパート取得","A","B")
+    performance.measure("メッセージボディー取得","B","C")
+    performance.measure("Segmenter new","C","D")
+    performance.measure("Segmenter処理","D","E")
+    // console.log(performance.getEntriesByName(""))
+    console.log(performance.getEntriesByType("measure")) 
     return words
   }
 
@@ -261,13 +282,20 @@ export default class backgroud {
   private async classificationMessage(
     messages: browser.messages.MessageHeader[]
   ) {
+    performance.mark("分類開始")
     for (const message of messages) {
       const messageId = message.id
       const tag: string = await this.getClassificationTag(messageId)
+      performance.mark("分類判定終了")
       if (tag == "") return
       console.log("Tagged " + tag)
       this.setClassificationTag(messageId, tag)
     }
+    performance.mark("分類終了")
+    performance.measure("分類メイン","分類開始","分類終了")
+    performance.measure("分類判定処理","分類開始","分類判定終了")
+    console.log(performance.getEntriesByName("分類メイン"))
+    console.log(performance.getEntriesByName("分類判定処理"))
   }
 
   /**
