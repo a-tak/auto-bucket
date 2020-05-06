@@ -8,6 +8,7 @@ export default class backgroud {
   private classifier_: BayesianClassifier
   private categories_: string[] = []
   private tags_: Tag[] = []
+  private bodymaxlength_: number = 100
 
   constructor() {
     // イベント
@@ -51,6 +52,14 @@ export default class backgroud {
     // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
     this.categories_ = await TagUtil.loadByArray()
     this.tags_ = await TagUtil.load()
+
+    // 本文の処理サイズ上限読み込み
+    browser.storage.sync.get("body_max_length").then((value) => {
+      this.bodymaxlength_ = (value as {
+        body_max_length: number
+      }).body_max_length
+    })
+
 
     // 学習モデルの整理
     this.garbageCollection()
@@ -257,8 +266,8 @@ export default class backgroud {
     let body = await this.getBody(messagePart)
     performance.mark("C")
     // 本文の最初の方だけを対象にする
-    body = body.slice(0,1024*100)
-    // console.log("result=" + body)
+    body = body.slice(0,this.bodymaxlength_ * 1024)
+    console.log("result=" + body)
 
     const seg = new Segmenter()
     performance.mark("D")

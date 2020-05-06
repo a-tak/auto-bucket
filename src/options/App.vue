@@ -95,7 +95,6 @@ export default class App extends Vue {
   private get rules(): {} {
     return {
       isNumeric: (value: string) => {
-        console.log("validate value = " + value)
         if (isNaN(Number(value))) return "数字を入力してください"
         return true
       },
