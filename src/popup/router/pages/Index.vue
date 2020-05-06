@@ -1,13 +1,18 @@
 <template>
-  <p>Hello world! TypeScript!!あいー</p>
+  <div>
+    <span class="title">AutoBacket Thunderbirdメール分類拡張機能</span>
+    <p>拡張機能の設定から分類に使用するタグを選択しメールを右クリックし振り分けの学習をしてください。
+      その後はメールを選択して右クリックしてメールの判定処理を行ってください。
+    </p>
+  </div>
 </template>
 
 <script lang="ts">
 export default {
   data() {
-    return {};
+    return {}
   },
-};
+}
 </script>
 
 <style lang="scss" scoped>
