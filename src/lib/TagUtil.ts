@@ -35,16 +35,6 @@ export default class TagUtil {
     return tags
   }
 
-  public static async loadByArray(): Promise<Array<string>> {
-    const tags = await this.load()
-    const tagsArray: string[] = []
-    for (const tag of tags) {
-      // TODO: ここは名前とキーを返すようにしないといけないかもしれない
-      tagsArray.push(tag.key)
-    }
-    return tagsArray
-  }
-
   /**
    * 分類対象タグの設定を保存する
    *

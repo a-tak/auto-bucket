@@ -6,7 +6,6 @@ import Tag from "./lib/Tag"
 
 export default class backgroud {
   private classifier_: BayesianClassifier
-  private categories_: string[] = []
   private tags_: Tag[] = []
   private bodymaxlength_: number = 100
 
@@ -43,7 +42,6 @@ export default class backgroud {
 
     // タグ設定読み込み
     // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
-    this.categories_ = await TagUtil.loadByArray()
     this.tags_ = await TagUtil.load()
 
     // 本文の処理サイズ上限読み込み
@@ -358,9 +356,12 @@ export default class backgroud {
 
     // 分類用タグをすべて取り除く
     const newTags = header.tags.filter((item: string) => {
-      for (const tag of this.categories_) {
-        if (tag == item) {
-          return false
+      for (const tag of this.tags_) {
+        if (tag.useClassification) {
+          if (tag.key == item) {
+            console.log("tag.key=" + tag.key + "/item=" + item)
+            return false
+          }
         }
       }
       return true
