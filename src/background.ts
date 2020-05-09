@@ -159,10 +159,9 @@ export default class backgroud {
       title: "判定ログを表示する",
       contexts: ["message_list"],
       onclick: async (info: browser.menus.OnClickData) => {
-        const createData = {
-          url: "logviewer/logviewer.html",
+        if (typeof info.selectedMessages != "undefined") {
+          this.showLogViewer(info.selectedMessages.messages[0])
         }
-        browser.tabs.create(createData)
       },
     })
 
@@ -195,6 +194,17 @@ export default class backgroud {
     }
   }
 
+  async showLogViewer(messageHeader: browser.messages.MessageHeader) {
+    // 一旦ストレージにmessageを保存しログ画面でそれを取り出す
+    await browser.storage.sync.set({
+      logTarget: messageHeader,
+    })
+
+    const createData = {
+      url: "logviewer/logviewer.html",
+    }
+    browser.tabs.create(createData)
+  }
   /**
    * 指定したメールの本文を取得する
    * 再帰読み込みでbodyを検索する
