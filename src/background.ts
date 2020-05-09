@@ -155,6 +155,18 @@ export default class backgroud {
     })
 
     browser.menus.create({
+      id: "view_log",
+      title: "判定ログを表示する",
+      contexts: ["message_list"],
+      onclick: async (info: browser.menus.OnClickData) => {
+        const createData = {
+          url: "logviewer/logviewer.html",
+        }
+        browser.tabs.create(createData)
+      },
+    })
+
+    browser.menus.create({
       id: "learn_clear",
       title: "学習状況と設定をクリア",
       contexts: ["message_list"],
