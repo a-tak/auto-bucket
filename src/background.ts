@@ -2,7 +2,8 @@ import "webextension-polyfill"
 import { BayesianClassifier } from "simple-statistics"
 import Segmenter from "tiny-segmenter"
 import TagUtil from "./lib/TagUtil"
-import Tag from "./lib/Tag"
+import Tag from "./models/Tag"
+import LogEntry from "./models/LogEntry"
 
 export default class backgroud {
   private classifier_: BayesianClassifier
@@ -264,11 +265,14 @@ export default class backgroud {
    * メールのスコアリング
    * @param {number}  messageId 対象のメールid
    */
-  private async scoring(messageId: number): Promise<ScoreTotal[]> {
+  private async scoring(
+    messageId: number
+  ): Promise<{ scoreTotal: ScoreTotal[]; logEntry: LogEntry }> {
     const totalScore: Score = {}
     performance.mark("本文分割開始")
     const words = await this.divideMessage(messageId)
     performance.mark("本文分割終了")
+    const logEntry = new LogEntry()
     for (const word of words) {
       // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
       // TODO: 現状、モデルに入っている分類名をそのままタグのkeyとして後続処理で使っている。
@@ -279,7 +283,20 @@ export default class backgroud {
           totalScore[category] = 0
         }
         totalScore[category] += categories_[category]
+        // ログ用スコア集計
+        if (logEntry.scoreEachWord[word] == undefined) {
+          logEntry.scoreEachWord[word] = {
+            count: 0,
+            score: {
+              [category] : 0
+            }
+          }
+        }
+        logEntry.scoreEachWord[word].score[category] += categories_[category]
       }
+      // ログ用スコア集計
+      logEntry.scoreEachWord[word].count += 1
+      logEntry.targetText = words
     }
     performance.mark("スコア集計終了")
     let resultScores: Array<ScoreTotal> = new Array(0)
@@ -295,7 +312,7 @@ export default class backgroud {
     console.log(performance.getEntriesByName("本文分割処理"))
     console.log(performance.getEntriesByName("スコア集計処理"))
 
-    return resultScores
+    return { scoreTotal: resultScores, logEntry: logEntry }
   }
 
   private async divideMessage(messageId: number): Promise<Array<string>> {
@@ -344,8 +361,23 @@ export default class backgroud {
    * @param messageId 対象のメッセージid
    */
   private async getClassificationTag(messageId: number): Promise<string> {
-    const scores: ScoreTotal[] = await this.scoring(messageId)
-    return this.ranking(scores)
+    const result = await this.scoring(messageId)
+    const tag = this.ranking(result.scoreTotal)
+    // ログに残す
+    const logEntry = result.logEntry
+    const messagePart = await browser.messages.getFull(messageId)
+    const headers = messagePart.headers as {
+      [key: string]: string
+    }
+    console.log("headers = " + JSON.stringify(headers, null, 4))
+    // ヘッダーはすべて小文字変換されているので小文字で探す
+    const id = headers["message-id"]
+    if (id == undefined) { throw new Error("do not get mail message-id")}
+    logEntry.id = id
+    logEntry.classifiedTag = tag
+    logEntry.save()
+
+    return tag
   }
 
   /**
@@ -381,7 +413,6 @@ export default class backgroud {
       for (const tag of this.tags_) {
         if (tag.useClassification) {
           if (tag.key == item) {
-            console.log("tag.key=" + tag.key + "/item=" + item)
             return false
           }
         }
