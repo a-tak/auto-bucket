@@ -4,6 +4,7 @@ import Segmenter from "tiny-segmenter"
 import TagUtil from "./lib/TagUtil"
 import Tag from "./models/Tag"
 import LogEntry from "./models/LogEntry"
+import MessageUtil from "./lib/MessageUtil"
 
 export default class backgroud {
   private classifier_: BayesianClassifier
@@ -365,15 +366,7 @@ export default class backgroud {
     const tag = this.ranking(result.scoreTotal)
     // ログに残す
     const logEntry = result.logEntry
-    const messagePart = await browser.messages.getFull(messageId)
-    const headers = messagePart.headers as {
-      [key: string]: string
-    }
-    console.log("headers = " + JSON.stringify(headers, null, 4))
-    // ヘッダーはすべて小文字変換されているので小文字で探す
-    const id = headers["message-id"]
-    if (id == undefined) { throw new Error("do not get mail message-id")}
-    logEntry.id = id
+    logEntry.id = await MessageUtil.getMailMessageId(messageId)
     logEntry.classifiedTag = tag
     logEntry.save()
 

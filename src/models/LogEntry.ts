@@ -53,21 +53,35 @@ export default class LogEntry {
     if (this.targetText_.length == 0) throw new Error("Not set targetText")
     if (this.classifiedTag_ == "" || this.classifiedTag_ == undefined)
       throw new Error("Not set classifiedTag")
-    const log: {
-      log: {
-        [key: string]: LogEntry
-      }
-    } = {
-      log: {
-        [this.id_]: this,
-      },
+    const keyname = "log_" + this.id
+    await browser.storage.sync.set({ [keyname]: this })
+  }
+
+  public async load(): Promise<boolean> {
+    if (this.id_ == "" || this.id_ == undefined) throw new Error("Not set id")
+    const keyname = "log_" + this.id
+    const log = (await browser.storage.sync.get(keyname)) as {
+      [kenyname: string]: LogEntry
+    }
+    const entry = log[keyname]
+    if (typeof entry == "undefined") {
+      // まだ一回も判定していない場合はみつからない
+      return false
     }
 
-    await browser.storage.sync.set(log)
-    console.log(
-      "logObj = " +
-        JSON.stringify(await browser.storage.sync.get("log"), null, 4)
-    )
+    if (entry == undefined) {
+      // まだ判定していないメールの場合はみつからない
+      return false
+    }
+
+    // ストレージにはクラス変数名で保存されている(このクラスのプロパティ名でアクセスしても取れないので注意)
+    // TODO: JSON.parseとかでそのままデシリアライズできるのでは?
+    this.classifiedTag_ = entry.classifiedTag_
+    this.logDate_ = entry.logDate_
+    this.scoreEachWord_ = entry.scoreEachWord_
+    this.targetText_ = entry.targetText_
+
+    return true
   }
 }
 
