@@ -21,12 +21,15 @@ export default class Tag {
   }
 
   /**
-   * valueとtextはv-selectのitems用プロパティ
-   * 一旦、keyとnameと同じ値を返すようにする
+   * valueはv-selectのitems用プロパティ
    */
   public get value() : Tag {
     return this
   }
+  /**
+   * textはv-selectのitems用プロパティ
+   * 一旦、nameと同じ値を返すようにする
+   */
   public get text() : string {
     return this.name_
   }

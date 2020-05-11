@@ -58,14 +58,5 @@ export default class TagUtil {
     await browser.storage.sync.set({
       tags: tagArray,
     })
-
-    // console.log(
-    //   "Save Tags = " +
-    //     JSON.stringify(
-    //       (await browser.storage.sync.get("tags")) as {
-    //         tags: string[]
-    //       }
-    //     )
-    // )
   }
 }

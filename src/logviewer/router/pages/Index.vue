@@ -26,6 +26,14 @@
       <v-list v-if="notFound == false">
         <v-list-item class="ma-1">
           <v-list-item-content>
+            <v-list-item-title class="ma-1">判定結果</v-list-item-title>
+            <v-list-item-subtitle class="ma-1">{{
+              classificate
+            }}</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item class="ma-1">
+          <v-list-item-content>
             <v-list-item-title class="ma-1">対象本文</v-list-item-title>
             <div class="caption ma-1">{{ targetText }}</div>
           </v-list-item-content>
@@ -39,6 +47,7 @@
 import { Component, Vue } from "vue-property-decorator"
 import LogEntry from "../../../models/LogEntry"
 import MessageUtil from "../../../lib/MessageUtil"
+import TagUtil from "../../../lib/TagUtil"
 
 @Component
 export default class App extends Vue {
@@ -60,6 +69,13 @@ export default class App extends Vue {
     return this.targetText_
   }
 
+  private classificate_: string = ""
+  public get classificate(): string {
+    return this.classificate_
+  }
+  public set classificate(v: string) {
+    this.classificate_ = v
+  }
   private notFound_: boolean = true
   private get notFound(): boolean {
     return this.notFound_
@@ -86,6 +102,18 @@ export default class App extends Vue {
       this.notFound_ = true
     } else {
       this.notFound_ = false
+
+      const tags = await TagUtil.load()
+      const tag = tags.find((item) => {
+        console.log("item =" + item.key + "/ logentry= " + this.logEntry_.classifiedTag)
+        return item.key === this.logEntry_.classifiedTag
+      })
+      if (tag != undefined) {
+        this.classificate_ = tag.name
+      }else{
+        console.log("not found tag key=" + this.logEntry_.classifiedTag)
+      }
+
       this.targetText_ = this.logEntry_.targetText.join("/")
     }
   }
