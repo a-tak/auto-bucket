@@ -32,6 +32,18 @@
             }}</v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
+        <v-list-item class="ma-1" v-for="score in scores" :key="score.name">
+          <v-list-item-content>
+            <v-list-item-title
+              class="ma-1"
+              v-text="score.name"
+            ></v-list-item-title>
+            <v-list-item-subtitle
+              class="ma-1"
+              v-text="score.score"
+            ></v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
         <v-list-item class="ma-1">
           <v-list-item-content>
             <v-list-item-title class="ma-1">対象本文</v-list-item-title>
@@ -48,6 +60,8 @@ import { Component, Vue } from "vue-property-decorator"
 import LogEntry from "../../../models/LogEntry"
 import MessageUtil from "../../../lib/MessageUtil"
 import TagUtil from "../../../lib/TagUtil"
+import Tag from "../../../models/Tag"
+import TotalScore from "../../../models/TotalScore"
 
 @Component
 export default class App extends Vue {
@@ -76,10 +90,21 @@ export default class App extends Vue {
   public set classificate(v: string) {
     this.classificate_ = v
   }
+
+  private scores_: Scores[] = []
+  public get scores(): Scores[] {
+    return this.scores_
+  }
+  public set scores(v: Scores[]) {
+    this.scores_ = v
+  }
+
   private notFound_: boolean = true
   private get notFound(): boolean {
     return this.notFound_
   }
+
+  private tags_: Tag[] = []
 
   private created() {
     this.Initialize()
@@ -97,24 +122,45 @@ export default class App extends Vue {
     const header = await this.getTargetMessage()
     this.subject_ = header.subject
     this.from_ = header.author
+
+    this.notFound_ = false
     this.logEntry_.id = await MessageUtil.getMailMessageId(header.id)
     if ((await this.logEntry_.load()) == false) {
       this.notFound_ = true
-    } else {
-      this.notFound_ = false
+      return
+    }
 
-      const tags = await TagUtil.load()
-      const tag = tags.find((item) => {
-        console.log("item =" + item.key + "/ logentry= " + this.logEntry_.classifiedTag)
-        return item.key === this.logEntry_.classifiedTag
+    this.tags_ = await TagUtil.load()
+    // 非同期で処理
+    this.showClassifficateTag()
+    this.showScore()
+    this.targetText_ = this.logEntry_.targetText.join("/")
+  }
+
+  private async showScore(): Promise<void> {
+    for (const score of this.logEntry_.score) {
+      const tag = this.tags_.find((item) => {
+        return item.key === score.category
       })
       if (tag != undefined) {
-        this.classificate_ = tag.name
-      }else{
+        this.scores_.push({
+          name: tag.name,
+          score: score.score,
+        })
+      } else {
         console.log("not found tag key=" + this.logEntry_.classifiedTag)
       }
+    }
+  }
 
-      this.targetText_ = this.logEntry_.targetText.join("/")
+  private async showClassifficateTag(): Promise<void> {
+    const tag = this.tags_.find((item) => {
+      return item.key === this.logEntry_.classifiedTag
+    })
+    if (tag != undefined) {
+      this.classificate_ = tag.name
+    } else {
+      console.log("not found tag key=" + this.logEntry_.classifiedTag)
     }
   }
 
@@ -128,6 +174,14 @@ export default class App extends Vue {
       throw new Error("Not save MessageHeader in storage")
     return header.logTarget
   }
+}
+
+/**
+ * スコア表示用のオブジェクト定義
+ */
+interface Scores {
+  name: string
+  score: number
 }
 </script>
 

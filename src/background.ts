@@ -5,6 +5,7 @@ import TagUtil from "./lib/TagUtil"
 import Tag from "./models/Tag"
 import LogEntry from "./models/LogEntry"
 import MessageUtil from "./lib/MessageUtil"
+import TotalScore from "./models/TotalScore"
 
 export default class backgroud {
   private classifier_: BayesianClassifier
@@ -268,7 +269,7 @@ export default class backgroud {
    */
   private async scoring(
     messageId: number
-  ): Promise<{ scoreTotal: ScoreTotal[]; logEntry: LogEntry }> {
+  ): Promise<{ scoreTotal: TotalScore[]; logEntry: LogEntry }> {
     const totalScore: Score = {}
     performance.mark("本文分割開始")
     const words = await this.divideMessage(messageId)
@@ -300,7 +301,7 @@ export default class backgroud {
       logEntry.targetText = words
     }
     performance.mark("スコア集計終了")
-    let resultScores: Array<ScoreTotal> = new Array(0)
+    let resultScores: Array<TotalScore> = new Array(0)
     for (const category in totalScore) {
       resultScores.push({
         category: category,
@@ -310,8 +311,8 @@ export default class backgroud {
 
     performance.measure("本文分割処理", "本文分割開始", "本文分割終了")
     performance.measure("スコア集計処理", "本文分割終了", "スコア集計終了")
-    console.log(performance.getEntriesByName("本文分割処理"))
-    console.log(performance.getEntriesByName("スコア集計処理"))
+    // console.log(performance.getEntriesByName("本文分割処理"))
+    // console.log(performance.getEntriesByName("スコア集計処理"))
 
     return { scoreTotal: resultScores, logEntry: logEntry }
   }
@@ -335,7 +336,7 @@ export default class backgroud {
     performance.measure("メッセージボディー取得", "B", "C")
     performance.measure("Segmenter new", "C", "D")
     performance.measure("Segmenter処理", "D", "E")
-    console.log(performance.getEntriesByType("measure"))
+    // console.log(performance.getEntriesByType("measure"))
     return words
   }
 
@@ -353,8 +354,8 @@ export default class backgroud {
     performance.mark("分類終了")
     performance.measure("分類メイン", "分類開始", "分類終了")
     performance.measure("分類判定処理", "分類開始", "分類判定終了")
-    console.log(performance.getEntriesByName("分類メイン"))
-    console.log(performance.getEntriesByName("分類判定処理"))
+    // console.log(performance.getEntriesByName("分類メイン"))
+    // console.log(performance.getEntriesByName("分類判定処理"))
   }
 
   /**
@@ -368,6 +369,7 @@ export default class backgroud {
     const logEntry = result.logEntry
     logEntry.id = await MessageUtil.getMailMessageId(messageId)
     logEntry.classifiedTag = tag
+    logEntry.score = result.scoreTotal
     logEntry.save()
 
     return tag
@@ -378,7 +380,7 @@ export default class backgroud {
    * @param scores スコア一覧
    * @returns 最も高いスコアのタグ文字列を返す。スコアが何も指定されていない場合は0バイト文字列を返す。
    */
-  private ranking(scores: ScoreTotal[]): string {
+  private ranking(scores: TotalScore[]): string {
     if (scores.length == 0) return ""
 
     const sortedScore = scores.sort((a, b) => {
@@ -430,14 +432,6 @@ export default class backgroud {
  */
 interface Score {
   [key: string]: number
-}
-
-/**
- * スコアリング結果応答用オブジェクト
- */
-interface ScoreTotal {
-  category: string
-  score: number
 }
 
 /**

@@ -1,3 +1,5 @@
+import TotalScore from "./TotalScore"
+
 /**
  * ログエントリを表すクラス
  */
@@ -15,6 +17,13 @@ export default class LogEntry {
   }
   public set logDate(v: Date) {
     this.logDate_ = v
+  }
+  private totalScore_ : TotalScore[]
+  public get score() : TotalScore[] {
+    return this.totalScore_
+  }
+  public set score(v : TotalScore[]) {
+    this.totalScore_ = v
   }
   private scoreEachWord_: LogScore
   public get scoreEachWord(): LogScore {
@@ -44,6 +53,7 @@ export default class LogEntry {
     this.scoreEachWord_ = {}
     this.targetText_ = []
     this.classifiedTag_ = ""
+    this.totalScore_ = []
   }
 
   public async save() {
@@ -53,6 +63,7 @@ export default class LogEntry {
     if (this.targetText_.length == 0) throw new Error("Not set targetText")
     if (this.classifiedTag_ == "" || this.classifiedTag_ == undefined)
       throw new Error("Not set classifiedTag")
+
     const keyname = "log_" + this.id
     await browser.storage.sync.set({ [keyname]: this })
   }
@@ -79,6 +90,7 @@ export default class LogEntry {
     this.classifiedTag_ = entry.classifiedTag_
     this.logDate_ = entry.logDate_
     this.scoreEachWord_ = entry.scoreEachWord_
+    this.totalScore_ = entry.totalScore_
     this.targetText_ = entry.targetText_
 
     return true
