@@ -2,7 +2,10 @@ import "webextension-polyfill"
 import { BayesianClassifier } from "simple-statistics"
 import Segmenter from "tiny-segmenter"
 import TagUtil from "./lib/TagUtil"
-import Tag from "./lib/Tag"
+import Tag from "./models/Tag"
+import LogEntry from "./models/LogEntry"
+import MessageUtil from "./lib/MessageUtil"
+import TotalScore from "./models/TotalScore"
 
 export default class backgroud {
   private classifier_: BayesianClassifier
@@ -155,6 +158,17 @@ export default class backgroud {
     })
 
     browser.menus.create({
+      id: "view_log",
+      title: "判定ログを表示する",
+      contexts: ["message_list"],
+      onclick: async (info: browser.menus.OnClickData) => {
+        if (typeof info.selectedMessages != "undefined") {
+          this.showLogViewer(info.selectedMessages.messages[0])
+        }
+      },
+    })
+
+    browser.menus.create({
       id: "learn_clear",
       title: "学習状況と設定をクリア",
       contexts: ["message_list"],
@@ -183,6 +197,17 @@ export default class backgroud {
     }
   }
 
+  async showLogViewer(messageHeader: browser.messages.MessageHeader) {
+    // 一旦ストレージにmessageを保存しログ画面でそれを取り出す
+    await browser.storage.sync.set({
+      logTarget: messageHeader,
+    })
+
+    const createData = {
+      url: "logviewer/logviewer.html",
+    }
+    browser.tabs.create(createData)
+  }
   /**
    * 指定したメールの本文を取得する
    * 再帰読み込みでbodyを検索する
@@ -242,11 +267,14 @@ export default class backgroud {
    * メールのスコアリング
    * @param {number}  messageId 対象のメールid
    */
-  private async scoring(messageId: number): Promise<ScoreTotal[]> {
+  private async scoring(
+    messageId: number
+  ): Promise<{ scoreTotal: TotalScore[]; logEntry: LogEntry }> {
     const totalScore: Score = {}
     performance.mark("本文分割開始")
     const words = await this.divideMessage(messageId)
     performance.mark("本文分割終了")
+    const logEntry = new LogEntry()
     for (const word of words) {
       // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
       // TODO: 現状、モデルに入っている分類名をそのままタグのkeyとして後続処理で使っている。
@@ -257,10 +285,25 @@ export default class backgroud {
           totalScore[category] = 0
         }
         totalScore[category] += categories_[category]
+        // ログ用スコア集計
+        if (logEntry.scoreEachWord[word] == undefined) {
+          logEntry.scoreEachWord[word] = {
+            count: 0,
+            score: {
+              [category]: 0,
+            },
+          }
+        } else if (logEntry.scoreEachWord[word].score[category] == undefined) {
+          logEntry.scoreEachWord[word].score[category] = 0
+        }
+        logEntry.scoreEachWord[word].score[category] += categories_[category]
       }
+      // ログ用スコア集計
+      logEntry.scoreEachWord[word].count += 1
+      logEntry.targetText = words
     }
     performance.mark("スコア集計終了")
-    let resultScores: Array<ScoreTotal> = new Array(0)
+    let resultScores: Array<TotalScore> = new Array(0)
     for (const category in totalScore) {
       resultScores.push({
         category: category,
@@ -270,10 +313,10 @@ export default class backgroud {
 
     performance.measure("本文分割処理", "本文分割開始", "本文分割終了")
     performance.measure("スコア集計処理", "本文分割終了", "スコア集計終了")
-    console.log(performance.getEntriesByName("本文分割処理"))
-    console.log(performance.getEntriesByName("スコア集計処理"))
+    // console.log(performance.getEntriesByName("本文分割処理"))
+    // console.log(performance.getEntriesByName("スコア集計処理"))
 
-    return resultScores
+    return { scoreTotal: resultScores, logEntry: logEntry }
   }
 
   private async divideMessage(messageId: number): Promise<Array<string>> {
@@ -295,7 +338,7 @@ export default class backgroud {
     performance.measure("メッセージボディー取得", "B", "C")
     performance.measure("Segmenter new", "C", "D")
     performance.measure("Segmenter処理", "D", "E")
-    console.log(performance.getEntriesByType("measure"))
+    // console.log(performance.getEntriesByType("measure"))
     return words
   }
 
@@ -313,8 +356,8 @@ export default class backgroud {
     performance.mark("分類終了")
     performance.measure("分類メイン", "分類開始", "分類終了")
     performance.measure("分類判定処理", "分類開始", "分類判定終了")
-    console.log(performance.getEntriesByName("分類メイン"))
-    console.log(performance.getEntriesByName("分類判定処理"))
+    // console.log(performance.getEntriesByName("分類メイン"))
+    // console.log(performance.getEntriesByName("分類判定処理"))
   }
 
   /**
@@ -322,8 +365,16 @@ export default class backgroud {
    * @param messageId 対象のメッセージid
    */
   private async getClassificationTag(messageId: number): Promise<string> {
-    const scores: ScoreTotal[] = await this.scoring(messageId)
-    return this.ranking(scores)
+    const result = await this.scoring(messageId)
+    const tag = this.ranking(result.scoreTotal)
+    // ログに残す
+    const logEntry = result.logEntry
+    logEntry.id = await MessageUtil.getMailMessageId(messageId)
+    logEntry.classifiedTag = tag
+    logEntry.score = result.scoreTotal
+    logEntry.save()
+
+    return tag
   }
 
   /**
@@ -331,7 +382,7 @@ export default class backgroud {
    * @param scores スコア一覧
    * @returns 最も高いスコアのタグ文字列を返す。スコアが何も指定されていない場合は0バイト文字列を返す。
    */
-  private ranking(scores: ScoreTotal[]): string {
+  private ranking(scores: TotalScore[]): string {
     if (scores.length == 0) return ""
 
     const sortedScore = scores.sort((a, b) => {
@@ -359,7 +410,6 @@ export default class backgroud {
       for (const tag of this.tags_) {
         if (tag.useClassification) {
           if (tag.key == item) {
-            console.log("tag.key=" + tag.key + "/item=" + item)
             return false
           }
         }
@@ -384,14 +434,6 @@ export default class backgroud {
  */
 interface Score {
   [key: string]: number
-}
-
-/**
- * スコアリング結果応答用オブジェクト
- */
-interface ScoreTotal {
-  category: string
-  score: number
 }
 
 /**

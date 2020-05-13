@@ -66,7 +66,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator"
-import Tag from "../lib/Tag"
+import Tag from "../models/Tag"
 import TagUtil from "../lib/TagUtil"
 import { numericSort } from "simple-statistics"
 

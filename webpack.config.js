@@ -13,6 +13,7 @@ const config = {
     background: './background.ts',
     'popup/popup': './popup/popup.ts',
     'options/options': './options/options.ts',
+    'logviewer/logviewer': './logviewer/logviewer.ts',
   },
   output: {
     path: __dirname + '/dist',
@@ -90,6 +91,7 @@ const config = {
       { from: 'icons', to: 'icons', ignore: ['icon.xcf'] },
       { from: 'popup/popup.html', to: 'popup/popup.html', transform: transformHtml },
       { from: 'options/options.html', to: 'options/options.html', transform: transformHtml },
+      { from: 'logviewer/logviewer.html', to: 'logviewer/logviewer.html', transform: transformHtml },
       {
         from: 'manifest.json',
         to: 'manifest.json',
