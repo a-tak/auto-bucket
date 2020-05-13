@@ -138,7 +138,6 @@ export default class App extends Vue {
    */
   private async showWordScore(): Promise<void> {
     const scoreEachWord = this.logEntry_.scoreEachWord
-    console.log("word score = " + JSON.stringify(this.logEntry_.scoreEachWord,null,4))
     for (const word in scoreEachWord) {
       const scores = scoreEachWord[word].score
       const count = scoreEachWord[word].count
@@ -192,8 +191,6 @@ export default class App extends Vue {
           category: tag,
           score: score.score,
         })
-      } else {
-        console.log("not found tag key=" + this.logEntry_.classifiedTag)
       }
     }
   }
@@ -202,8 +199,6 @@ export default class App extends Vue {
     const tag = this.getTagName(this.logEntry_.classifiedTag)
     if (tag != undefined) {
       this.classificate_ = tag
-    } else {
-      console.log("not found tag key=" + this.logEntry_.classifiedTag)
     }
   }
 
