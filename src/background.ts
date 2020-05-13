@@ -290,9 +290,11 @@ export default class backgroud {
           logEntry.scoreEachWord[word] = {
             count: 0,
             score: {
-              [category] : 0
-            }
+              [category]: 0,
+            },
           }
+        } else if (logEntry.scoreEachWord[word].score[category] == undefined) {
+          logEntry.scoreEachWord[word].score[category] = 0
         }
         logEntry.scoreEachWord[word].score[category] += categories_[category]
       }

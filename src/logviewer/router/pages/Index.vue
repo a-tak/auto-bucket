@@ -2,55 +2,46 @@
   <div class="d-flex flex-column ma-4">
     <span class="title">AutoBacket Thunderbirdメール分類拡張機能</span>
     <v-card class="ma-2">
-      <v-card-title class="ma-1">メール情報</v-card-title>
-      <v-list>
-        <v-list-item class="ma-1">
-          <v-list-item-content>
-            <v-list-item-title class="ma-1">件名</v-list-item-title>
-            <v-list-item-subtitle class="ma-1">{{
-              subject
-            }}</v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="ma-1">差出人</v-list-item-title>
-            <v-list-item-subtitle class="ma-1">{{ from }}</v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
+      <v-card-title class="ma-1">件名</v-card-title>
+      <v-card-text>{{ subject }} </v-card-text>
     </v-card>
     <v-card class="ma-2">
-      <v-card-title class="ma-1">分類情報</v-card-title>
-      <span v-if="notFound == true" class="ma-4">分類情報がみつかりません</span>
-      <v-list v-if="notFound == false">
-        <v-list-item class="ma-1">
-          <v-list-item-content>
-            <v-list-item-title class="ma-1">判定結果</v-list-item-title>
-            <v-list-item-subtitle class="ma-1">{{
-              classificate
-            }}</v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item class="ma-1" v-for="score in scores" :key="score.name">
-          <v-list-item-content>
-            <v-list-item-title
-              class="ma-1"
-              v-text="score.name"
-            ></v-list-item-title>
-            <v-list-item-subtitle
-              class="ma-1"
-              v-text="score.score"
-            ></v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item class="ma-1">
-          <v-list-item-content>
-            <v-list-item-title class="ma-1">対象本文</v-list-item-title>
-            <div class="caption ma-1">{{ targetText }}</div>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
+      <v-card-title>差出人</v-card-title>
+      <v-card-text>{{ from }}</v-card-text>
+    </v-card>
+    <v-card class="ma-2" v-if="notFound == true">
+      <v-card-title class="ma-4">分類情報がみつかりません</v-card-title>
+    </v-card>
+    <v-card class="ma-2" v-if="notFound == false">
+      <v-card-title>判定結果</v-card-title>
+      <v-card-text>{{ classificate }}</v-card-text>
+    </v-card>
+    <v-card class="ma-2" v-if="notFound == false">
+      <v-card-title>カテゴリ毎スコア</v-card-title>
+      <v-list-item v-for="score in scores" :key="score.category">
+        <v-list-item-content>
+          <v-list-item-title
+            class="ma-1"
+            v-text="score.category"
+          ></v-list-item-title>
+          <v-list-item-subtitle
+            class="ma-1"
+            v-text="score.score"
+          ></v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </v-card>
+    <v-card v-for="category in wordscore" :key="category.word" class="ma-2">
+      <v-card-title>{{ category.category }} トップスコアワード</v-card-title>
+      <v-list-item v-for="word in category.words" :key="word.word">
+        <v-list-item-title>{{ word.word }}</v-list-item-title>
+        <v-list-item-subtitle>{{ word.score }}</v-list-item-subtitle>
+        <v-list-item-subtitle>{{ word.count }}</v-list-item-subtitle>
+      </v-list-item>
+    </v-card>
+    <v-card class="ma-2" v-if="notFound == false">
+      <v-card-title>対象本文</v-card-title>
+      <div class="caption ma-2">{{ targetText }}</div>
     </v-card>
   </div>
 </template>
@@ -91,12 +82,16 @@ export default class App extends Vue {
     this.classificate_ = v
   }
 
-  private scores_: Scores[] = []
-  public get scores(): Scores[] {
+  private scores_: ScoresEachTag[] = []
+  public get scores(): ScoresEachTag[] {
     return this.scores_
   }
-  public set scores(v: Scores[]) {
+  public set scores(v: ScoresEachTag[]) {
     this.scores_ = v
+  }
+  private wordscore_: WordEachCategory[] = []
+  public get wordscore(): WordEachCategory[] {
+    return this.wordscore_
   }
 
   private notFound_: boolean = true
@@ -134,17 +129,67 @@ export default class App extends Vue {
     // 非同期で処理
     this.showClassifficateTag()
     this.showScore()
+    this.showWordScore()
     this.targetText_ = this.logEntry_.targetText.join("/")
+  }
+
+  /**
+   * 表示用に単語 > カテゴリと記録されているログをカテゴリ > 単語の配列に変換
+   */
+  private async showWordScore(): Promise<void> {
+    const scoreEachWord = this.logEntry_.scoreEachWord
+    console.log("word score = " + JSON.stringify(this.logEntry_.scoreEachWord,null,4))
+    for (const word in scoreEachWord) {
+      const scores = scoreEachWord[word].score
+      const count = scoreEachWord[word].count
+      for (const category in scores) {
+        const score = scores[category]
+        const cat = {
+          word: word,
+          count: count,
+          score: score,
+        }
+        let catName = this.getTagName(category)
+        if (catName==undefined) {
+          // 消されたタグの場合は値が取れない可能性がある
+          catName = "削除されたタグ"
+        }
+        const ret = this.wordscore_.find((item) => item.category === catName)
+        if (ret == undefined) {
+          const ary = []
+          ary.push(cat)
+          this.wordscore_.push({
+            category: catName,
+            words: ary,
+          })
+        } else {
+          ret.words.push(cat)
+        }
+      }
+    }
+    for (const category of this.wordscore_) {
+      // ソート
+      category.words.sort((a, b) => b.score - a.score)
+      // トップ10件の単語のみに表示を削る
+      category.words = category.words.slice(0, 9)
+    }
+  }
+
+  private getTagName(key: string): string|undefined {
+      const tag = this.tags_.find((item) => {
+        return item.key === key
+      })
+      
+      if (tag==undefined) return undefined
+      return tag.name
   }
 
   private async showScore(): Promise<void> {
     for (const score of this.logEntry_.score) {
-      const tag = this.tags_.find((item) => {
-        return item.key === score.category
-      })
+      const tag = this.getTagName(score.category)
       if (tag != undefined) {
         this.scores_.push({
-          name: tag.name,
+          category: tag,
           score: score.score,
         })
       } else {
@@ -154,11 +199,9 @@ export default class App extends Vue {
   }
 
   private async showClassifficateTag(): Promise<void> {
-    const tag = this.tags_.find((item) => {
-      return item.key === this.logEntry_.classifiedTag
-    })
+    const tag = this.getTagName(this.logEntry_.classifiedTag)
     if (tag != undefined) {
-      this.classificate_ = tag.name
+      this.classificate_ = tag
     } else {
       console.log("not found tag key=" + this.logEntry_.classifiedTag)
     }
@@ -179,9 +222,20 @@ export default class App extends Vue {
 /**
  * スコア表示用のオブジェクト定義
  */
-interface Scores {
-  name: string
+interface ScoresEachTag {
+  category: string
   score: number
+}
+
+interface ScoreEachWord {
+  word: string
+  count: number
+  score: number
+}
+
+interface WordEachCategory {
+  category: string
+  words: ScoreEachWord[]
 }
 </script>
 
