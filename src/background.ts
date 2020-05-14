@@ -170,10 +170,19 @@ export default class backgroud {
 
     browser.menus.create({
       id: "learn_clear",
-      title: "学習状況と設定をクリア",
+      title: "学習状況をクリア",
       contexts: ["message_list"],
       onclick: async (info: browser.menus.OnClickData) => {
         this.clearLearn()
+      },
+    })
+
+    browser.menus.create({
+      id: "setting_clear",
+      title: "学習状況と設定をクリア",
+      contexts: ["message_list"],
+      onclick: async (info: browser.menus.OnClickData) => {
+        this.clearSetting()
       },
     })
   }
@@ -259,6 +268,12 @@ export default class backgroud {
   async clearLearn() {
     // ベイジアンフィルター初期化
     this.classifier_ = new BayesianClassifier()
+    this.saveSetting()
+  }
+
+  async clearSetting() {
+    // ベイジアンフィルター初期化
+    this.classifier_ = new BayesianClassifier()
     // TODO: ストレージの設定は全部消しているがオプション画面のインスタンスは破棄していないので不整合がある
     this.removeSetting()
   }
@@ -332,7 +347,33 @@ export default class backgroud {
 
     const seg = new Segmenter()
     performance.mark("D")
-    const words: Array<string> = seg.segment(body)
+    // 除外文字列
+    body = body.replace(/\r?\n/g, "")
+
+    let words: Array<string> = seg.segment(body)
+
+    // 除外文字列
+    const filterStr = [
+      " ",
+      "-",
+      "--",
+      ".",
+      "/",
+      "─",
+      "──",
+      ":",
+      "。",
+      "、",
+      "\n",
+    ]
+    words = words.filter((item) => {
+      for (const str of filterStr) {
+        if (str === item) {
+          return false
+        }
+      }
+      return true
+    })
     performance.mark("E")
     performance.measure("メッセージパート取得", "A", "B")
     performance.measure("メッセージボディー取得", "B", "C")
