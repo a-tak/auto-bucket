@@ -217,21 +217,51 @@ export default class backgroud {
     }
     browser.tabs.create(createData)
   }
+
+  private async getBodyMain(messagePart: browser.messages.MessagePart) {
+    let body = this.getBody(messagePart, ContentType.PlainText)
+    // プレーンテキストが無かった場合はHTMLを対象とする
+    if ((await body).length === 0) {
+      body = this.getBody(messagePart, ContentType.Html)
+    }
+    return body
+  }
+
   /**
-   * 指定したメールの本文を取得する
+   * メールの本文を取得する
    * 再帰読み込みでbodyを検索する
    * @param   {MessagePart} messagePart ThunderbirdのMessagePartオブジェクト
+   * @param contentType 取得対象のコンテンツタイプ
    * @returns {string}                  メールのBody
    */
-  private async getBody(messagePart: browser.messages.MessagePart) {
+  private async getBody(
+    messagePart: browser.messages.MessagePart,
+    contentType: ContentType
+  ) {
     let body = ""
     if ("parts" in messagePart) {
       for (var part of messagePart.parts) {
-        body = body + (await this.getBody(part))
+        body = body + (await this.getBody(part, contentType))
       }
     }
-    if ("body" in messagePart) {
-      body = body + messagePart.body
+    // コンテンツタイプが一致するbodyがあれば処理
+    if ("body" in messagePart && messagePart.contentType === contentType) {
+      let result = messagePart.body
+      if (messagePart.contentType === ContentType.Html) {
+        // HTMLタグ除去
+        result = result.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, "")
+        // 半角空白削除(文字列で指定すると最初の一つしか置換しないので正規表現で)
+        result = result.replace(/&nbsp;/g, "")
+      }
+      // 記号と数字を削除する(0000-0FFF)
+      // https://ja.wikipedia.org/wiki/Unicode一覧_0000-0FFF
+      result = result.replace(/([\u0000-\u002d])|([\u003a-\u0040])|([\u005b-\u0060])|([\u007b-\u00bf])|([\u02b9-\u0362])|([\u0374-\u0375])|([\u037A-\u037E])|([\u0384-\u0385])|\u0387/g,"")
+      // 記号と数字を削除する(2000-2FFF)
+      result = result.replace(/([\u2000-\u203e])|([\u20dd-\u20f0])|([\u2460-\u27ff])|([\u2900-\u2e70])|([\u2ff0-\u2ffb])/g,"")
+      // 記号と数字を削除する(3000-3FFF)
+      result = result.replace(/([\u3000-\u3040])|([\u3200-\u33ff])/g,"")
+      // サロゲートペアで表す文字列は一旦対応放置
+      body = body + result
     }
 
     return body
@@ -340,7 +370,7 @@ export default class backgroud {
     performance.mark("A")
     const messagePart = await browser.messages.getFull(messageId)
     performance.mark("B")
-    let body = await this.getBody(messagePart)
+    let body = await this.getBodyMain(messagePart)
     performance.mark("C")
     // 本文の最初の方だけを対象にする
     body = body.slice(0, this.bodymaxlength_ * 1024)
@@ -348,30 +378,14 @@ export default class backgroud {
     const seg = new Segmenter()
     performance.mark("D")
     // 除外文字列
-    body = body.replace(/\r?\n/g, "")
+    // body = body.replace(/\r?\n/g, "")
 
     let words: Array<string> = seg.segment(body)
 
-    // 除外文字列
-    const filterStr = [
-      " ",
-      "-",
-      "--",
-      ".",
-      "/",
-      "─",
-      "──",
-      ":",
-      "。",
-      "、",
-      "\n",
-    ]
     words = words.filter((item) => {
-      for (const str of filterStr) {
-        if (str === item) {
-          return false
-        }
-      }
+      // 1文字ワードは学習対象から外す
+      item = item.trim()
+      if (item.length <= 1) return false
       return true
     })
     performance.mark("E")
@@ -494,5 +508,12 @@ interface ClassiffierObj {
     }
   }
 }
+
+// ContentType引数用 ユニオン型
+const ContentType = {
+  PlainText: "text/plain",
+  Html: "text/html",
+}
+type ContentType = typeof ContentType[keyof typeof ContentType]
 
 const obj = new backgroud()
