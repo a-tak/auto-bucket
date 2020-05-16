@@ -14,10 +14,19 @@ export default class backgroud {
 
   constructor() {
     // イベント
-    // browser.browserAction.onClicked.addListener(this.doClassification)
-    // browser.commands.onCommand.addListener((command) => {
-    //   obj.doClassification()
-    // })
+    // browser.browserAction.onClicked.addListener(this.executeClassifficate)
+    browser.commands.onCommand.addListener((command) => {
+      switch (command) {
+        case "classificate":
+          this.executeClassifficate()
+          break
+        case "view-log":
+          this.executeViewLog()
+          break
+        default:
+          throw new Error("not shortcut define")
+      }
+    })
 
     // ベイジアンフィルター初期化
     this.classifier_ = new BayesianClassifier()
@@ -142,18 +151,8 @@ export default class backgroud {
       id: "scoring",
       title: "このメールを判定",
       contexts: ["message_list"],
-      onclick: async (info: browser.menus.OnClickData) => {
-        if (info.selectedMessages == undefined) return
-        const generator = this.listMessages(info.selectedMessages)
-        let result = generator.next()
-        while (!(await result).done) {
-          const message = (await result).value
-          // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
-          if (typeof message != "undefined") {
-            this.classificationMessage(message)
-          }
-          result = generator.next()
-        }
+      onclick: async () => {
+        this.executeClassifficate()
       },
     })
 
@@ -161,10 +160,8 @@ export default class backgroud {
       id: "view_log",
       title: "判定ログを表示する",
       contexts: ["message_list"],
-      onclick: async (info: browser.menus.OnClickData) => {
-        if (typeof info.selectedMessages != "undefined") {
-          this.showLogViewer(info.selectedMessages.messages[0])
-        }
+      onclick: async () => {
+        this.executeViewLog()
       },
     })
 
@@ -204,6 +201,27 @@ export default class backgroud {
         yield message
       }
     }
+  }
+
+  private async executeClassifficate() {
+    const generator = this.listMessages(
+      await browser.mailTabs.getSelectedMessages()
+    )
+    let result = generator.next()
+    while (!(await result).done) {
+      const message = (await result).value
+      // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
+      if (typeof message != "undefined") {
+        this.classificationMessage(message)
+      }
+      result = generator.next()
+    }
+  }
+
+  private async executeViewLog() {
+    this.showLogViewer(
+      await (await browser.mailTabs.getSelectedMessages()).messages[0]
+    )
   }
 
   async showLogViewer(messageHeader: browser.messages.MessageHeader) {
@@ -255,11 +273,17 @@ export default class backgroud {
       }
       // 記号と数字を削除する(0000-0FFF)
       // https://ja.wikipedia.org/wiki/Unicode一覧_0000-0FFF
-      result = result.replace(/([\u0000-\u002d])|([\u003a-\u0040])|([\u005b-\u0060])|([\u007b-\u00bf])|([\u02b9-\u0362])|([\u0374-\u0375])|([\u037A-\u037E])|([\u0384-\u0385])|\u0387/g,"")
+      result = result.replace(
+        /([\u0000-\u002d])|([\u003a-\u0040])|([\u005b-\u0060])|([\u007b-\u00bf])|([\u02b9-\u0362])|([\u0374-\u0375])|([\u037A-\u037E])|([\u0384-\u0385])|\u0387/g,
+        ""
+      )
       // 記号と数字を削除する(2000-2FFF)
-      result = result.replace(/([\u2000-\u203e])|([\u20dd-\u20f0])|([\u2460-\u27ff])|([\u2900-\u2e70])|([\u2ff0-\u2ffb])/g,"")
+      result = result.replace(
+        /([\u2000-\u203e])|([\u20dd-\u20f0])|([\u2460-\u27ff])|([\u2900-\u2e70])|([\u2ff0-\u2ffb])/g,
+        ""
+      )
       // 記号と数字を削除する(3000-3FFF)
-      result = result.replace(/([\u3000-\u3040])|([\u3200-\u33ff])/g,"")
+      result = result.replace(/([\u3000-\u3040])|([\u3200-\u33ff])/g, "")
       // サロゲートペアで表す文字列は一旦対応放置
       body = body + result
     }

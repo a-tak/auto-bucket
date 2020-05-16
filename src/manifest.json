@@ -34,9 +34,13 @@
     "open_in_tab": false
   },  
   "commands": {
-    "toggle-feature": {
-      "suggested_key": { "default": "Alt+Shift+B" },
-      "description": "AutoBacketの呼び出し"
+    "classificate": {
+      "suggested_key": { "default": "Alt+Shift+C" },
+      "description": "AutoBacketでメールを判定"
+    },
+    "view-log": {
+      "suggested_key": { "default": "Alt+Shift+V" },
+      "description": "AutoBacketのメール判定ログを表示"
     }
   }
 }
