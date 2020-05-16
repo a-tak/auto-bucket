@@ -19,7 +19,8 @@
   "permissions": [
     "messagesRead",
     "menus",
-    "storage"
+    "storage",
+    "accountsRead"
     ],
   "browser_action": {
     "default_title": "AutoBacket",
@@ -34,6 +35,10 @@
     "open_in_tab": false
   },  
   "commands": {
+    "all-classificate": {
+      "suggested_key": { "default": "Alt+Shift+A" },
+      "description": "AutoBacketで未判定メールをすべて判定"
+    },
     "classificate": {
       "suggested_key": { "default": "Alt+Shift+C" },
       "description": "AutoBacketでメールを判定"

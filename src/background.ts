@@ -17,8 +17,11 @@ export default class backgroud {
     // browser.browserAction.onClicked.addListener(this.executeClassifficate)
     browser.commands.onCommand.addListener((command) => {
       switch (command) {
+        case "all-classificate":
+          this.executeAllClassificate()
+          break
         case "classificate":
-          this.executeClassifficate()
+          this.executeClassificate()
           break
         case "view-log":
           this.executeViewLog()
@@ -148,11 +151,20 @@ export default class backgroud {
     }
 
     browser.menus.create({
-      id: "scoring",
+      id: "all_classificate",
+      title: "未判定メールをすべて判定",
+      contexts: ["message_list"],
+      onclick: async () => {
+        this.executeAllClassificate()
+      },
+    })
+
+    browser.menus.create({
+      id: "classificate",
       title: "このメールを判定",
       contexts: ["message_list"],
       onclick: async () => {
-        this.executeClassifficate()
+        this.executeClassificate()
       },
     })
 
@@ -169,7 +181,7 @@ export default class backgroud {
       id: "learn_clear",
       title: "学習状況をクリア",
       contexts: ["message_list"],
-      onclick: async (info: browser.menus.OnClickData) => {
+      onclick: async () => {
         this.clearLearn()
       },
     })
@@ -178,7 +190,7 @@ export default class backgroud {
       id: "setting_clear",
       title: "学習状況と設定をクリア",
       contexts: ["message_list"],
-      onclick: async (info: browser.menus.OnClickData) => {
+      onclick: async () => {
         this.clearSetting()
       },
     })
@@ -203,7 +215,54 @@ export default class backgroud {
     }
   }
 
-  private async executeClassifficate() {
+  private async executeAllClassificate() {
+    // 現在アクティブなタブのメール一覧を取得
+    const mailTabs = await browser.mailTabs.query({
+      active: true,
+      currentWindow: true,
+    })
+    if (mailTabs.length === 0) return
+    const folder = mailTabs[0].displayedFolder
+    const messageList = await browser.messages.list(folder)
+    const generator = this.listMessages(messageList)
+
+    // メール毎に処理
+    let result = generator.next()
+    while (!(await result).done) {
+      const message = (await result).value
+      // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
+      if (typeof message != "undefined") {
+        // 非同期処理待たずにメールを処理
+        this.subAllClassificate(message)
+      }
+      result = generator.next()
+    }
+  }
+
+  private async subAllClassificate(message: browser.messages.MessageHeader) {
+    // まだタグがついていないか判断
+    if ((await this.isTagged(message)) === false) {
+      // タグ付け
+      this.classificationMessage(message)
+    }
+  }
+
+  private async isTagged(
+    message: browser.messages.MessageHeader
+  ): Promise<boolean> {
+    for (const msgTag of message.tags) {
+      for (const tag of this.tags_) {
+        if (tag.useClassification) {
+          if (tag.key === msgTag) {
+            return true
+          }
+        }
+      }
+    }
+    return false
+  }
+
+  private async executeClassificate() {
     const generator = this.listMessages(
       await browser.mailTabs.getSelectedMessages()
     )
