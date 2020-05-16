@@ -26,17 +26,16 @@
           ></v-list-item-title>
           <v-list-item-subtitle
             class="ma-1"
-            v-text="score.score"
-          ></v-list-item-subtitle>
+          >{{ score.score }} ポイント</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </v-card>
     <v-card v-for="category in wordscore" :key="category.word" class="ma-2">
-      <v-card-title>{{ category.category }} トップスコアワード</v-card-title>
+      <v-card-title>{{ category.category }} トップスコア ワード</v-card-title>
       <v-list-item v-for="word in category.words" :key="word.word">
         <v-list-item-title>{{ word.word }}</v-list-item-title>
-        <v-list-item-subtitle>{{ word.score }}</v-list-item-subtitle>
-        <v-list-item-subtitle>{{ word.count }}</v-list-item-subtitle>
+        <v-list-item-subtitle>{{ word.score }} ポイント</v-list-item-subtitle>
+        <v-list-item-subtitle>{{ word.count }} 個</v-list-item-subtitle>
       </v-list-item>
     </v-card>
     <v-card class="ma-2" v-if="notFound == false">
