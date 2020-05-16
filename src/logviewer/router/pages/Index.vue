@@ -130,7 +130,7 @@ export default class App extends Vue {
     this.showClassifficateTag()
     this.showScore()
     this.showWordScore()
-    this.targetText_ = this.logEntry_.targetText.join("/")
+    this.targetText_ = this.logEntry_.targetText.join(" ")
   }
 
   /**
@@ -171,7 +171,7 @@ export default class App extends Vue {
       category.words.sort((a, b) => b.score - a.score)
       // トップ10件の単語のみに表示を削る
       category.words = category.words.slice(0, 9)
-      console.log("words = " + JSON.stringify(category.words,null,4))
+      // console.log("words = " + JSON.stringify(category.words,null,4))
     }
   }
 

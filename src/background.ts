@@ -348,25 +348,19 @@ export default class backgroud {
     const seg = new Segmenter()
     performance.mark("D")
     // 除外文字列
-    body = body.replace(/\r?\n/g, "")
+    // body = body.replace(/\r?\n/g, "")
 
     let words: Array<string> = seg.segment(body)
 
     // 除外文字列
     const filterStr = [
-      " ",
-      "-",
       "--",
-      ".",
-      "/",
-      "─",
       "──",
-      ":",
-      "。",
-      "、",
-      "\n",
     ]
     words = words.filter((item) => {
+      // 1文字ワードは学習対象から外す
+      item = item.trim()
+      if (item.length <= 1) return false
       for (const str of filterStr) {
         if (str === item) {
           return false
