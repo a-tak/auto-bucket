@@ -247,13 +247,20 @@ export default class backgroud {
     // コンテンツタイプが一致するbodyがあれば処理
     if ("body" in messagePart && messagePart.contentType === contentType) {
       let result = messagePart.body
-      
       if (messagePart.contentType === ContentType.Html) {
         // HTMLタグ除去
         result = result.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, "")
         // 半角空白削除(文字列で指定すると最初の一つしか置換しないので正規表現で)
         result = result.replace(/&nbsp;/g, "")
       }
+      // 記号と数字を削除する(0000-0FFF)
+      // https://ja.wikipedia.org/wiki/Unicode一覧_0000-0FFF
+      result = result.replace(/([\u0000-\u002d])|([\u003a-\u0040])|([\u005b-\u0060])|([\u007b-\u00bf])|([\u02b9-\u0362])|([\u0374-\u0375])|([\u037A-\u037E])|([\u0384-\u0385])|\u0387/g,"")
+      // 記号と数字を削除する(2000-2FFF)
+      result = result.replace(/([\u2000-\u203e])|([\u20dd-\u20f0])|([\u2460-\u27ff])|([\u2900-\u2e70])|([\u2ff0-\u2ffb])/g,"")
+      // 記号と数字を削除する(3000-3FFF)
+      result = result.replace(/([\u3000-\u3040])|([\u3200-\u33ff])/g,"")
+      // サロゲートペアで表す文字列は一旦対応放置
       body = body + result
     }
 
@@ -375,17 +382,10 @@ export default class backgroud {
 
     let words: Array<string> = seg.segment(body)
 
-    // 除外文字列
-    const filterStr = ["--", "──"]
     words = words.filter((item) => {
       // 1文字ワードは学習対象から外す
       item = item.trim()
       if (item.length <= 1) return false
-      for (const str of filterStr) {
-        if (str === item) {
-          return false
-        }
-      }
       return true
     })
     performance.mark("E")
