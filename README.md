@@ -28,6 +28,19 @@ cd dist
 Addonとして公開する場合は同じバージョンはアップし直せないので、package.jsonのバージョンを変えること
 (manifest.jsonのバージョンはpackage.jsonのバージョンで書き換えられる)
 
+## リリース
+
+1. package.jsonのバージョンを変更
+2. コミットしてgithubにプッシュ
+3. タグをつけてgithubにプッシュ
+7. githubでタグをリリースへ
+8. ソースをダウンロード
+4. ビルド
+5. distの中をzip化
+6. https://addons.thunderbird.net/ja/developers/addon/autobacket/versions/submit/ へアップロード
+9. ソースもアップロード
+
+
 ## Linter
 
 ### インストール
