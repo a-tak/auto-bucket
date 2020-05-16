@@ -217,21 +217,44 @@ export default class backgroud {
     }
     browser.tabs.create(createData)
   }
+
+  private async getBodyMain(messagePart: browser.messages.MessagePart) {
+    let body = this.getBody(messagePart, ContentType.PlainText)
+    // プレーンテキストが無かった場合はHTMLを対象とする
+    if ((await body).length === 0) {
+      body = this.getBody(messagePart, ContentType.Html)
+    }
+    return body
+  }
+
   /**
-   * 指定したメールの本文を取得する
+   * メールの本文を取得する
    * 再帰読み込みでbodyを検索する
    * @param   {MessagePart} messagePart ThunderbirdのMessagePartオブジェクト
+   * @param contentType 取得対象のコンテンツタイプ
    * @returns {string}                  メールのBody
    */
-  private async getBody(messagePart: browser.messages.MessagePart) {
+  private async getBody(
+    messagePart: browser.messages.MessagePart,
+    contentType: ContentType
+  ) {
     let body = ""
     if ("parts" in messagePart) {
       for (var part of messagePart.parts) {
-        body = body + (await this.getBody(part))
+        body = body + (await this.getBody(part, contentType))
       }
     }
-    if ("body" in messagePart) {
-      body = body + messagePart.body
+    // コンテンツタイプが一致するbodyがあれば処理
+    if ("body" in messagePart && messagePart.contentType === contentType) {
+      let result = messagePart.body
+      
+      if (messagePart.contentType === ContentType.Html) {
+        // HTMLタグ除去
+        result = result.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, "")
+        // 半角空白削除(文字列で指定すると最初の一つしか置換しないので正規表現で)
+        result = result.replace(/&nbsp;/g, "")
+      }
+      body = body + result
     }
 
     return body
@@ -340,7 +363,7 @@ export default class backgroud {
     performance.mark("A")
     const messagePart = await browser.messages.getFull(messageId)
     performance.mark("B")
-    let body = await this.getBody(messagePart)
+    let body = await this.getBodyMain(messagePart)
     performance.mark("C")
     // 本文の最初の方だけを対象にする
     body = body.slice(0, this.bodymaxlength_ * 1024)
@@ -353,10 +376,7 @@ export default class backgroud {
     let words: Array<string> = seg.segment(body)
 
     // 除外文字列
-    const filterStr = [
-      "--",
-      "──",
-    ]
+    const filterStr = ["--", "──"]
     words = words.filter((item) => {
       // 1文字ワードは学習対象から外す
       item = item.trim()
@@ -488,5 +508,12 @@ interface ClassiffierObj {
     }
   }
 }
+
+// ContentType引数用 ユニオン型
+const ContentType = {
+  PlainText: "text/plain",
+  Html: "text/html",
+}
+type ContentType = typeof ContentType[keyof typeof ContentType]
 
 const obj = new backgroud()
