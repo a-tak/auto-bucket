@@ -60,16 +60,42 @@ export default class backgroud {
     this.tags_ = await TagUtil.load()
 
     // 本文の処理サイズ上限読み込み
-    browser.storage.sync.get("body_max_length").then((value) => {
-      this.bodymaxlength_ = (value as {
-        body_max_length: number
-      }).body_max_length
-    })
+    this.bodymaxlength_ = (await browser.storage.sync.get("body_max_length") as {
+      body_max_length: number
+    }).body_max_length
 
     // 学習モデルの整理
     this.garbageCollection()
+    // 古いログの削除
+    this.deleteOldLog()
 
     console.log("load settings totalcount : " + this.classifier_.totalCount)
+  }
+
+  private async deleteOldLog() {
+    // 設定読み込み
+    let deleteHour = (await browser.storage.sync.get("log_delete_past_hour") as {
+      log_delete_past_hour: number
+    }).log_delete_past_hour
+    if (typeof deleteHour === "undefined") {
+      // デフォルトでは3日前のログは削除する
+      deleteHour = 24 * 3
+    }
+    // まずsettingが名前インデックス付きであることを定義
+    const setting = await browser.storage.sync.get(null) as { [keyname: string]: object}
+    const nowDate = new Date()
+    for(const item in setting) {
+      // キーの先頭文字でログであることを判断。他の設定で同様のキーを作ると誤動作する。
+      if (item.indexOf("__log_",0)===0) {
+        // いけてないがここまでくるとオブジェクトの中にlogDate_メンバがあるのは間違いなのでasで指定して読み込む
+        const logEntry = setting[item] as {logDate_: string}
+        const logDate = new Date(logEntry.logDate_)
+        const hourdiff = (nowDate.getTime() - logDate.getTime()) / (1000 * 60 * 60)
+        if (hourdiff > deleteHour) {
+          browser.storage.sync.remove(item)
+        }
+      }
+    }
   }
 
   /**

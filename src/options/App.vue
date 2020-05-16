@@ -49,6 +49,16 @@
               hint="学習対象とする上限サイズを指定してください。メール本文の最初から指定されたサイズまでを学習、判定の条件にします。数値を大きくしすぎると長いメールの処理に時間がかかるようになります。"
               :rules="[rules.isNumeric]"
             ></v-text-field>
+            <v-text-field
+              class="ma-3"
+              placeholder="72"
+              single-line
+              outline
+              v-model="logDeletePastHour"
+              suffix="時間"
+              hint="判定ログを保持する期間を指定してください"
+              :rules="[rules.isNumeric]"
+            ></v-text-field>
           </v-form>
         </div>
         <v-snackbar
@@ -91,6 +101,13 @@ export default class App extends Vue {
   private set bodymaxlength(v: number) {
     this.bodymaxlength_ = v
   }
+  private logDeletePastHour_: number = 24 * 3
+  public get logDeletePastHour(): number {
+    return this.logDeletePastHour_
+  }
+  public set logDeletePastHour(v: number) {
+    this.logDeletePastHour_ = v
+  }
 
   private get rules(): {} {
     return {
@@ -129,24 +146,30 @@ export default class App extends Vue {
     this.initialize()
   }
 
-  private initialize(): void {
+  private async initialize(): Promise<void> {
     // 初期化
     this.tags_ = []
     this.values_ = []
 
-    TagUtil.load().then((value) => {
-      browser.storage.sync.get("body_max_length").then((value) => {
-        this.bodymaxlength_ = (value as {
-          body_max_length: number
-        }).body_max_length
-      })
-      this.tags_ = value
-      for (const tag of value) {
-        if (tag.useClassification) {
-          this.values_.push(tag)
-        }
+    const tags = await TagUtil.load()
+    this.bodymaxlength_ = ((await browser.storage.sync.get(
+      "body_max_length"
+    )) as {
+      body_max_length: number
+    }).body_max_length
+
+    this.logDeletePastHour_ = ((await browser.storage.sync.get(
+      "log_delete_past_hour"
+    )) as {
+      log_delete_past_hour: number
+    }).log_delete_past_hour
+
+    this.tags_ = tags
+    for (const tag of tags) {
+      if (tag.useClassification) {
+        this.values_.push(tag)
       }
-    })
+    }
   }
 
   private save() {
@@ -165,6 +188,10 @@ export default class App extends Vue {
       // 学習対象の上限サイズ保存
       browser.storage.sync.set({
         body_max_length: this.bodymaxlength_,
+      })
+      // ログ保持期間の保存
+      browser.storage.sync.set({
+        log_delete_past_hour: this.logDeletePastHour_,
       })
 
       // タイムアウトリセットするため一度消す
