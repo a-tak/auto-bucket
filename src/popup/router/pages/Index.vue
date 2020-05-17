@@ -1,17 +1,23 @@
 <template>
-  <div>
-    <span class="title">AutoBacket Thunderbirdメール分類拡張機能</span>
-    <p>拡張機能の設定から分類に使用するタグを選択しメールを右クリックし振り分けの学習をしてください。
-      その後はメールを選択して右クリックしてメールの判定処理を行ってください。
-    </p>
+  <div class="d-flex flex-column ma-4">
+    <span class="title">{{ $t("message.page_title") }}</span>
+    <v-card class="ma-2">
+      <v-card-text>{{ $t("message.page_head_content") }}</v-card-text>
+      <v-card-actions>
+        <v-btn text color="accent" @click="openLearnMore">{{ $t("message.learn_more") }}</v-btn>
+      </v-card-actions>
+    </v-card>
   </div>
 </template>
 
 <script lang="ts">
-export default {
-  data() {
-    return {}
-  },
+import { Component, Vue } from "vue-property-decorator"
+
+@Component
+export default class App extends Vue {
+  private openLearnMore() {
+    browser.tabs.create({url: this.$t("message.learn_more_url").toString() })
+  }
 }
 </script>
 
