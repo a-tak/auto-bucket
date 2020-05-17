@@ -32,14 +32,16 @@ Addonとして公開する場合は同じバージョンはアップし直せな
 
 1. package.jsonのバージョンを変更
 2. コミットしてgithubにプッシュ
-3. タグをつけてgithubにプッシュ
-7. githubでタグをリリースへ
-8. ソースをダウンロード
-4. ビルド
-5. distの中をzip化
-6. https://addons.thunderbird.net/ja/developers/addon/autobacket/versions/submit/ へアップロード
-9. ソースもアップロード
-
+3. タグをつける
+4. githubにプッシュ(タグをフォロー)
+5. githubでタグをリリースへ
+   1. プルリクエストの説明を抜粋してリリースの説明を作る
+6. ソースをダウンロード
+7. ビルド
+8. distの中をzip化
+9.  https://addons.thunderbird.net/ja/developers/addon/autobacket/versions/submit/ へアップロード
+10. ソースもアップロード
+11. 説明にgithubのリリースの説明を貼り付け
 
 ## Linter
 
