@@ -60,7 +60,9 @@ export default class backgroud {
     this.tags_ = await TagUtil.load()
 
     // 本文の処理サイズ上限読み込み
-    this.bodymaxlength_ = (await browser.storage.sync.get("body_max_length") as {
+    this.bodymaxlength_ = ((await browser.storage.sync.get(
+      "body_max_length"
+    )) as {
       body_max_length: number
     }).body_max_length
 
@@ -74,7 +76,9 @@ export default class backgroud {
 
   private async deleteOldLog() {
     // 設定読み込み
-    let deleteHour = (await browser.storage.sync.get("log_delete_past_hour") as {
+    let deleteHour = ((await browser.storage.sync.get(
+      "log_delete_past_hour"
+    )) as {
       log_delete_past_hour: number
     }).log_delete_past_hour
     if (typeof deleteHour === "undefined") {
@@ -82,15 +86,18 @@ export default class backgroud {
       deleteHour = 24 * 3
     }
     // まずsettingが名前インデックス付きであることを定義
-    const setting = await browser.storage.sync.get(null) as { [keyname: string]: object}
+    const setting = (await browser.storage.sync.get(null)) as {
+      [keyname: string]: object
+    }
     const nowDate = new Date()
-    for(const item in setting) {
+    for (const item in setting) {
       // キーの先頭文字でログであることを判断。他の設定で同様のキーを作ると誤動作する。
-      if (item.indexOf("__log_",0)===0) {
+      if (item.indexOf("__log_", 0) === 0) {
         // いけてないがここまでくるとオブジェクトの中にlogDate_メンバがあるのは間違いなのでasで指定して読み込む
-        const logEntry = setting[item] as {logDate_: string}
+        const logEntry = setting[item] as { logDate_: string }
         const logDate = new Date(logEntry.logDate_)
-        const hourdiff = (nowDate.getTime() - logDate.getTime()) / (1000 * 60 * 60)
+        const hourdiff =
+          (nowDate.getTime() - logDate.getTime()) / (1000 * 60 * 60)
         if (hourdiff > deleteHour) {
           browser.storage.sync.remove(item)
         }
@@ -472,7 +479,9 @@ export default class backgroud {
     return { scoreTotal: resultScores, logEntry: logEntry }
   }
 
-  private async getTargetMessage(message: browser.messages.MessageHeader): Promise<Array<string>> {
+  private async getTargetMessage(
+    message: browser.messages.MessageHeader
+  ): Promise<Array<string>> {
     // メールをとりあえず本文だけを対象にする
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
     const messagePart = await browser.messages.getFull(message.id)
@@ -497,8 +506,54 @@ export default class backgroud {
     return words
   }
 
-  private async getHeaderArray(message: browser.messages.MessageHeader): Promise<string[]> {
-    return [""]
+  /**
+   * 学習・判定用のメールヘッダ配列を返す
+   * @param message メッセージオブジェクト
+   */
+  private async getHeaderArray(
+    message: browser.messages.MessageHeader
+  ): Promise<string[]> {
+    let ret: string[] = []
+    // From
+    ret.push("from:" + message.author)
+    const from = this.getDomain(message.author)
+    if (typeof from != "undefined") {
+      ret.push("from:" + from)
+    }
+
+    // To
+    for (const mail of message.recipients) {
+      ret.push("to:" + mail)
+      const to = this.getDomain(mail)
+      if (typeof to != "undefined") {
+        ret.push("to:" + to)
+      }
+    }
+
+    // cc
+    for (const mail of message.ccList) {
+      ret.push("cc:" + mail)
+      const cc = this.getDomain(mail)
+      if (typeof cc != "undefined") {
+        ret.push("cc:" + cc)
+      }
+    }
+
+    return ret
+  }
+
+  /**
+   * 指定されたアドレスのドメイン部分の学習対象文字列を返す
+   * @param mail メールアドレス
+   * @returns ドメイン部分。見つからない場合はundefined。
+   */
+  private getDomain(mail: string): string | undefined {
+    const ret = mail.split("@")
+    if ((ret.length = 2)) {
+      return ret[1]
+    } else {
+      return undefined
+    }
   }
 
   /**
@@ -523,7 +578,9 @@ export default class backgroud {
    * 指定したメッセージを評価して分類タグを返す
    * @param messageId 対象のメッセージid
    */
-  private async getClassificationTag(message: browser.messages.MessageHeader): Promise<string> {
+  private async getClassificationTag(
+    message: browser.messages.MessageHeader
+  ): Promise<string> {
     const result = await this.scoring(message)
     const tag = this.ranking(result.scoreTotal)
     // ログに残す
