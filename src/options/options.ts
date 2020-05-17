@@ -9,7 +9,6 @@ const data = require("./message.json")
 Vue.use(VueI18n)
 const i18n = new VueI18n({
   locale: browser.i18n.getUILanguage().split('-')[0],
-  // locale: "ja",
   messages: data,
   fallbackLocale: "en"
 })
