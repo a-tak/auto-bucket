@@ -178,7 +178,7 @@ export default class App extends Vue {
       this.snackbarDisplay_ = false
       this.$nextTick(() => {
         // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
-        this.snackbarText_ = "エラーをご確認ください"
+        this.snackbarText_ = this.$i18n.tc('message.save_error_msg')
         this.snackbarDisplay_ = true
       })
 
@@ -199,7 +199,7 @@ export default class App extends Vue {
       this.$nextTick(() => {
         // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
         this.snackbarText_ =
-          "設定を保存しました。Thunderbirdを再起動してください。"
+          this.$i18n.tc('message.save_msg')
         this.snackbarDisplay_ = true
       })
       // TODO: メニューを更新するコード
@@ -209,7 +209,7 @@ export default class App extends Vue {
   private cancel() {
     this.initialize()
     this.$nextTick(() => {
-      this.snackbarText_ = "設定を元に戻しました"
+      this.snackbarText_ = this.$i18n.tc('message.cancel_msg')
       this.snackbarDisplay_ = true
     })
   }
