@@ -164,7 +164,7 @@ export default class backgroud {
       if (tag.useClassification) {
         browser.menus.create({
           id: "doLearn" + tag.key,
-          title: "このメールを「" + tag.name + "」として学習",
+          title: browser.i18n.getMessage("learnMenu",tag.name),
           contexts: ["message_list"],
           onclick: async (info: browser.menus.OnClickData) => {
             if (info.selectedMessages == undefined) return
@@ -185,7 +185,7 @@ export default class backgroud {
 
     browser.menus.create({
       id: "all_classificate",
-      title: "未判定メールをすべて判定",
+      title: browser.i18n.getMessage("allClassificateMenu"),
       contexts: ["message_list"],
       onclick: async () => {
         this.executeAllClassificate()
@@ -194,7 +194,7 @@ export default class backgroud {
 
     browser.menus.create({
       id: "classificate",
-      title: "このメールを判定",
+      title: browser.i18n.getMessage("classificateMenu"),
       contexts: ["message_list"],
       onclick: async () => {
         this.executeClassificate()
@@ -203,7 +203,7 @@ export default class backgroud {
 
     browser.menus.create({
       id: "view_log",
-      title: "判定ログを表示する",
+      title: browser.i18n.getMessage("viewLogMenu"),
       contexts: ["message_list"],
       onclick: async () => {
         this.executeViewLog()
@@ -212,7 +212,7 @@ export default class backgroud {
 
     browser.menus.create({
       id: "learn_clear",
-      title: "学習状況をクリア",
+      title: browser.i18n.getMessage("clearLernMenu"),
       contexts: ["message_list"],
       onclick: async () => {
         this.clearLearn()
@@ -221,7 +221,7 @@ export default class backgroud {
 
     browser.menus.create({
       id: "setting_clear",
-      title: "学習状況と設定をクリア",
+      title: browser.i18n.getMessage("clearSettingMenu"),
       contexts: ["message_list"],
       onclick: async () => {
         this.clearSetting()
