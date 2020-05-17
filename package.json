@@ -1,6 +1,6 @@
 {
   "name": "AutoBacket",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "description": "Thunderbird auto classification web extension",
   "author": "A-tak <hoge+git@a-tak.com>",
   "scripts": {
