@@ -18,6 +18,7 @@
     "tiny-segmenter": "^0.2.0",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
+    "vue-i18n": "^8.17.6",
     "vue-property-decorator": "^8.4.2",
     "vue-router": "^3.0.1",
     "vuetify": "^2.2.11",

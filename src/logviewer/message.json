@@ -1,0 +1,30 @@
+{
+  "ja": {
+    "message": {
+      "page_title": "AutoBacket Thunderbirdメール分類拡張機能",
+      "subject_title": "件名",
+      "from_title": "差出人",
+      "not_found_title": "分類情報がみつかりません",
+      "judgement_title": "判定結果",
+      "category_score_title" : "カテゴリ毎スコア",
+      "unit_score": "ポイント",
+      "top_score_word_title": "トップスコア ワード",
+      "unit_count": "個",
+      "target_text_title": "対象本文"
+    }
+  },
+  "en": {
+    "message": {
+      "page_title": "AutoBacket Thunderbird Mail Classification Extension",
+      "subject_title": "Subject",
+      "from_title": "From",
+      "not_found_title": "Classification information not found",
+      "judgement_title": "Judgment result",
+      "category_score_title" : "Score for each category",
+      "unit_score": "points",
+      "top_score_word_title": "Top score word",
+      "unit_count": "times",
+      "target_text_title": "Target text"
+    }
+  }
+}

@@ -3,7 +3,7 @@
   "name": "AutoBacket",
   "version": "0.0.0",
   "author": "A-tak",
-  "description": "メールをベイジアンフィルターで複数のバケツに分類してタグを付ける拡張機能です",
+  "description": "__MSG_extensionDescription__",
   "homepage_url": "https://github.com/a-tak/auto-backet",
   "icons": {
     "48": "icons/icon_48.png",
@@ -15,7 +15,7 @@
       "strict_min_version": "68.0"
     }
   },
-
+  "default_locale": "en",
   "permissions": [
     "messagesRead",
     "menus",
@@ -37,15 +37,15 @@
   "commands": {
     "all-classificate": {
       "suggested_key": { "default": "Alt+Shift+A" },
-      "description": "AutoBacketで未判定メールをすべて判定"
+      "description": "__MSG_allClassificateDescription__"
     },
     "classificate": {
       "suggested_key": { "default": "Alt+Shift+C" },
-      "description": "AutoBacketでメールを判定"
+      "description": "__MSG_classificateDescription__"
     },
     "view-log": {
       "suggested_key": { "default": "Alt+Shift+V" },
-      "description": "AutoBacketのメール判定ログを表示"
+      "description": "__MSG_viewLogDescription__"
     }
   }
 }

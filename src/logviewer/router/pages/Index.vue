@@ -1,23 +1,23 @@
 <template>
   <div class="d-flex flex-column ma-4">
-    <span class="title">AutoBacket Thunderbirdメール分類拡張機能</span>
+    <span class="title">{{ $t("message.page_title") }}</span>
     <v-card class="ma-2">
-      <v-card-title class="ma-1">件名</v-card-title>
+      <v-card-title class="ma-1">{{ $t("message.subject_title") }}</v-card-title>
       <v-card-text>{{ subject }} </v-card-text>
     </v-card>
     <v-card class="ma-2">
-      <v-card-title>差出人</v-card-title>
+      <v-card-title>{{ $t("message.from_title") }}</v-card-title>
       <v-card-text>{{ from }}</v-card-text>
     </v-card>
     <v-card class="ma-2" v-if="notFound == true">
-      <v-card-title class="ma-4">分類情報がみつかりません</v-card-title>
+      <v-card-title class="ma-4">{{ $t("message.not_found_title") }}</v-card-title>
     </v-card>
     <v-card class="ma-2" v-if="notFound == false">
-      <v-card-title>判定結果</v-card-title>
+      <v-card-title>{{ $t("message.judgement_title") }}</v-card-title>
       <v-card-text>{{ classificate }}</v-card-text>
     </v-card>
     <v-card class="ma-2" v-if="notFound == false">
-      <v-card-title>カテゴリ毎スコア</v-card-title>
+      <v-card-title>{{ $t("message.category_score_title") }}</v-card-title>
       <v-list-item v-for="score in scores" :key="score.category">
         <v-list-item-content>
           <v-list-item-title
@@ -26,20 +26,20 @@
           ></v-list-item-title>
           <v-list-item-subtitle
             class="ma-1"
-          >{{ score.score }} ポイント</v-list-item-subtitle>
+          >{{ score.score }} {{ $t("message.unit_score") }}</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </v-card>
     <v-card v-for="category in wordscore" :key="category.word" class="ma-2">
-      <v-card-title>{{ category.category }} トップスコア ワード</v-card-title>
+      <v-card-title>{{ category.category }} {{ $t("message.top_score_word_title") }}</v-card-title>
       <v-list-item v-for="word in category.words" :key="word.word">
         <v-list-item-title>{{ word.word }}</v-list-item-title>
-        <v-list-item-subtitle>{{ word.score }} ポイント</v-list-item-subtitle>
-        <v-list-item-subtitle>{{ word.count }} 個</v-list-item-subtitle>
+        <v-list-item-subtitle>{{ word.score }} {{ $t("message.unit_score") }}</v-list-item-subtitle>
+        <v-list-item-subtitle>{{ word.count }} {{ $t("message.unit_count") }}</v-list-item-subtitle>
       </v-list-item>
     </v-card>
     <v-card class="ma-2" v-if="notFound == false">
-      <v-card-title>対象本文</v-card-title>
+      <v-card-title>{{ $t("message.target_text_title") }}</v-card-title>
       <div class="caption ma-2">{{ targetText }}</div>
     </v-card>
   </div>

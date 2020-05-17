@@ -3,9 +3,9 @@
     <v-content>
       <v-container fluid pa-0>
         <div id="main">
-          <div id="title" class="title ma-3">分類用タグ設定</div>
+          <div id="title" class="title ma-3">{{ $t("message.classificate_tag_title") }}</div>
           <div class="body-1 ma-3">
-            分類用タグを変更したらThunderbirdを再起動してください
+            {{ $t("message.notice") }}
           </div>
           <v-form v-model="valid">
             <div class="d-flex flex-row">
@@ -13,18 +13,18 @@
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
                     <v-btn v-on="on" color="accent" @click.stop="save()"
-                      >SAVE</v-btn
+                      >{{ $t("message.save_button_label") }}</v-btn
                     >
                   </template>
-                  <span>分類タグ設定を保存</span>
+                  <span>{{ $t("message.save_button_tip") }}</span>
                 </v-tooltip>
               </div>
               <div class="ma-3">
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
-                    <v-btn v-on="on" @click.stop="cancel()">CANCEL</v-btn>
+                    <v-btn v-on="on" @click.stop="cancel()">{{ $t("message.cancel_button_label") }}</v-btn>
                   </template>
-                  <span>編集をキャンセルする</span>
+                  <span>{{ $t("message.cancel_button_tip") }}</span>
                 </v-tooltip>
               </div>
             </div>
@@ -33,30 +33,30 @@
               :items="tags_"
               attach
               chips
-              label="分類用タグ"
+              :label="$t('message.classificate_tag_label')"
               multiple
-              hint="分類に使用するタグを選択してください。AutoBacketはここで指定されたタグのどれかをメールにセットします。"
+              :hint="$t('message.classificate_tag_hint')"
               persistent-hint
-              class="ma-3"
+              class="ma-3 pa-2"
             ></v-select>
             <v-text-field
-              class="ma-3"
+              class="ma-3 pa-2"
               placeholder="100"
               single-line
               outline
               v-model="bodymaxlength_"
               suffix="KByte"
-              hint="学習対象とする上限サイズを指定してください。メール本文の最初から指定されたサイズまでを学習、判定の条件にします。数値を大きくしすぎると長いメールの処理に時間がかかるようになります。"
+              :hint="$t('message.body_max_length_hint')"
               :rules="[rules.isNumeric]"
             ></v-text-field>
             <v-text-field
-              class="ma-3"
+              class="ma-3 pa-2"
               placeholder="72"
               single-line
               outline
               v-model="logDeletePastHour"
-              suffix="時間"
-              hint="判定ログを保持する期間を指定してください"
+              :suffix="$t('message.keep_log_hour_suffix')"
+              :hint="$t('message.keep_log_hour_hint')"
               :rules="[rules.isNumeric]"
             ></v-text-field>
           </v-form>
@@ -112,7 +112,7 @@ export default class App extends Vue {
   private get rules(): {} {
     return {
       isNumeric: (value: string) => {
-        if (isNaN(Number(value))) return "数字を入力してください"
+        if (isNaN(Number(value))) return this.$i18n.tc('message.numeric_only_rule_error')
         return true
       },
     }
@@ -178,7 +178,7 @@ export default class App extends Vue {
       this.snackbarDisplay_ = false
       this.$nextTick(() => {
         // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
-        this.snackbarText_ = "エラーをご確認ください"
+        this.snackbarText_ = this.$i18n.tc('message.save_error_msg')
         this.snackbarDisplay_ = true
       })
 
@@ -199,7 +199,7 @@ export default class App extends Vue {
       this.$nextTick(() => {
         // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
         this.snackbarText_ =
-          "設定を保存しました。Thunderbirdを再起動してください。"
+          this.$i18n.tc('message.save_msg')
         this.snackbarDisplay_ = true
       })
       // TODO: メニューを更新するコード
@@ -209,7 +209,7 @@ export default class App extends Vue {
   private cancel() {
     this.initialize()
     this.$nextTick(() => {
-      this.snackbarText_ = "設定を元に戻しました"
+      this.snackbarText_ = this.$i18n.tc('message.cancel_msg')
       this.snackbarDisplay_ = true
     })
   }
