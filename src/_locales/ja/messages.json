@@ -3,6 +3,10 @@
     "message": "メールをベイジアンフィルターで複数のバケツに分類してタグを付ける拡張機能です",
     "description": "エクステンションの説明文字列"
   },
+  "homepage": {
+    "message": "https://a-tak.github.io/auto-backet/README_ja",
+    "description": "Extension HomePage URL"
+  },
   "allClassificateDescription": {
     "message": "未判定メールをすべて判定",
     "description": "ショートカットの説明"

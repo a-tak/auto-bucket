@@ -3,6 +3,10 @@
     "message": "This is an extension function that classifies emails into multiple buckets using the Bayesian filter and tags them.",
     "description": "Extension description string"
   },
+  "homepage": {
+    "message": "https://a-tak.github.io/auto-backet/",
+    "description": "Extension HomePage URL"
+  },
   "allClassificateDescription": {
     "message": "Judge all undetermined emails",
     "description": "Shortcut description"
