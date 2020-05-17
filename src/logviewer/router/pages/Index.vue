@@ -118,7 +118,7 @@ export default class App extends Vue {
     this.from_ = header.author
 
     this.notFound_ = false
-    this.logEntry_.id = await MessageUtil.getMailMessageId(header.id)
+    this.logEntry_.id = await MessageUtil.getMailMessageId(header)
     if ((await this.logEntry_.load()) == false) {
       this.notFound_ = true
       return

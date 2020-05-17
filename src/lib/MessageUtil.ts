@@ -6,8 +6,8 @@ export default class MessageUtil {
      * 指定されたメールのMessage-Idヘッダを取得して返す
      * @param messageId Thunderbird API内部メッセージID
      */
-    public static async getMailMessageId(messageId: number): Promise<string> {
-        const messagePart = await browser.messages.getFull(messageId)
+    public static async getMailMessageId(message: browser.messages.MessageHeader): Promise<string> {
+        const messagePart = await browser.messages.getFull(message.id)
         const headers = messagePart.headers as {
           [key: string]: string
         }

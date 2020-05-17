@@ -381,8 +381,7 @@ export default class backgroud {
    * @param {string}  category  分類名
    */
   async doLearn(message: browser.messages.MessageHeader, category: string) {
-    const messageId = message.id
-    const words = await this.divideMessage(messageId)
+    const words = await this.getTargetMessage(message)
     let relearn: number = 0
     do {
       relearn += 1
@@ -393,7 +392,7 @@ export default class backgroud {
       }
     } while (
       // 再度判定して指定したタグとして判定されるまで繰り返し学習する
-      (await this.getClassificationTag(messageId)) != category
+      (await this.getClassificationTag(message)) != category
     )
 
     // タグ付けも実施する
@@ -422,11 +421,11 @@ export default class backgroud {
    * @param {number}  messageId 対象のメールid
    */
   private async scoring(
-    messageId: number
+    message: browser.messages.MessageHeader
   ): Promise<{ scoreTotal: TotalScore[]; logEntry: LogEntry }> {
     const totalScore: Score = {}
     performance.mark("本文分割開始")
-    const words = await this.divideMessage(messageId)
+    const words = await this.getTargetMessage(message)
     performance.mark("本文分割終了")
     const logEntry = new LogEntry()
     for (const word of words) {
@@ -473,21 +472,15 @@ export default class backgroud {
     return { scoreTotal: resultScores, logEntry: logEntry }
   }
 
-  private async divideMessage(messageId: number): Promise<Array<string>> {
+  private async getTargetMessage(message: browser.messages.MessageHeader): Promise<Array<string>> {
     // メールをとりあえず本文だけを対象にする
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
-    performance.mark("A")
-    const messagePart = await browser.messages.getFull(messageId)
-    performance.mark("B")
+    const messagePart = await browser.messages.getFull(message.id)
     let body = await this.getBodyMain(messagePart)
-    performance.mark("C")
     // 本文の最初の方だけを対象にする
     body = body.slice(0, this.bodymaxlength_ * 1024)
 
     const seg = new Segmenter()
-    performance.mark("D")
-    // 除外文字列
-    // body = body.replace(/\r?\n/g, "")
 
     let words: Array<string> = seg.segment(body)
 
@@ -497,13 +490,15 @@ export default class backgroud {
       if (item.length <= 1) return false
       return true
     })
-    performance.mark("E")
-    performance.measure("メッセージパート取得", "A", "B")
-    performance.measure("メッセージボディー取得", "B", "C")
-    performance.measure("Segmenter new", "C", "D")
-    performance.measure("Segmenter処理", "D", "E")
-    // console.log(performance.getEntriesByType("measure"))
+
+    // ヘッダを学習対象に追加
+    words = words.concat(await this.getHeaderArray(message))
+
     return words
+  }
+
+  private async getHeaderArray(message: browser.messages.MessageHeader): Promise<string[]> {
+    return [""]
   }
 
   /**
@@ -513,7 +508,7 @@ export default class backgroud {
   private async classificationMessage(message: browser.messages.MessageHeader) {
     performance.mark("分類開始")
     const messageId = message.id
-    const tag: string = await this.getClassificationTag(messageId)
+    const tag: string = await this.getClassificationTag(message)
     performance.mark("分類判定終了")
     if (tag == "") return
     this.setClassificationTag(messageId, tag)
@@ -528,12 +523,12 @@ export default class backgroud {
    * 指定したメッセージを評価して分類タグを返す
    * @param messageId 対象のメッセージid
    */
-  private async getClassificationTag(messageId: number): Promise<string> {
-    const result = await this.scoring(messageId)
+  private async getClassificationTag(message: browser.messages.MessageHeader): Promise<string> {
+    const result = await this.scoring(message)
     const tag = this.ranking(result.scoreTotal)
     // ログに残す
     const logEntry = result.logEntry
-    logEntry.id = await MessageUtil.getMailMessageId(messageId)
+    logEntry.id = await MessageUtil.getMailMessageId(message)
     logEntry.classifiedTag = tag
     logEntry.score = result.scoreTotal
     logEntry.save()
