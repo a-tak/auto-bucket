@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "author": "A-tak",
   "description": "__MSG_extensionDescription__",
-  "homepage_url": "https://github.com/a-tak/auto-backet",
+  "homepage_url": "__MSG_homepage__",
   "icons": {
     "48": "icons/icon_48.png",
     "128": "icons/icon_128.png"

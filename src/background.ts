@@ -431,9 +431,7 @@ export default class backgroud {
     message: browser.messages.MessageHeader
   ): Promise<{ scoreTotal: TotalScore[]; logEntry: LogEntry }> {
     const totalScore: Score = {}
-    performance.mark("本文分割開始")
     const words = await this.getTargetMessage(message)
-    performance.mark("本文分割終了")
     const logEntry = new LogEntry()
     for (const word of words) {
       // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
@@ -462,7 +460,6 @@ export default class backgroud {
       logEntry.scoreEachWord[word].count += 1
       logEntry.targetText = words
     }
-    performance.mark("スコア集計終了")
     let resultScores: Array<TotalScore> = new Array(0)
     for (const category in totalScore) {
       resultScores.push({
@@ -470,11 +467,6 @@ export default class backgroud {
         score: totalScore[category],
       })
     }
-
-    performance.measure("本文分割処理", "本文分割開始", "本文分割終了")
-    performance.measure("スコア集計処理", "本文分割終了", "スコア集計終了")
-    // console.log(performance.getEntriesByName("本文分割処理"))
-    // console.log(performance.getEntriesByName("スコア集計処理"))
 
     return { scoreTotal: resultScores, logEntry: logEntry }
   }
@@ -486,6 +478,10 @@ export default class backgroud {
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
     const messagePart = await browser.messages.getFull(message.id)
     let body = await this.getBodyMain(messagePart)
+
+    // subjectを追加する
+    body = message.subject + body
+
     // 本文の最初の方だけを対象にする
     body = body.slice(0, this.bodymaxlength_ * 1024)
 
@@ -515,7 +511,7 @@ export default class backgroud {
   ): Promise<string[]> {
     let ret: string[] = []
     // From
-    ret.push("from:" + message.author)
+    ret.push("from:" + this.getMailAddress(message.author))
     const from = this.getDomain(message.author)
     if (typeof from != "undefined") {
       ret.push("from:" + from)
@@ -523,7 +519,7 @@ export default class backgroud {
 
     // To
     for (const mail of message.recipients) {
-      ret.push("to:" + mail)
+      ret.push("to:" + this.getMailAddress(mail))
       const to = this.getDomain(mail)
       if (typeof to != "undefined") {
         ret.push("to:" + to)
@@ -532,7 +528,7 @@ export default class backgroud {
 
     // cc
     for (const mail of message.ccList) {
-      ret.push("cc:" + mail)
+      ret.push("cc:" + this.getMailAddress(mail))
       const cc = this.getDomain(mail)
       if (typeof cc != "undefined") {
         ret.push("cc:" + cc)
@@ -542,12 +538,22 @@ export default class backgroud {
     return ret
   }
 
+  private getMailAddress(mail: string): string {
+    if (mail.length === 0 ) return ""
+    console.log(mail)
+    let start = mail.lastIndexOf("<")
+
+    let end = mail.lastIndexOf(">")
+    if (end === -1) end = mail.length
+    return mail.slice(start + 1, end)
+  }
   /**
    * 指定されたアドレスのドメイン部分の学習対象文字列を返す
    * @param mail メールアドレス
    * @returns ドメイン部分。見つからない場合はundefined。
    */
   private getDomain(mail: string): string | undefined {
+    mail = this.getMailAddress(mail)
     const ret = mail.split("@")
     if ((ret.length = 2)) {
       return ret[1]
