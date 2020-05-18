@@ -102,6 +102,7 @@ export default class App extends Vue {
 
   private created() {
     this.Initialize()
+    // タブがアクティブになったときに選択されたメール情報で再描画する為のフック
     browser.tabs.onActivated.addListener(this.refresh)
   }
 
@@ -136,6 +137,9 @@ export default class App extends Vue {
    * 表示用に単語 > カテゴリと記録されているログをカテゴリ > 単語の配列に変換
    */
   private async showWordScore(): Promise<void> {
+    // ワードスコア初期化
+    this.wordscore_ = []
+
     const scoreEachWord = this.logEntry_.scoreEachWord
     for (const word in scoreEachWord) {
       const scores = scoreEachWord[word].score
@@ -170,7 +174,6 @@ export default class App extends Vue {
       category.words.sort((a, b) => b.score - a.score)
       // トップ10件の単語のみに表示を削る
       category.words = category.words.slice(0, 9)
-      // console.log("words = " + JSON.stringify(category.words,null,4))
     }
   }
 
@@ -184,6 +187,9 @@ export default class App extends Vue {
   }
 
   private async showScore(): Promise<void> {
+    //　スコア初期化
+    this.scores_ = []
+
     for (const score of this.logEntry_.score) {
       const tag = this.getTagName(score.category)
       if (tag != undefined) {
