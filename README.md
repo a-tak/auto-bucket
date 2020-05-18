@@ -41,7 +41,7 @@ Addonとして公開する場合は同じバージョンはアップし直せな
 8. distの中をzip化
 9.  https://addons.thunderbird.net/ja/developers/addon/autobacket/versions/submit/ へアップロード
 10. ソースもアップロード
-11. 説明にgithubのリリースの説明を貼り付け
+11. アップ完了後、各国語毎に説明を入れるページが表示さるのでgithubのリリースの説明を貼り付け
 
 ## Linter
 
