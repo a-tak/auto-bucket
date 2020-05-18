@@ -431,9 +431,7 @@ export default class backgroud {
     message: browser.messages.MessageHeader
   ): Promise<{ scoreTotal: TotalScore[]; logEntry: LogEntry }> {
     const totalScore: Score = {}
-    performance.mark("本文分割開始")
     const words = await this.getTargetMessage(message)
-    performance.mark("本文分割終了")
     const logEntry = new LogEntry()
     for (const word of words) {
       // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
@@ -462,7 +460,6 @@ export default class backgroud {
       logEntry.scoreEachWord[word].count += 1
       logEntry.targetText = words
     }
-    performance.mark("スコア集計終了")
     let resultScores: Array<TotalScore> = new Array(0)
     for (const category in totalScore) {
       resultScores.push({
@@ -470,11 +467,6 @@ export default class backgroud {
         score: totalScore[category],
       })
     }
-
-    performance.measure("本文分割処理", "本文分割開始", "本文分割終了")
-    performance.measure("スコア集計処理", "本文分割終了", "スコア集計終了")
-    // console.log(performance.getEntriesByName("本文分割処理"))
-    // console.log(performance.getEntriesByName("スコア集計処理"))
 
     return { scoreTotal: resultScores, logEntry: logEntry }
   }
@@ -486,6 +478,10 @@ export default class backgroud {
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
     const messagePart = await browser.messages.getFull(message.id)
     let body = await this.getBodyMain(messagePart)
+
+    // subjectを追加する
+    body = message.subject + body
+
     // 本文の最初の方だけを対象にする
     body = body.slice(0, this.bodymaxlength_ * 1024)
 
