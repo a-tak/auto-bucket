@@ -18,6 +18,7 @@
   "default_locale": "en",
   "permissions": ["messagesRead", "menus", "storage", "accountsRead"],
   "browser_action": {
+    "default_icon": "icons/icon_48.png",
     "default_title": "AutoBacket",
     "default_popup": "popup/popup.html"
   },

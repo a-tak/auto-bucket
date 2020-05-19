@@ -540,7 +540,6 @@ export default class backgroud {
 
   private getMailAddress(mail: string): string {
     if (mail.length === 0 ) return ""
-    console.log(mail)
     let start = mail.lastIndexOf("<")
 
     let end = mail.lastIndexOf(">")
@@ -567,17 +566,10 @@ export default class backgroud {
    * @param messageId 対象のメッセージid
    */
   private async classificationMessage(message: browser.messages.MessageHeader) {
-    performance.mark("分類開始")
     const messageId = message.id
     const tag: string = await this.getClassificationTag(message)
-    performance.mark("分類判定終了")
     if (tag == "") return
     this.setClassificationTag(messageId, tag)
-    performance.mark("分類終了")
-    performance.measure("分類メイン", "分類開始", "分類終了")
-    performance.measure("分類判定処理", "分類開始", "分類判定終了")
-    // console.log(performance.getEntriesByName("分類メイン"))
-    // console.log(performance.getEntriesByName("分類判定処理"))
   }
 
   /**
