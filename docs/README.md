@@ -1,7 +1,7 @@
 
 # AutoBacket
 
-![](icon-flat-large.svg)
+![](../images/github-open-graph.png)
 
 ## What is AutoBacket
 
