@@ -1,4 +1,7 @@
 # auto-backet
+
+![](images/github-open-graph.png)
+
  Thunderbird用ベイジアンフィルターによる自動メール分類拡張機能
 
 ## ビルド環境準備(Build Environment)
