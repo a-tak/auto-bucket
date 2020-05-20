@@ -4,6 +4,11 @@
 
  Thunderbird用ベイジアンフィルターによる自動メール分類拡張機能
 
+## GitHub Pages
+
+https://a-tak.github.io/auto-backet/
+https://a-tak.github.io/auto-backet/README_ja
+
 ## ビルド環境準備(Build Environment)
 
 ```bash

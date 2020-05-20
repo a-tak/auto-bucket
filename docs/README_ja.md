@@ -1,6 +1,6 @@
 # AutoBacket
 
-![](github-open-graph.png)
+![](https://github.com/a-tak/auto-backet/raw/master/docs/github-open-graph.png)
 
 ## AutoBacketとは
 
