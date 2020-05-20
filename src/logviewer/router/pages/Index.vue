@@ -2,7 +2,9 @@
   <div class="d-flex flex-column ma-4">
     <span class="title">{{ $t("message.page_title") }}</span>
     <v-card class="ma-2">
-      <v-card-title class="ma-1">{{ $t("message.subject_title") }}</v-card-title>
+      <v-card-title class="ma-1">{{
+        $t("message.subject_title")
+      }}</v-card-title>
       <v-card-text>{{ subject }} </v-card-text>
     </v-card>
     <v-card class="ma-2">
@@ -10,7 +12,9 @@
       <v-card-text>{{ from }}</v-card-text>
     </v-card>
     <v-card class="ma-2" v-if="notFound == true">
-      <v-card-title class="ma-4">{{ $t("message.not_found_title") }}</v-card-title>
+      <v-card-title class="ma-4">{{
+        $t("message.not_found_title")
+      }}</v-card-title>
     </v-card>
     <v-card class="ma-2" v-if="notFound == false">
       <v-card-title>{{ $t("message.judgement_title") }}</v-card-title>
@@ -24,18 +28,26 @@
             class="ma-1"
             v-text="score.category"
           ></v-list-item-title>
-          <v-list-item-subtitle
-            class="ma-1"
-          >{{ score.score }} {{ $t("message.unit_score") }}</v-list-item-subtitle>
+          <v-list-item-subtitle class="ma-1"
+            >{{ score.score }}
+            {{ $t("message.unit_score") }}</v-list-item-subtitle
+          >
         </v-list-item-content>
       </v-list-item>
     </v-card>
     <v-card v-for="category in wordscore" :key="category.word" class="ma-2">
-      <v-card-title>{{ category.category }} {{ $t("message.top_score_word_title") }}</v-card-title>
+      <v-card-title
+        >{{ category.category }}
+        {{ $t("message.top_score_word_title") }}</v-card-title
+      >
       <v-list-item v-for="word in category.words" :key="word.word">
         <v-list-item-title>{{ word.word }}</v-list-item-title>
-        <v-list-item-subtitle>{{ word.score }} {{ $t("message.unit_score") }}</v-list-item-subtitle>
-        <v-list-item-subtitle>{{ word.count }} {{ $t("message.unit_count") }}</v-list-item-subtitle>
+        <v-list-item-subtitle
+          >{{ word.score }} {{ $t("message.unit_score") }}</v-list-item-subtitle
+        >
+        <v-list-item-subtitle
+          >{{ word.count }} {{ $t("message.unit_count") }}</v-list-item-subtitle
+        >
       </v-list-item>
     </v-card>
     <v-card class="ma-2" v-if="notFound == false">
@@ -135,6 +147,8 @@ export default class App extends Vue {
 
   /**
    * 表示用に単語 > カテゴリと記録されているログをカテゴリ > 単語の配列に変換
+   * 単語の中で最もスコアの高いカテゴリに分類
+   * さらにトップ10件に絞る
    */
   private async showWordScore(): Promise<void> {
     // ワードスコア初期化
@@ -144,31 +158,51 @@ export default class App extends Vue {
     for (const word in scoreEachWord) {
       const scores = scoreEachWord[word].score
       const count = scoreEachWord[word].count
+      let bestCategory = ""
+      let bestScore = {} as {
+        word: string
+        count: number
+        score: number
+      }
+      bestScore = {
+        word: "",
+        count: 0,
+        score: 0
+      }
+      // 単語毎カテゴリ毎のループ
       for (const category in scores) {
         const score = scores[category]
-        const cat = {
-          word: word,
-          count: count,
-          score: score,
-        }
-        let catName = this.getTagName(category)
-        if (catName==undefined) {
-          // 消されたタグの場合は値が取れない可能性がある
-          catName = "削除されたタグ"
-        }
-        const ret = this.wordscore_.find((item) => item.category === catName)
-        if (ret == undefined) {
-          const ary = []
-          ary.push(cat)
-          this.wordscore_.push({
-            category: catName,
-            words: ary,
-          })
-        } else {
-          ret.words.push(cat)
+        // ワードの中で最もスコアの高いカテゴリを選択する
+        if (bestScore.score <= score) {
+          bestCategory = category
+          bestScore = {
+            word: word,
+            count: count,
+            score: score,
+          }
         }
       }
+
+      let catName = this.getTagName(bestCategory)
+      if (catName == undefined) {
+        // 消されたタグの場合は値が取れない可能性がある
+        catName = "削除されたタグ"
+      }
+
+      // カテゴリ毎の単語一覧に追加
+      const ret = this.wordscore_.find((item) => item.category === catName)
+      if (ret == undefined) {
+        const ary = []
+        ary.push(bestScore)
+        this.wordscore_.push({
+          category: catName,
+          words: ary,
+        })
+      } else {
+        ret.words.push(bestScore)
+      }
     }
+
     for (const category of this.wordscore_) {
       // ソート
       category.words.sort((a, b) => b.score - a.score)
@@ -177,13 +211,13 @@ export default class App extends Vue {
     }
   }
 
-  private getTagName(key: string): string|undefined {
-      const tag = this.tags_.find((item) => {
-        return item.key === key
-      })
-      
-      if (tag==undefined) return undefined
-      return tag.name
+  private getTagName(key: string): string | undefined {
+    const tag = this.tags_.find((item) => {
+      return item.key === key
+    })
+
+    if (tag == undefined) return undefined
+    return tag.name
   }
 
   private async showScore(): Promise<void> {
