@@ -1,5 +1,7 @@
 # AutoBacket
 
+![](icon-flat-large.svg)
+
 ## AutoBacketとは
 
 ベイジアンフィルターを使ってメールをいくつかのバケツ(タグ)へ自動分類するThunderbird拡張機能です。
