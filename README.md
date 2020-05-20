@@ -6,8 +6,8 @@
 
 ## GitHub Pages
 
-https://a-tak.github.io/auto-backet/
-https://a-tak.github.io/auto-backet/README_ja
+* https://a-tak.github.io/auto-backet/
+* https://a-tak.github.io/auto-backet/README_ja
 
 ## ビルド環境準備(Build Environment)
 
