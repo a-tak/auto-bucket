@@ -1,6 +1,6 @@
 # AutoBacket
 
-![](../images/github-open-graph.png)
+![](github-open-graph.png)
 
 ## AutoBacketとは
 

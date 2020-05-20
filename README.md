@@ -1,6 +1,6 @@
 # auto-backet
 
-![](images/github-open-graph.png)
+![](docs/github-open-graph.png)
 
  Thunderbird用ベイジアンフィルターによる自動メール分類拡張機能
 
