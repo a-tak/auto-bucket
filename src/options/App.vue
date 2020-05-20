@@ -41,21 +41,17 @@
             ></v-select>
             <v-text-field
               class="ma-3 pa-2"
-              placeholder="100"
-              single-line
-              outline
               v-model="bodymaxlength_"
               suffix="KByte"
+              :label="$t('message.body_max_length_label')"
               :hint="$t('message.body_max_length_hint')"
               :rules="[rules.isNumeric]"
             ></v-text-field>
             <v-text-field
               class="ma-3 pa-2"
-              placeholder="72"
-              single-line
-              outline
               v-model="logDeletePastHour"
               :suffix="$t('message.keep_log_hour_suffix')"
+              :label="$t('message.keep_log_hour_label')"
               :hint="$t('message.keep_log_hour_hint')"
               :rules="[rules.isNumeric]"
             ></v-text-field>

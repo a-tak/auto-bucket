@@ -1,6 +1,8 @@
 
 # AutoBacket
 
+![](icon-flat-large.svg)
+
 ## What is AutoBacket
 
 A Thunderbird extension that automatically sorts emails into several buckets (tags) using a Bayesian filter.

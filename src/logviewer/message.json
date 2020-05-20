@@ -8,7 +8,7 @@
       "judgement_title": "判定結果",
       "category_score_title" : "カテゴリ毎スコア",
       "unit_score": "ポイント",
-      "top_score_word_title": "トップスコア ワード",
+      "top_score_word_title": "カテゴリ影響ワード トップ10",
       "unit_count": "個",
       "target_text_title": "対象本文"
     }
@@ -22,7 +22,7 @@
       "judgement_title": "Judgment result",
       "category_score_title" : "Score for each category",
       "unit_score": "points",
-      "top_score_word_title": "Top score word",
+      "top_score_word_title": "category impact word top 10",
       "unit_count": "times",
       "target_text_title": "Target text"
     }
