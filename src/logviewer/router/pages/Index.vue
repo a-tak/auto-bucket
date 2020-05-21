@@ -167,7 +167,7 @@ export default class App extends Vue {
       bestScore = {
         word: "",
         count: 0,
-        score: 0
+        score: 0,
       }
       // 単語毎カテゴリ毎のループ
       for (const category in scores) {
@@ -190,16 +190,18 @@ export default class App extends Vue {
       }
 
       // カテゴリ毎の単語一覧に追加
-      const ret = this.wordscore_.find((item) => item.category === catName)
-      if (ret == undefined) {
-        const ary = []
-        ary.push(bestScore)
-        this.wordscore_.push({
-          category: catName,
-          words: ary,
-        })
-      } else {
-        ret.words.push(bestScore)
+      if (bestScore.score != 0) {
+        const ret = this.wordscore_.find((item) => item.category === catName)
+        if (ret == undefined) {
+          const ary = []
+          ary.push(bestScore)
+          this.wordscore_.push({
+            category: catName,
+            words: ary,
+          })
+        } else {
+          ret.words.push(bestScore)
+        }
       }
     }
 
