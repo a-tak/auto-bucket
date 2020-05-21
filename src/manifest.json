@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "AutoBacket",
+  "name": "AutoBucket",
   "version": "0.0.0",
   "author": "A-tak",
   "description": "__MSG_extensionDescription__",
@@ -19,7 +19,7 @@
   "permissions": ["messagesRead", "menus", "storage", "accountsRead"],
   "browser_action": {
     "default_icon": "icons/icon_48.png",
-    "default_title": "AutoBacket",
+    "default_title": "AutoBucket",
     "default_popup": "popup/popup.html"
   },
   "background": {

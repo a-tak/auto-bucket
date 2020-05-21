@@ -1,7 +1,7 @@
 {
   "ja": {
     "message": {
-      "page_title": "AutoBacket Thunderbirdメール分類拡張機能",
+      "page_title": "AutoBucket Thunderbirdメール分類拡張機能",
       "subject_title": "件名",
       "from_title": "差出人",
       "not_found_title": "分類情報がみつかりません",
@@ -15,7 +15,7 @@
   },
   "en": {
     "message": {
-      "page_title": "AutoBacket Thunderbird Mail Classification Extension",
+      "page_title": "AutoBucket Thunderbird Mail Classification Extension",
       "subject_title": "Subject",
       "from_title": "From",
       "not_found_title": "Classification information not found",
