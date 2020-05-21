@@ -1,72 +1,95 @@
 <template>
   <v-app>
-    <v-content>
-      <v-container fluid pa-0>
-        <div id="main">
-          <div id="title" class="title ma-3">{{ $t("message.classificate_tag_title") }}</div>
-          <div class="body-1 ma-3">
-            {{ $t("message.notice") }}
-          </div>
-          <v-form v-model="valid">
-            <div class="d-flex flex-row">
-              <div class="ma-3">
-                <v-tooltip top>
-                  <template v-slot:activator="{ on }">
-                    <v-btn v-on="on" color="accent" @click.stop="save()"
-                      >{{ $t("message.save_button_label") }}</v-btn
-                    >
-                  </template>
-                  <span>{{ $t("message.save_button_tip") }}</span>
-                </v-tooltip>
-              </div>
-              <div class="ma-3">
-                <v-tooltip top>
-                  <template v-slot:activator="{ on }">
-                    <v-btn v-on="on" @click.stop="cancel()">{{ $t("message.cancel_button_label") }}</v-btn>
-                  </template>
-                  <span>{{ $t("message.cancel_button_tip") }}</span>
-                </v-tooltip>
-              </div>
+    <div id="main">
+      <v-card class="ma-1">
+        <v-card-title>
+          {{ $t("message.classificate_tag_title") }}
+        </v-card-title>
+        <v-card-subtitle> {{ $t("message.notice") }}</v-card-subtitle>
+        <v-form v-model="valid">
+          <div class="d-flex flex-row">
+            <div class="ma-3">
+              <v-tooltip top>
+                <template v-slot:activator="{ on }">
+                  <v-btn v-on="on" color="accent" @click.stop="save()">{{
+                    $t("message.save_button_label")
+                  }}</v-btn>
+                </template>
+                <span>{{ $t("message.save_button_tip") }}</span>
+              </v-tooltip>
             </div>
-            <v-select
-              v-model="values_"
-              :items="tags_"
-              attach
-              chips
-              :label="$t('message.classificate_tag_label')"
-              multiple
-              :hint="$t('message.classificate_tag_hint')"
-              persistent-hint
-              class="ma-3 pa-2"
-            ></v-select>
-            <v-text-field
-              class="ma-3 pa-2"
-              v-model="bodymaxlength_"
-              suffix="KByte"
-              :label="$t('message.body_max_length_label')"
-              :hint="$t('message.body_max_length_hint')"
-              :rules="[rules.isNumeric]"
-            ></v-text-field>
-            <v-text-field
-              class="ma-3 pa-2"
-              v-model="logDeletePastHour"
-              :suffix="$t('message.keep_log_hour_suffix')"
-              :label="$t('message.keep_log_hour_label')"
-              :hint="$t('message.keep_log_hour_hint')"
-              :rules="[rules.isNumeric]"
-            ></v-text-field>
-          </v-form>
-        </div>
-        <v-snackbar
-          v-model="snackbarDisplay"
-          :top="true"
-          :timeout="3000"
-          :multi-line="multiLine"
-        >
-          {{ snackbarText }}
-        </v-snackbar>
-      </v-container>
-    </v-content>
+            <div class="ma-3">
+              <v-tooltip top>
+                <template v-slot:activator="{ on }">
+                  <v-btn v-on="on" @click.stop="cancel()">{{
+                    $t("message.cancel_button_label")
+                  }}</v-btn>
+                </template>
+                <span>{{ $t("message.cancel_button_tip") }}</span>
+              </v-tooltip>
+            </div>
+          </div>
+          <v-select
+            v-model="values_"
+            :items="tags_"
+            attach
+            chips
+            :label="$t('message.classificate_tag_label')"
+            multiple
+            :hint="$t('message.classificate_tag_hint')"
+            persistent-hint
+            class="ma-3 pa-2"
+          ></v-select>
+          <v-text-field
+            class="ma-3 pa-2"
+            v-model="bodymaxlength_"
+            suffix="KByte"
+            :label="$t('message.body_max_length_label')"
+            :hint="$t('message.body_max_length_hint')"
+            :rules="[rules.isNumeric]"
+          ></v-text-field>
+          <v-text-field
+            class="ma-3 pa-2"
+            v-model="logDeletePastHour"
+            :suffix="$t('message.keep_log_hour_suffix')"
+            :label="$t('message.keep_log_hour_label')"
+            :hint="$t('message.keep_log_hour_hint')"
+            :rules="[rules.isNumeric]"
+          ></v-text-field>
+        </v-form>
+      </v-card>
+      <v-card class="ma-1" color="red lighten-4">
+        <v-card-title>{{ $t("message.reset_learn_title") }}</v-card-title>
+        <v-card-subtitle>{{
+          $t("message.reset_learn_subtitle")
+        }}</v-card-subtitle>
+        <v-card-actions>
+          <v-btn color="red lighten-2" @click="clearLearn">
+            {{ $t("message.reset_learn_btn_label") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+      <v-card class="ma-1" color="red lighten-4">
+        <v-card-title>{{ $t("message.reset_all_title") }}</v-card-title>
+        <v-card-subtitle>{{
+          $t("message.reset_all_subtitle")
+        }}</v-card-subtitle>
+        <v-card-actions>
+          <v-btn color="red lighten-2" @click="clearSetting">
+            {{ $t("message.reset_all_btn_label") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </div>
+    <v-snackbar
+      v-model="snackbarDisplay"
+      :top="snackTop === true"
+      :bottom="snackTop === false"
+      :timeout="3000"
+      :multi-line="multiLine"
+    >
+      {{ snackbarText }}
+    </v-snackbar>
   </v-app>
 </template>
 
@@ -83,6 +106,13 @@ export default class App extends Vue {
   private snackbarDisplay_: boolean = false
   private snackbarText_: string = ""
   private bodymaxlength_: number = 100
+  private snackTop_: boolean = true
+  public get snackTop(): boolean {
+    return this.snackTop_
+  }
+  public set snackTop(v: boolean) {
+    this.snackTop_ = v
+  }
 
   private valid_: boolean = false
   public get valid(): boolean {
@@ -108,7 +138,8 @@ export default class App extends Vue {
   private get rules(): {} {
     return {
       isNumeric: (value: string) => {
-        if (isNaN(Number(value))) return this.$i18n.tc('message.numeric_only_rule_error')
+        if (isNaN(Number(value)))
+          return this.$i18n.tc("message.numeric_only_rule_error")
         return true
       },
     }
@@ -172,14 +203,16 @@ export default class App extends Vue {
     if (!this.valid_) {
       // タイムアウトリセットするため一度消す
       this.snackbarDisplay_ = false
+      this.snackTop_ = true
       this.$nextTick(() => {
         // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
-        this.snackbarText_ = this.$i18n.tc('message.save_error_msg')
+        this.snackbarText_ = this.$i18n.tc("message.save_error_msg")
         this.snackbarDisplay_ = true
       })
 
       return
     }
+
     TagUtil.save(this.values_).then(() => {
       // 学習対象の上限サイズ保存
       browser.storage.sync.set({
@@ -191,11 +224,11 @@ export default class App extends Vue {
       })
 
       // タイムアウトリセットするため一度消す
+      this.snackTop_ = true
       this.snackbarDisplay_ = false
       this.$nextTick(() => {
         // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
-        this.snackbarText_ =
-          this.$i18n.tc('message.save_msg')
+        this.snackbarText_ = this.$i18n.tc("message.save_msg")
         this.snackbarDisplay_ = true
       })
       // TODO: メニューを更新するコード
@@ -205,7 +238,35 @@ export default class App extends Vue {
   private cancel() {
     this.initialize()
     this.$nextTick(() => {
-      this.snackbarText_ = this.$i18n.tc('message.cancel_msg')
+      this.snackTop_ = true
+      this.snackbarText_ = this.$i18n.tc("message.cancel_msg")
+      this.snackbarDisplay_ = true
+    })
+  }
+
+  private clearLearn() {
+    browser.storage.sync.remove("data")
+    browser.storage.sync.remove("totalCount")
+
+    // タイムアウトリセットするため一度消す
+    this.snackTop_ = false
+    this.snackbarDisplay_ = false
+    this.$nextTick(() => {
+      // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
+      this.snackbarText_ = this.$i18n.tc("message.clear_learn_msg")
+      this.snackbarDisplay_ = true
+    })
+  }
+
+  private clearSetting() {
+    browser.storage.sync.clear()
+
+    // タイムアウトリセットするため一度消す
+    this.snackTop_ = false
+    this.snackbarDisplay_ = false
+    this.$nextTick(() => {
+      // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
+      this.snackbarText_ = this.$i18n.tc("message.clear_setting_msg")
       this.snackbarDisplay_ = true
     })
   }

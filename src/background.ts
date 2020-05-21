@@ -209,24 +209,6 @@ export default class backgroud {
         this.executeViewLog()
       },
     })
-
-    browser.menus.create({
-      id: "learn_clear",
-      title: browser.i18n.getMessage("clearLernMenu"),
-      contexts: ["message_list"],
-      onclick: async () => {
-        this.clearLearn()
-      },
-    })
-
-    browser.menus.create({
-      id: "setting_clear",
-      title: browser.i18n.getMessage("clearSettingMenu"),
-      contexts: ["message_list"],
-      onclick: async () => {
-        this.clearSetting()
-      },
-    })
   }
 
   /**
@@ -408,22 +390,6 @@ export default class backgroud {
     // タグ付けも実施する
     await this.classificationMessage(message)
     this.saveSetting()
-  }
-
-  /**
-   * 学習状況をクリアする
-   */
-  async clearLearn() {
-    // ベイジアンフィルター初期化
-    this.classifier_ = new BayesianClassifier()
-    this.saveSetting()
-  }
-
-  async clearSetting() {
-    // ベイジアンフィルター初期化
-    this.classifier_ = new BayesianClassifier()
-    // TODO: ストレージの設定は全部消しているがオプション画面のインスタンスは破棄していないので不整合がある
-    this.removeSetting()
   }
 
   /**
