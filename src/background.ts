@@ -209,24 +209,6 @@ export default class backgroud {
         this.executeViewLog()
       },
     })
-
-    browser.menus.create({
-      id: "learn_clear",
-      title: browser.i18n.getMessage("clearLernMenu"),
-      contexts: ["message_list"],
-      onclick: async () => {
-        this.clearLearn()
-      },
-    })
-
-    browser.menus.create({
-      id: "setting_clear",
-      title: browser.i18n.getMessage("clearSettingMenu"),
-      contexts: ["message_list"],
-      onclick: async () => {
-        this.clearSetting()
-      },
-    })
   }
 
   /**
@@ -364,6 +346,7 @@ export default class backgroud {
         result = result.replace(/&nbsp;/g, "")
       }
       // 記号と数字を削除する(0000-0FFF)
+      // サロゲートペアで表す文字列は一旦対応放置
       // https://ja.wikipedia.org/wiki/Unicode一覧_0000-0FFF
       result = result.replace(
         /([\u0000-\u002f])|([\u003a-\u0040])|([\u005b-\u0060])|([\u007b-\u00bf])|([\u02b9-\u0362])|([\u0374-\u0375])|([\u037A-\u037E])|([\u0384-\u0385])|\u0387/g,
@@ -371,12 +354,14 @@ export default class backgroud {
       )
       // 記号と数字を削除する(2000-2FFF)
       result = result.replace(
-        /([\u2000-\u203e])|([\u20dd-\u20f0])|([\u2460-\u27ff])|([\u2900-\u2e70])|([\u2ff0-\u2ffb])/g,
+        /([\u2000-\u203e])|([\u20dd-\u20f0])|([\u2190-\u27ff])|([\u2900-\u2e70])|([\u2ff0-\u2ffb])/g,
         " "
       )
       // 記号と数字を削除する(3000-3FFF)
       result = result.replace(/([\u3000-\u3040])|([\u3200-\u33ff])/g, " ")
-      // サロゲートペアで表す文字列は一旦対応放置
+      // 記号と数字を削除する(F000-FFFF)
+      result = result.replace(/([\ufe30-\ufe6b])|([\uff00-\uff0f])|([\uff1a-\uff20])|([\uff3b-\uff40])|([\uff5b-\uff65])/g, " ")
+
       body = body + result
     }
 
@@ -405,22 +390,6 @@ export default class backgroud {
     // タグ付けも実施する
     await this.classificationMessage(message)
     this.saveSetting()
-  }
-
-  /**
-   * 学習状況をクリアする
-   */
-  async clearLearn() {
-    // ベイジアンフィルター初期化
-    this.classifier_ = new BayesianClassifier()
-    this.saveSetting()
-  }
-
-  async clearSetting() {
-    // ベイジアンフィルター初期化
-    this.classifier_ = new BayesianClassifier()
-    // TODO: ストレージの設定は全部消しているがオプション画面のインスタンスは破棄していないので不整合がある
-    this.removeSetting()
   }
 
   /**
