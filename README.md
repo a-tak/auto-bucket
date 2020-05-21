@@ -1,4 +1,4 @@
-# auto-backet
+# auto-bucket
 
 ![](docs/github-open-graph.png)
 
@@ -6,8 +6,8 @@
 
 ## GitHub Pages
 
-* https://a-tak.github.io/auto-backet/
-* https://a-tak.github.io/auto-backet/README_ja
+* https://a-tak.github.io/auto-bucket/
+* https://a-tak.github.io/auto-bucket/README_ja
 
 ## ビルド環境準備(Build Environment)
 
@@ -47,7 +47,7 @@ Addonとして公開する場合は同じバージョンはアップし直せな
 6. ソースをダウンロード
 7. ビルド
 8. distの中をzip化
-9.  https://addons.thunderbird.net/ja/developers/addon/autobacket/versions/submit/ へアップロード
+9.  https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/submit/ へアップロード
 10. ソースもアップロード
 11. アップ完了後、各国語毎に説明を入れるページが表示さるのでgithubのリリースの説明を貼り付け
 
@@ -62,5 +62,5 @@ npm install -g addons-linter
 ### 実行
 
 ```bash
-addons-linter web-ext-artifacts/autobacket-1.0.zip
+addons-linter web-ext-artifacts/autobucket-1.0.zip
 ```
