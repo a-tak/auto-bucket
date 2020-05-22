@@ -44,8 +44,8 @@ Addonとして公開する場合は同じバージョンはアップし直せな
 5. githubでタグをリリースへ
    1. プルリクエストの説明を抜粋してリリースの説明を作る
 6. ソースをダウンロード
-7. ビルド
-8. distの中をzip化
+7. ビルド ```npm run build```
+8. distの中をzip化 ```npm run build-zip```
 9.  https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/submit/ へアップロード
 10. ソースもアップロード
 11. アップ完了後、各国語毎に説明を入れるページが表示さるのでgithubのリリースの説明を貼り付け
