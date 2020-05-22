@@ -29,8 +29,7 @@ npm i
 
 ```
 npm run build
-cd dist
-# zip compress
+npm run build-zip 
 ```
 
 Addonとして公開する場合は同じバージョンはアップし直せないので、package.jsonのバージョンを変えること
