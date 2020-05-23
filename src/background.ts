@@ -26,6 +26,12 @@ export default class backgroud {
         case "view-log":
           this.executeViewLog()
           break
+        case "statsitics":
+          const createData = {
+            url: "/statistics/statistics.html",
+          }
+          browser.tabs.create(createData)
+          break
         default:
           throw new Error("not shortcut define")
       }

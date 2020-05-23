@@ -42,6 +42,10 @@
     "view-log": {
       "suggested_key": { "default": "Alt+Shift+V", "windows": "Ctrl+Shift+V" },
       "description": "__MSG_viewLogDescription__"
+    },
+    "statsitics": {
+      "suggested_key": { "default": "Alt+Shift+S", "windows": "Ctrl+Shift+S" },
+      "description": "__MSG_statisticsDescription__"
     }
   }
 }

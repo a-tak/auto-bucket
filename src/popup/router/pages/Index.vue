@@ -10,6 +10,9 @@
         <v-btn text color="accent" @click="openLearnMore">{{
           $t("message.learn_more")
         }}</v-btn>
+        <v-btn text color="accent" @click="openStatistics">{{
+          $t("message.statistics_btn_label")
+        }}</v-btn>
       </v-card-actions>
     </v-card>
   </div>
@@ -22,6 +25,12 @@ import { Component, Vue } from "vue-property-decorator"
 export default class App extends Vue {
   private openLearnMore() {
     browser.tabs.create({ url: this.$t("message.learn_more_url").toString() })
+  }
+  private openStatistics() {
+    const createData = {
+      url: "/statistics/statistics.html",
+    }
+    browser.tabs.create(createData)
   }
 }
 </script>

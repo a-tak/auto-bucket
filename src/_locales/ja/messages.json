@@ -19,6 +19,10 @@
     "message": "メール判定ログを表示",
     "description": "ショートカットの説明"
   },
+  "statisticsDescription": {
+    "message": "統計を表示",
+    "description": "ショートカットの説明"
+  },
   "learnMenu": {
     "message": "このメールを「$TAG$」として学習",
     "description": "メニュー文言",
