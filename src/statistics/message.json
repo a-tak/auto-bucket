@@ -1,12 +1,14 @@
 {
   "ja": {
     "message": {
-      "page_title": "AutoBucket Thunderbirdメール分類拡張機能"
+      "page_title": "AutoBucket 統計情報",
+      "accuracy_title": "精度"
     }
   },
   "en": {
     "message": {
-      "page_title": "AutoBucket Thunderbird Mail Classification Extension"
+      "page_title": "AutoBucket Statistics",
+      "accuracy_title": "Accuracy"
     }
   }
 }

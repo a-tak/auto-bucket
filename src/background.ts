@@ -6,11 +6,15 @@ import Tag from "./models/Tag"
 import LogEntry from "./models/LogEntry"
 import MessageUtil from "./lib/MessageUtil"
 import TotalScore from "./models/TotalScore"
+import StatisticsLog from "./models/StatisticsLog"
+import StasticsUtil from "./lib/StatisticsUtil"
+import StatisticsUtil from "./lib/StatisticsUtil"
 
 export default class backgroud {
   private classifier_: BayesianClassifier
   private tags_: Tag[] = []
   private bodymaxlength_: number = 100
+  private totalStatistics: StatisticsLog = StasticsUtil.getInitialObj()
 
   constructor() {
     // イベント
@@ -76,8 +80,14 @@ export default class backgroud {
     this.garbageCollection()
     // 古いログの削除
     this.deleteOldLog()
+    // 統計読み込み
+    await this.loadStatistics()
 
     console.log("load settings totalcount : " + this.classifier_.totalCount)
+  }
+
+  private async loadStatistics() {
+    this.totalStatistics = await StatisticsUtil.LoadTotalStatistics()
   }
 
   private async deleteOldLog() {
@@ -170,20 +180,10 @@ export default class backgroud {
       if (tag.useClassification) {
         browser.menus.create({
           id: "doLearn" + tag.key,
-          title: browser.i18n.getMessage("learnMenu",tag.name),
+          title: browser.i18n.getMessage("learnMenu", tag.name),
           contexts: ["message_list"],
-          onclick: async (info: browser.menus.OnClickData) => {
-            if (info.selectedMessages == undefined) return
-            const generator = this.listMessages(info.selectedMessages)
-            let result = generator.next()
-            while (!(await result).done) {
-              const message = (await result).value
-              // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
-              if (typeof message != "undefined") {
-                this.doLearn(message, tag.key)
-              }
-              result = generator.next()
-            }
+          onclick: async () => {
+            this.executeLearn(tag)
           },
         })
       }
@@ -249,14 +249,19 @@ export default class backgroud {
 
     // メール毎に処理
     let result = generator.next()
+    const promises: Promise<void>[] = []
     while (!(await result).done) {
       const message = (await result).value
       // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
       if (typeof message != "undefined") {
         // 非同期処理待たずにメールを処理
-        this.subAllClassificate(message)
+        promises.push(this.subAllClassificate(message))
       }
       result = generator.next()
+      // 処理待ち
+      await Promise.all(promises)
+      // 統計情報保存
+      StatisticsUtil.SaveTotalStatistics(this.totalStatistics)
     }
   }
 
@@ -268,6 +273,10 @@ export default class backgroud {
     }
   }
 
+  /**
+   * 分類用タグがついているか応答する
+   * @param message
+   */
   private async isTagged(
     message: browser.messages.MessageHeader
   ): Promise<boolean> {
@@ -281,6 +290,31 @@ export default class backgroud {
       }
     }
     return false
+  }
+
+  /**
+   * メールを学習する
+   * @param tag 分類(タグ)
+   */
+  private async executeLearn(tag: Tag) {
+    const generator = this.listMessages(
+      await browser.mailTabs.getSelectedMessages()
+    )
+    let result = generator.next()
+    const promises: Promise<void>[] = []
+    while (!(await result).done) {
+      const message = (await result).value
+      // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
+      if (typeof message != "undefined") {
+        promises.push(this.doLearn(message, tag.key))
+      }
+      result = generator.next()
+    }
+
+    // 処理待ち
+    await Promise.all(promises)
+    // 統計情報保存
+    StatisticsUtil.SaveTotalStatistics(this.totalStatistics)
   }
 
   private async executeClassificate() {
@@ -366,7 +400,10 @@ export default class backgroud {
       // 記号と数字を削除する(3000-3FFF)
       result = result.replace(/([\u3000-\u3040])|([\u3200-\u33ff])/g, " ")
       // 記号と数字を削除する(F000-FFFF)
-      result = result.replace(/([\ufe30-\ufe6b])|([\uff00-\uff0f])|([\uff1a-\uff20])|([\uff3b-\uff40])|([\uff5b-\uff65])/g, " ")
+      result = result.replace(
+        /([\ufe30-\ufe6b])|([\uff00-\uff0f])|([\uff1a-\uff20])|([\uff3b-\uff40])|([\uff5b-\uff65])/g,
+        " "
+      )
 
       body = body + result
     }
@@ -379,6 +416,9 @@ export default class backgroud {
    * @param {string}  category  分類名
    */
   async doLearn(message: browser.messages.MessageHeader, category: string) {
+    if (await this.isTagged(message)) {
+      this.totalStatistics.wrongCount += 1
+    }
     const words = await this.getTargetMessage(message)
     let relearn: number = 0
     do {
@@ -514,7 +554,7 @@ export default class backgroud {
   }
 
   private getMailAddress(mail: string): string {
-    if (mail.length === 0 ) return ""
+    if (mail.length === 0) return ""
     let start = mail.lastIndexOf("<")
 
     let end = mail.lastIndexOf(">")
@@ -614,6 +654,9 @@ export default class backgroud {
       read: header.read,
       tags: newTags,
     }
+
+    // 統計情報更新
+    this.totalStatistics.totalCount += 1
     await browser.messages.update(messageId, newProp)
   }
 }
