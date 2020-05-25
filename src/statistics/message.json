@@ -2,13 +2,21 @@
   "ja": {
     "message": {
       "page_title": "AutoBucket 統計情報",
-      "accuracy_title": "精度"
+      "total_accuracy_title": "全期間累計",
+      "total_accuracy_label": "精度",
+      "total_judge_count_label": "総判定数",
+      "total_wrong_count_label": "総誤判定数",
+      "accuracy_title": "過去30日の精度推移"
     }
   },
   "en": {
     "message": {
       "page_title": "AutoBucket Statistics",
-      "accuracy_title": "Accuracy"
+      "total_accuracy_title": "Cumulative for all periods",
+      "total_accuracy_label": "Accuracy",
+      "total_judge_count_label": "Total number of judgments",
+      "total_wrong_count_label": "Total number of false positives",
+      "accuracy_title": "Accuracy transition in the last 30 days"
     }
   }
 }

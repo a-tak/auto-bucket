@@ -1,6 +1,43 @@
 <template>
   <div class="d-flex flex-column ma-4">
     <span class="title">{{ $t("message.page_title") }}</span>
+    <v-skeleton-loader
+      :loading="loading"
+      transition="scale-transition"
+      height="300"
+      type="article"
+      class="ma-2"
+    >
+      <v-card class="ma-2">
+        <v-card-title>{{ $t("message.total_accuracy_title") }}</v-card-title>
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="ma-1">
+              {{ $t("message.total_accuracy_label") }}
+            </v-list-item-title>
+            <v-list-item-subtitle class="ma-1">
+              {{ totalAccurancy }} %
+            </v-list-item-subtitle>
+          </v-list-item-content>
+          <v-list-item-content>
+            <v-list-item-title class="ma-1">
+              {{ $t("message.total_judge_count_label") }}
+            </v-list-item-title>
+            <v-list-item-subtitle class="ma-1">
+              {{ totalJudgeCount }}
+            </v-list-item-subtitle>
+          </v-list-item-content>
+          <v-list-item-content>
+            <v-list-item-title class="ma-1">
+              {{ $t("message.total_wrong_count_label") }}
+            </v-list-item-title>
+            <v-list-item-subtitle class="ma-1">
+              {{ totalWrongCount }}
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-card>
+    </v-skeleton-loader>
     <v-card class="ma-2">
       <v-card-title class="ma-1">{{
         $t("message.accuracy_title")
@@ -65,6 +102,29 @@ export default class App extends Vue {
     return ret
   }
 
+  private totalStatistics: StatisticsLog = {
+    totalCount: 0,
+    wrongCount: 0,
+  }
+  public get totalAccurancy(): number {
+    return (
+      // 第一位で四捨五入するにはこうするしかないらしい…
+      Math.round(
+        (this.totalStatistics.wrongCount / this.totalStatistics.totalCount) *
+          100 *
+          10
+      ) / 10
+    )
+  }
+
+  public get totalJudgeCount(): number {
+    return this.totalStatistics.totalCount
+  }
+
+  public get totalWrongCount(): number {
+    return this.totalStatistics.wrongCount
+  }
+
   private styles_: {} = {}
   public get styles(): {} {
     return this.styles_
@@ -87,6 +147,19 @@ export default class App extends Vue {
   }
 
   private async Initialize() {
+    const promises: Promise<void>[] = []
+    promises.push(this.loadStatistics())
+    promises.push(this.loadTotalStatistics())
+
+    await Promise.all(promises)
+    this.loading_ = false
+  }
+
+  private async loadTotalStatistics() {
+    this.totalStatistics = await StatisticsUtil.loadTotalStatistics()
+  }
+
+  private async loadStatistics() {
     const data: number[] = []
     const dateLabel: string[] = []
     const items: StatisticsLog[] = await StatisticsUtil.getListStatistics()
@@ -108,7 +181,6 @@ export default class App extends Vue {
         },
       ],
     }
-    this.loading_ = false
   }
 }
 
