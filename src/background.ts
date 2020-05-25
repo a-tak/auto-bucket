@@ -7,7 +7,6 @@ import LogEntry from "./models/LogEntry"
 import MessageUtil from "./lib/MessageUtil"
 import TotalScore from "./models/TotalScore"
 import StatisticsLog from "./models/StatisticsLog"
-import StasticsUtil from "./lib/StatisticsUtil"
 import StatisticsUtil from "./lib/StatisticsUtil"
 import ReLearnLog from "./models/ReLearnLog"
 
@@ -15,8 +14,8 @@ export default class backgroud {
   private classifier_: BayesianClassifier
   private tags_: Tag[] = []
   private bodymaxlength_: number = 100
-  private totalStatistics: StatisticsLog = StasticsUtil.getInitialObj()
-  private todayStatistics: StatisticsLog = StasticsUtil.getInitialObj()
+  private totalStatistics: StatisticsLog = StatisticsUtil.getInitialObj()
+  private todayStatistics: StatisticsLog = StatisticsUtil.getInitialObj()
 
   constructor() {
     // イベント
