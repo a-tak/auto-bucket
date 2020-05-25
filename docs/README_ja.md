@@ -27,6 +27,7 @@
 |一括メール判定|Ctrl + B|
 |メール判定|Ctrl + Shift + C|
 |判定ログ表示|Ctrl + Shift + V|
+|統計情報表示|Ctrl + Shift + S|
 
 
 ## ショートカット(Mac)
@@ -36,5 +37,6 @@
 |一括メール判定|Option + Shift + B|
 |メール判定|Option + Shift + C|
 |判定ログ表示|Option + Shift + V|
+|統計情報表示|Option + Shift + S|
 
 
