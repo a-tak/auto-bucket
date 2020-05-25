@@ -5,11 +5,14 @@ import ReLearnLog from "@/models/ReLearnLog"
 export default class StatisticsUtil {
   static readonly STATISTICS_LOG_PREFIX = "__stat_"
   static readonly RE_LEARN_LOG_PREFIX = "__relog_"
+  static readonly TOTAL_STATISTICS_KEY: string = "statistics"
   static readonly DELETE_STATISTICS_PAST_DAY: number = 30
   static readonly DELETE_RE_LEARN_LOG_PAST_DAY: number = 30
 
   public static async loadTotalStatistics(): Promise<StatisticsLog> {
-    let result = (await browser.storage.sync.get("statistics")) as {
+    let result = (await browser.storage.sync.get(
+      this.TOTAL_STATISTICS_KEY
+    )) as {
       statistics: StatisticsLog
     }
 
@@ -21,8 +24,12 @@ export default class StatisticsUtil {
 
   public static async saveTotalStatistics(value: StatisticsLog) {
     await browser.storage.sync.set({
-      statistics: value,
+      [this.TOTAL_STATISTICS_KEY]: value,
     })
+  }
+
+  public static async removeTotalStatistics() {
+    await browser.storage.sync.remove(this.TOTAL_STATISTICS_KEY)
   }
 
   /**
@@ -36,16 +43,12 @@ export default class StatisticsUtil {
     let result = (await browser.storage.sync.get(keyname)) as {
       [keyname: string]: StatisticsLogObj
     }
-    console.log("load obj " + JSON.stringify(result, null, 4))
 
     let obj = result[keyname]
     if (typeof obj === "undefined") {
       return this.getInitialObj()
     }
-    console.log("load obj2 " + JSON.stringify(obj, null, 4))
     const ret = this.toStatisticsLog(obj)
-    console.log("stat load")
-    console.log(ret)
     return ret
   }
 
@@ -61,11 +64,6 @@ export default class StatisticsUtil {
   public static toStatistcsObj(log: StatisticsLog): StatisticsLogObj {
     if (typeof log.date === "undefined")
       throw new Error("not set date property of StatisticsLog")
-    console.log("toObj")
-    console.log(log)
-    console.log(log.totalCount)
-    console.log(log)
-    console.log("toS" + JSON.stringify(log, null, 4))
     const ret: StatisticsLogObj = {
       date: log.date.toISOString(),
       totalCount: log.totalCount,
@@ -75,17 +73,11 @@ export default class StatisticsUtil {
   }
 
   public static async saveStatistics(statLog: StatisticsLog, date: Date) {
-    console.log("ここでは値ある?↓")
-    console.log(statLog.totalCount)
     const obj = this.toStatistcsObj(statLog)
     const keyname = this.STATISTICS_LOG_PREFIX + date.toDateString()
     await browser.storage.sync.set({
       [keyname]: obj,
     })
-    console.log("stat save")
-    console.log(statLog)
-    console.log(obj)
-    console.log(statLog.totalCount)
   }
 
   /**
@@ -100,10 +92,18 @@ export default class StatisticsUtil {
         const dateDiff =
           (nowDate.getTime() - log.date.getTime()) / (1000 * 60 * 60 * 24)
         if (dateDiff > deleteDate) {
-          console.log("remove learn log " + keyName)
-          browser.storage.sync.remove(keyName)
+          await browser.storage.sync.remove(keyName)
         }
       }
+    })
+  }
+
+  /**
+   * 日付毎の統計情報をすべて削除する
+   */
+  public static async removeAllStatistics() {
+    this.listStatistics(async (keyName) => {
+      await browser.storage.sync.remove(keyName)
     })
   }
 
@@ -113,7 +113,6 @@ export default class StatisticsUtil {
   public static async getListStatistics(): Promise<StatisticsLog[]> {
     const ret: StatisticsLog[] = []
     await this.listStatistics(async (keyname, log) => {
-        console.log("get key" + keyname)
       ret.push(log)
     })
     const retSorted: StatisticsLog[] = ret.sort((a, b): number => {
@@ -124,6 +123,15 @@ export default class StatisticsUtil {
     })
 
     return retSorted
+  }
+
+  public static async resetStatistics() {
+    const promises: Promise<void>[] = []
+    promises.push(this.removeTotalStatistics())
+    promises.push(this.removeAllStatistics())
+    promises.push(this.removeAllReLearnLog())
+
+    await Promise.all(promises)
   }
 
   /**
@@ -164,7 +172,6 @@ export default class StatisticsUtil {
     if (typeof (await this.loadReLearnLog(message)) === "undefined") {
       return false
     }
-    console.log("typeoff" + typeof (await this.loadReLearnLog(message)))
     return true
   }
 
@@ -203,9 +210,17 @@ export default class StatisticsUtil {
           (nowDate.getTime() - log.date.getTime()) / (1000 * 60 * 60 * 24)
         if (dateDiff > deleteDate) {
           browser.storage.sync.remove(keyName)
-          console.log("remove statistics log " + keyName)
         }
       }
+    })
+  }
+
+  /**
+   * 再学習ログデータをすべて削除する
+   */
+  public static async removeAllReLearnLog() {
+    this.listReLearnLog(async (keyName) => {
+      browser.storage.sync.remove(keyName)
     })
   }
 
