@@ -107,13 +107,15 @@ export default class App extends Vue {
     wrongCount: 0,
   }
   public get totalAccurancy(): number {
+    if (this.totalStatistics.totalCount === 0) return 0
+
     return (
       // 第一位で四捨五入するにはこうするしかないらしい…
-      Math.round(
+      100 - (Math.round(
         (this.totalStatistics.wrongCount / this.totalStatistics.totalCount) *
           100 *
           10
-      ) / 10
+      ) / 10)
     )
   }
 
@@ -163,7 +165,6 @@ export default class App extends Vue {
     const data: number[] = []
     const dateLabel: string[] = []
     const items: StatisticsLog[] = await StatisticsUtil.getListStatistics()
-    console.log(items)
     for (const item of items) {
       data.push(100 - (item.wrongCount / item.totalCount) * 100)
       dateLabel.push(

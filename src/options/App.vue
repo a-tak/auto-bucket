@@ -59,6 +59,17 @@
         </v-form>
       </v-card>
       <v-card class="ma-1" color="red lighten-4">
+        <v-card-title>{{ $t("message.reset_statistics_title") }}</v-card-title>
+        <v-card-subtitle>{{
+          $t("message.reset_statistics_subtitle")
+        }}</v-card-subtitle>
+        <v-card-actions>
+          <v-btn color="red lighten-2" @click="resetStatistic">
+            {{ $t("message.reset_statistics_btn_label") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+      <v-card class="ma-1" color="red lighten-4">
         <v-card-title>{{ $t("message.reset_learn_title") }}</v-card-title>
         <v-card-subtitle>{{
           $t("message.reset_learn_subtitle")
@@ -98,6 +109,7 @@ import { Component, Vue, Watch } from "vue-property-decorator"
 import Tag from "../models/Tag"
 import TagUtil from "../lib/TagUtil"
 import { numericSort } from "simple-statistics"
+import StatisticsUtil from "../lib/StatisticsUtil"
 
 @Component
 export default class App extends Vue {
@@ -255,6 +267,17 @@ export default class App extends Vue {
       // 画面更新がされたの待ってから処理しないとタイムアウトかリセットされない
       this.snackbarText_ = this.$i18n.tc("message.clear_learn_msg")
       this.snackbarDisplay_ = true
+    })
+  }
+
+  private resetStatistic() {
+    StatisticsUtil.resetStatistics().then(() => {
+      this.snackTop_ = false
+      this.snackbarDisplay_ = false
+      this.$nextTick(() => {
+        this.snackbarText_ = this.$i18n.tc("message.reset_statistics_msg")
+        this.snackbarDisplay_ = true
+      })
     })
   }
 

@@ -14,6 +14,9 @@
       "keep_log_hour_suffix": "時間",
       "keep_log_hour_label": "判定ログ保持期間",
       "keep_log_hour_hint": "判定ログを保持する期間を指定してください",
+      "reset_statistics_title": "統計情報をリセット",
+      "reset_statistics_subtitle": "統計情報をリセットします",
+      "reset_statistics_btn_label": "統計情報をリセット",
       "reset_learn_title": "学習状況をリセット",
       "reset_learn_subtitle": "すべての学習状況をリセットします",
       "reset_learn_btn_label": "すべての学習状況をリセット",
@@ -24,6 +27,7 @@
       "save_error_msg": "エラーをご確認ください",
       "save_msg": "設定を保存しました。Thunderbirdを再起動してください。",
       "cancel_msg": "設定を元に戻しました",
+      "reset_statistics_msg": "統計情報をリセットしました。Thunderbirdを再起動してください。",
       "clear_learn_msg": "学習データをすべて初期化しました。Thunderbirdを再起動してください。",
       "clear_setting_msg": "学習データと設定をすべて初期化しました。Thunderbirdを再起動してください。"
     }
@@ -43,6 +47,9 @@
       "keep_log_hour_suffix": "hours",
       "keep_log_hour_label": "Judgment log retention period",
       "keep_log_hour_hint": "Please specify the period to retain the judgment log",
+      "reset_statistics_title": "Reset statistics",
+      "reset_statistics_subtitle": "Reset statistics",
+      "reset_statistics_btn_label": "Reset statistics",
       "reset_learn_title": "Reset learning status",
       "reset_learn_subtitle": "Reset all learning status",
       "reset_learn_btn_label": "Reset all learning status",
@@ -53,6 +60,7 @@
       "save_error_msg": "Please check the error",
       "save_msg": "Your settings have been saved. Please restart Thunderbird.",
       "cancel_msg": "Restored the settings",
+      "reset_statistics_msg": "Statistics have been reset. Please restart Thunderbird.",
       "clear_learn_msg": "All the training data has been initialized. Please restart Thunderbird.",
       "clear_setting_msg": "All the learning data and settings have been initialized. Please restart Thunderbird."
     }
