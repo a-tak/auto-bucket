@@ -86,8 +86,6 @@ export default class backgroud {
     this.deleteOldJudgeLog()
     // 統計読み込み
     await this.loadStatistics()
-
-    console.log("load settings totalcount : " + this.classifier_.totalCount)
   }
 
   private async loadStatistics() {
@@ -146,7 +144,6 @@ export default class backgroud {
         }) == -1
       ) {
         // 見つからなかった
-        console.log("parge lean model : " + obj)
         delete target[obj]
       }
     }
@@ -311,10 +308,6 @@ export default class backgroud {
   private async saveStatistcs(logDate: Date) {
     StatisticsUtil.saveTotalStatistics(this.totalStatistics)
     StatisticsUtil.saveStatistics(this.todayStatistics, logDate)
-    console.log(this.todayStatistics)
-    console.log("saved after " + JSON.stringify(this.todayStatistics, null, 4))
-    console.log(this.todayStatistics)
-    console.log("saved after " + JSON.stringify(this.todayStatistics, null, 4))
   }
 
   /**
@@ -325,7 +318,6 @@ export default class backgroud {
     // 本日統計情報読み込み
     const logDate = new Date()
     this.todayStatistics = await StatisticsUtil.loadStatsitics(logDate)
-    console.log("loaded obj " + JSON.stringify(this.todayStatistics, null, 4))
 
     const generator = this.listMessages(
       await browser.mailTabs.getSelectedMessages()
@@ -458,7 +450,6 @@ export default class backgroud {
     let relearn: number = 0
     do {
       relearn += 1
-      console.log("re-learn count:" + relearn)
       for (const word of words) {
         // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
         this.classifier_.train({ word: word }, category)
@@ -483,7 +474,6 @@ export default class backgroud {
 
     // 統計情報更新
     if (previousTag != "") {
-      console.log("ここにこないの?")
       // 過去に一度再学習したメールであれば誤判定回数は二重に増やさない
       if ((await StatisticsUtil.isReLearned(message)) === false) {
         this.totalStatistics.wrongCount += 1

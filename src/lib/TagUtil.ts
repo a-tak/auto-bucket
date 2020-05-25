@@ -31,8 +31,7 @@ export default class TagUtil {
       })
     }
 
-    // console.log("Load Tags = " + JSON.stringify(tags, null, 4))
-    return tags
+   return tags
   }
 
   /**
@@ -52,7 +51,6 @@ export default class TagUtil {
     for (const tag of tags) {
       // useClassificationは見ずにオブジェクトが渡ってきたら保存対象にする
       tagArray.push(tag.key)
-      // console.log("target tag=" + JSON.stringify(tag,null, 4))
     }
 
     await browser.storage.sync.set({
