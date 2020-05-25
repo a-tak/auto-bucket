@@ -5,11 +5,21 @@
       <v-card-title class="ma-1">{{
         $t("message.accuracy_title")
       }}</v-card-title>
-      <AccuracyChart
-        :chartData="accuracyData"
-        :chartOptions="accuracyOptions"
-        :styles="styles"
-      ></AccuracyChart>
+      <v-skeleton-loader
+        :loading="loading"
+        transition="scale-transition"
+        height="300"
+        type="article"
+        class="ma-2"
+      >
+        <AccuracyChart
+          :chartData="accuracyData"
+          :chartOptions="accuracyOptions"
+          :styles="styles"
+          :height="150"
+          class="ma-2"
+        ></AccuracyChart>
+      </v-skeleton-loader>
     </v-card>
   </div>
 </template>
@@ -17,6 +27,10 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator"
 import AccuracyChart from "../../components/AccuracyChart.vue"
+import StatisticsUtil from "../../../lib/StatisticsUtil"
+import StatisticsLog from "../../../models/StatisticsLog"
+import DateUtil from "../../../lib/DateUtil"
+import Chart, { ChartOptions } from "chart.js"
 
 @Component({
   components: {
@@ -29,44 +43,13 @@ export default class App extends Vue {
   public get accuracyData(): {} {
     return this.accuracyData_
   }
-  public set accuracyData(v: {}) {
-    this.accuracyData_ = v
-  }
 
-  private accuracyOptions_: {} = {}
-  public get accuracyOptions(): {} {
-    return this.accuracyOptions_
-  }
-  public set accuracyOptions(v: {}) {
-    this.accuracyOptions_ = v
-  }
-
-  private styles_: {} = {}
-  public get styles(): {} {
-    return this.styles_
-  }
-  public set styles(v: {}) {
-    this.styles_ = v
-  }
-
-  private created() {
-    this.Initialize()
-  }
-
-  private async Initialize() {
-    this.accuracyData_ = {
-      labels: ["1/1", "1/2", "1/3", "1/4"],
-      datasets: [
-        {
-          label: "精度",
-          data: [80, 85, 75, 90, 100],
-        },
-      ],
-    }
-
-    this.accuracyOptions_ = {
+  public get accuracyOptions(): ChartOptions {
+    const ret: ChartOptions = {
       responsive: true,
-      maintainAspectRatio: false,
+      legend: {
+        display: false,
+      },
       scales: {
         yAxes: [
           {
@@ -79,10 +62,53 @@ export default class App extends Vue {
       },
     }
 
+    return ret
+  }
+
+  private styles_: {} = {}
+  public get styles(): {} {
+    return this.styles_
+  }
+  public set styles(v: {}) {
+    this.styles_ = v
+  }
+
+  private loading_: boolean = true
+  public get loading(): boolean {
+    return this.loading_
+  }
+
+  private mounted() {
+    this.Initialize()
+
     this.styles_ = {
-      height: "300px",
       position: "relative",
     }
+  }
+
+  private async Initialize() {
+    const data: number[] = []
+    const dateLabel: string[] = []
+    const items: StatisticsLog[] = await StatisticsUtil.getListStatistics()
+    console.log(items)
+    for (const item of items) {
+      data.push(100 - (item.wrongCount / item.totalCount) * 100)
+      dateLabel.push(
+        typeof item.date === "undefined" ? "" : DateUtil.getMD(item.date)
+      )
+    }
+    this.accuracyData_ = {
+      // labels: ["1/1","1/2","1/3","1/4"],
+      labels: dateLabel,
+      datasets: [
+        {
+          label: "精度",
+          // data: [10,20,30,50],
+          data: data,
+        },
+      ],
+    }
+    this.loading_ = false
   }
 }
 
