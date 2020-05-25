@@ -271,7 +271,7 @@ export default class backgroud {
     // まだタグがついていないか判断
     if ((await this.isTagged(message)) === false) {
       // タグ付け
-      this.classificationMessage(message)
+      await this.classificationMessage(message)
     }
   }
 
@@ -667,7 +667,7 @@ export default class backgroud {
     logEntry.id = await MessageUtil.getMailMessageId(message)
     logEntry.classifiedTag = tag
     logEntry.score = result.scoreTotal
-    logEntry.save()
+    await logEntry.save()
 
     return tag
   }
