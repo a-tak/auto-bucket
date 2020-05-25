@@ -27,6 +27,7 @@ A Thunderbird extension that automatically sorts emails into several buckets (ta
 |Batch email judgment|Ctrl + B|
 |Email judgment|Ctrl + Shift + C|
 |Judgment log display|Ctrl + Shift + V|
+|Statistical information|Ctrl + Shift + S|
 
 
 ## Shortcut (Mac)
@@ -36,3 +37,4 @@ A Thunderbird extension that automatically sorts emails into several buckets (ta
 |Batch email judgment|Option + Shift + B|
 |Email judgment|Option + Shift + C|
 |Judgment log display|Option + Shift + V|
+|Statistical information|Option + Shift + S|

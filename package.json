@@ -14,9 +14,11 @@
     "watch:dev": "cross-env HMR=true npm run build:dev -- --watch"
   },
   "dependencies": {
+    "chart.js": "^2.9.3",
     "simple-statistics": "^7.0.9",
     "tiny-segmenter": "^0.2.0",
     "vue": "^2.6.11",
+    "vue-chartjs": "^3.5.0",
     "vue-class-component": "^7.2.3",
     "vue-i18n": "^8.17.6",
     "vue-property-decorator": "^8.4.2",
@@ -32,6 +34,7 @@
     "@babel/plugin-proposal-optional-chaining": "^7.0.0",
     "@babel/preset-env": "^7.1.0",
     "@babel/runtime-corejs3": "^7.4.0",
+    "@types/chart.js": "^2.9.21",
     "archiver": "^3.0.0",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.2",

@@ -14,6 +14,7 @@ const config = {
     'popup/popup': './popup/popup.ts',
     'options/options': './options/options.ts',
     'logviewer/logviewer': './logviewer/logviewer.ts',
+    'statistics/statistics': './statistics/statistics.ts',
   },
   output: {
     path: __dirname + '/dist',
@@ -92,6 +93,7 @@ const config = {
       { from: 'popup/popup.html', to: 'popup/popup.html', transform: transformHtml },
       { from: 'options/options.html', to: 'options/options.html', transform: transformHtml },
       { from: 'logviewer/logviewer.html', to: 'logviewer/logviewer.html', transform: transformHtml },
+      { from: 'statistics/statistics.html', to: 'statistics/statistics.html', transform: transformHtml },
       { from: '_locales', to: '_locales', transform: transformHtml },
       {
         from: 'manifest.json',

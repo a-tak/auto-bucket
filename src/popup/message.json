@@ -4,7 +4,8 @@
       "page_title": "AutoBucket Thunderbirdメール分類拡張機能",
       "page_head_content": "拡張機能の設定から分類に使用するタグを選択しメールを右クリックし振り分けの学習をしてください。その後はメールを選択して右クリックしてメールの判定処理を行ってください。",
       "learn_more": "もっと学ぶ",
-      "learn_more_url": "https://a-tak.github.io/auto-bucket/README_ja"
+      "learn_more_url": "https://a-tak.github.io/auto-bucket/README_ja",
+      "statistics_btn_label": "統計を表示する"
     }
   },
   "en": {
@@ -12,7 +13,8 @@
       "page_title": "AutoBucket Thunderbird Mail Classification Extension",
       "page_head_content": "Please select the tag to be used for classification from the extension settings and right-click the email to learn how to sort. After that, select the email and right-click to perform the email judgment processing.",
       "learn_more": "LEARN MORE",
-      "learn_more_url": "https://a-tak.github.io/auto-bucket/"
+      "learn_more_url": "https://a-tak.github.io/auto-bucket/",
+      "statistics_btn_label": "Show statistics"
     }
   }
 }

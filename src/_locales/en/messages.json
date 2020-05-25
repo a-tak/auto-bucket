@@ -19,6 +19,10 @@
     "message": "Show mail judgment log",
     "description": "Shortcut description"
   },
+  "statisticsDescription": {
+    "message": "Show statistics",
+    "description": "Shortcut description"
+  },
   "learnMenu": {
     "message": "Learn this email as \"$TAG$\"",
     "description": "Menu text",
