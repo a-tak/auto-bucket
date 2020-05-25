@@ -9,12 +9,14 @@ import TotalScore from "./models/TotalScore"
 import StatisticsLog from "./models/StatisticsLog"
 import StasticsUtil from "./lib/StatisticsUtil"
 import StatisticsUtil from "./lib/StatisticsUtil"
+import ReLearnLog from "./models/ReLearnLog"
 
 export default class backgroud {
   private classifier_: BayesianClassifier
   private tags_: Tag[] = []
   private bodymaxlength_: number = 100
   private totalStatistics: StatisticsLog = StasticsUtil.getInitialObj()
+  private todayStatistics: StatisticsLog = StasticsUtil.getInitialObj()
 
   constructor() {
     // イベント
@@ -76,10 +78,13 @@ export default class backgroud {
       body_max_length: number
     }).body_max_length
 
+    StatisticsUtil.removeOldStatistics()
+    StatisticsUtil.removeOldReLearnLog()
+    
     // 学習モデルの整理
-    this.garbageCollection()
+    this.garbageCollectionLearnModel()
     // 古いログの削除
-    this.deleteOldLog()
+    this.deleteOldJudgeLog()
     // 統計読み込み
     await this.loadStatistics()
 
@@ -87,10 +92,10 @@ export default class backgroud {
   }
 
   private async loadStatistics() {
-    this.totalStatistics = await StatisticsUtil.LoadTotalStatistics()
+    this.totalStatistics = await StatisticsUtil.loadTotalStatistics()
   }
 
-  private async deleteOldLog() {
+  private async deleteOldJudgeLog() {
     // 設定読み込み
     let deleteHour = ((await browser.storage.sync.get(
       "log_delete_past_hour"
@@ -126,7 +131,7 @@ export default class backgroud {
    *
    * 事前にclassifier_.dataに整理対象の学習データとtags_にタグ情報をセットしておくこと
    */
-  private async garbageCollection() {
+  private async garbageCollectionLearnModel() {
     const target = this.classifier_.data as ClassiffierObj
 
     // 既に存在しないタグの学習結果は削除
@@ -164,11 +169,6 @@ export default class backgroud {
       data: this.classifier_.data,
       totalCount: this.classifier_.totalCount,
     })
-  }
-
-  private async removeSetting(): Promise<void> {
-    await browser.storage.sync.clear()
-    this.classifier_ = new BayesianClassifier()
   }
 
   private createMenu(): void {
@@ -237,6 +237,10 @@ export default class backgroud {
   }
 
   private async executeAllClassificate() {
+    // 本日統計情報読み込み
+    const logDate = new Date()
+    this.todayStatistics = await StatisticsUtil.loadStatsitics(logDate)
+
     // 現在アクティブなタブのメール一覧を取得
     const mailTabs = await browser.mailTabs.query({
       active: true,
@@ -258,11 +262,10 @@ export default class backgroud {
         promises.push(this.subAllClassificate(message))
       }
       result = generator.next()
-      // 処理待ち
-      await Promise.all(promises)
-      // 統計情報保存
-      StatisticsUtil.SaveTotalStatistics(this.totalStatistics)
     }
+    // 処理待ち
+    await Promise.all(promises)
+    this.saveStatistcs(logDate)
   }
 
   private async subAllClassificate(message: browser.messages.MessageHeader) {
@@ -280,16 +283,39 @@ export default class backgroud {
   private async isTagged(
     message: browser.messages.MessageHeader
   ): Promise<boolean> {
+    if ((await this.getClassificateTag(message)) === "") {
+      return false
+    }
+    return true
+  }
+
+  /**
+   * メッセージにセットされている分類用タグ名を返す
+   * @param message
+   * @returns タグ名を返す。分類用タグが設定されていなければ""を返す
+   */
+  private async getClassificateTag(
+    message: browser.messages.MessageHeader
+  ): Promise<string> {
     for (const msgTag of message.tags) {
       for (const tag of this.tags_) {
         if (tag.useClassification) {
           if (tag.key === msgTag) {
-            return true
+            return msgTag
           }
         }
       }
     }
-    return false
+    return ""
+  }
+
+  private async saveStatistcs(logDate: Date) {
+    StatisticsUtil.saveTotalStatistics(this.totalStatistics)
+    StatisticsUtil.saveStatistics(this.todayStatistics, logDate)
+    console.log(this.todayStatistics)
+    console.log("saved after " + JSON.stringify(this.todayStatistics, null, 4))
+    console.log(this.todayStatistics)
+    console.log("saved after " + JSON.stringify(this.todayStatistics, null, 4))
   }
 
   /**
@@ -297,6 +323,11 @@ export default class backgroud {
    * @param tag 分類(タグ)
    */
   private async executeLearn(tag: Tag) {
+    // 本日統計情報読み込み
+    const logDate = new Date()
+    this.todayStatistics = await StatisticsUtil.loadStatsitics(logDate)
+    console.log("loaded obj " + JSON.stringify(this.todayStatistics, null, 4))
+
     const generator = this.listMessages(
       await browser.mailTabs.getSelectedMessages()
     )
@@ -313,23 +344,31 @@ export default class backgroud {
 
     // 処理待ち
     await Promise.all(promises)
-    // 統計情報保存
-    StatisticsUtil.SaveTotalStatistics(this.totalStatistics)
+    this.saveStatistcs(logDate)
   }
 
   private async executeClassificate() {
+    // 本日統計情報読み込み
+    const logDate = new Date()
+    this.todayStatistics = await StatisticsUtil.loadStatsitics(logDate)
+
     const generator = this.listMessages(
       await browser.mailTabs.getSelectedMessages()
     )
+    const promises: Promise<void>[] = []
     let result = generator.next()
     while (!(await result).done) {
       const message = (await result).value
       // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
       if (typeof message != "undefined") {
-        this.classificationMessage(message)
+        promises.push(this.classificationMessage(message))
       }
       result = generator.next()
     }
+
+    // 処理待ち
+    await Promise.all(promises)
+    this.saveStatistcs(logDate)
   }
 
   private async executeViewLog() {
@@ -416,9 +455,6 @@ export default class backgroud {
    * @param {string}  category  分類名
    */
   async doLearn(message: browser.messages.MessageHeader, category: string) {
-    if (await this.isTagged(message)) {
-      this.totalStatistics.wrongCount += 1
-    }
     const words = await this.getTargetMessage(message)
     let relearn: number = 0
     do {
@@ -430,12 +466,39 @@ export default class backgroud {
       }
     } while (
       // 再度判定して指定したタグとして判定されるまで繰り返し学習する
-      (await this.getClassificationTag(message)) != category
+      (await this.judgeClassification(message)) != category
     )
 
+    // 現在の分類タグを待避
+    const previousTag = await this.getClassificateTag(message)
+
     // タグ付けも実施する
-    await this.classificationMessage(message)
+    if (previousTag != "") {
+      // 分類タグが既にセットされている場合は再学習。この場合はメールカウントは増やさない
+      await this.classificationMessage(message, true)
+    } else {
+      await this.classificationMessage(message, false)
+    }
+
     this.saveSetting()
+
+    // 統計情報更新
+    if (previousTag != "") {
+      console.log("ここにこないの?")
+      // 過去に一度再学習したメールであれば誤判定回数は二重に増やさない
+      if ((await StatisticsUtil.isReLearned(message)) === false) {
+        this.totalStatistics.wrongCount += 1
+        this.todayStatistics.wrongCount += 1
+      }
+      //再学習ログを残す
+      const log: ReLearnLog = {
+        messageId: await MessageUtil.getMailMessageId(message),
+        date: new Date(),
+        previousClassification: previousTag,
+        changedClassification: await this.getClassificateTag(message),
+      }
+      StatisticsUtil.saveReLearnLog(log)
+    }
   }
 
   /**
@@ -579,19 +642,23 @@ export default class backgroud {
   /**
    * 指定したメールをスコアリングし分類タグをセットする
    * @param messageId 対象のメッセージid
+   * @param isLearn 再学習時のタグ付けの場合はtrueをセット。統計情報のメール数を加算しない。
    */
-  private async classificationMessage(message: browser.messages.MessageHeader) {
+  private async classificationMessage(
+    message: browser.messages.MessageHeader,
+    isReLearn: boolean = false
+  ) {
     const messageId = message.id
-    const tag: string = await this.getClassificationTag(message)
+    const tag: string = await this.judgeClassification(message)
     if (tag == "") return
-    this.setClassificationTag(messageId, tag)
+    await this.setClassificationTag(messageId, tag, isReLearn)
   }
 
   /**
    * 指定したメッセージを評価して分類タグを返す
    * @param messageId 対象のメッセージid
    */
-  private async getClassificationTag(
+  private async judgeClassification(
     message: browser.messages.MessageHeader
   ): Promise<string> {
     const result = await this.scoring(message)
@@ -626,10 +693,12 @@ export default class backgroud {
    * 分類用タグのセット
    * @param {number} messageId 対象メールのid
    * @param {string} tagName  設定する分類用タグ
+   * @param isReLearn 再学習のタグ付け処理の場合はtrueを指定。統計情報のメール数にカウントしない。
    */
   private async setClassificationTag(
     messageId: number,
-    tagName: string
+    tagName: string,
+    isReLearn: boolean = false
   ): Promise<void> {
     // 現在のメッセージのプロパティ取得
     const header = await browser.messages.get(messageId)
@@ -656,7 +725,11 @@ export default class backgroud {
     }
 
     // 統計情報更新
-    this.totalStatistics.totalCount += 1
+    if (isReLearn === false) {
+      this.totalStatistics.totalCount += 1
+      this.todayStatistics.totalCount += 1
+    }
+
     await browser.messages.update(messageId, newProp)
   }
 }
