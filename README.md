@@ -4,10 +4,18 @@
 
  Thunderbird用ベイジアンフィルターによる自動メール分類拡張機能
 
+## Thunderdアドオンページ
+
+https://addons.thunderbird.net/ja/thunderbird/addon/autobucket/
+
 ## GitHub Pages
 
-* https://a-tak.github.io/auto-bucket/
-* https://a-tak.github.io/auto-bucket/README_ja
+* https://a-tak.github.io/auto-bucket/ (English)
+* https://a-tak.github.io/auto-bucket/README_ja (日本語)
+
+## ブログ
+
+https://a-tak.com/blog/tag/autobucket/
 
 ## ビルド環境準備(Build Environment)
 
