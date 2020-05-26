@@ -162,8 +162,8 @@ export default class App extends Vue {
   }
 
   private async loadStatistics() {
-    const data: number[] = []
-    const dateLabel: string[] = []
+    let data: number[] = []
+    let dateLabel: string[] = []
     const items: StatisticsLog[] = await StatisticsUtil.getListStatistics()
     for (const item of items) {
       data.push(100 - (item.wrongCount / item.totalCount) * 100)
@@ -171,14 +171,25 @@ export default class App extends Vue {
         typeof item.date === "undefined" ? "" : DateUtil.getMD(item.date)
       )
     }
+    
+    // グラフ表示テスト用コード
+    // dateLabel = []
+    // data = []
+    // const s = new Date()
+    // s.setDate(s.getDate() - 31)
+    // for (let i = 0; i < 30; i++) {
+    //   dateLabel.push(DateUtil.getMD(s))
+    //   data.push(Math.round(Math.random()*1000)/10)
+    //   s.setDate(s.getDate() + 1)
+    // }
+
     this.accuracyData_ = {
-      // labels: ["1/1","1/2","1/3","1/4"],
       labels: dateLabel,
       datasets: [
         {
           label: "精度",
-          // data: [10,20,30,50],
           data: data,
+          backgroundColor: this.$vuetify.theme.themes.light.primary 
         },
       ],
     }
