@@ -10,21 +10,26 @@ export default class StatisticsUtil {
   static readonly DELETE_RE_LEARN_LOG_PAST_DAY: number = 30
 
   public static async loadTotalStatistics(): Promise<StatisticsLog> {
-    let result = (await browser.storage.sync.get(
+    const result = (await browser.storage.sync.get(
       this.TOTAL_STATISTICS_KEY
     )) as {
-      statistics: StatisticsLog
+      statistics: StatisticsLogObj
     }
 
     if (result.statistics == undefined) {
-      result.statistics = this.getInitialObj()
+      return this.getInitialObj()
     }
-    return result.statistics
+    return this.toStatisticsLog(result.statistics)
   }
 
   public static async saveTotalStatistics(value: StatisticsLog) {
+    // 統計情報がリセットされていたら今日の日付をセットする
+    if (typeof value.date === "undefined") {
+      value.date = new Date()
+    }
+    const obj = this.toStatistcsObj(value)
     await browser.storage.sync.set({
-      [this.TOTAL_STATISTICS_KEY]: value,
+      [this.TOTAL_STATISTICS_KEY]: obj,
     })
   }
 
