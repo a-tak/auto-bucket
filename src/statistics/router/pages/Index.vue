@@ -129,11 +129,13 @@ export default class App extends Vue {
 
     return (
       // 第一位で四捨五入するにはこうするしかないらしい…
-      100 - (Math.round(
+      100 -
+      Math.round(
         (this.totalStatistics.wrongCount / this.totalStatistics.totalCount) *
           100 *
           10
-      ) / 10)
+      ) /
+        10
     )
   }
 
@@ -146,7 +148,9 @@ export default class App extends Vue {
   }
 
   public get totalStatisticsResetDate(): string {
-    return (typeof this.totalStatistics.date==="undefined" ? "" : this.totalStatistics.date.toLocaleString())
+    return typeof this.totalStatistics.date === "undefined"
+      ? ""
+      : this.totalStatistics.date.toLocaleString()
   }
 
   private styles_: {} = {}
@@ -188,12 +192,14 @@ export default class App extends Vue {
     let dateLabel: string[] = []
     const items: StatisticsLog[] = await StatisticsUtil.getListStatistics()
     for (const item of items) {
-      data.push(100 - (item.wrongCount / item.totalCount) * 100)
+      data.push(
+        100 - Math.round((item.wrongCount / item.totalCount) * 100 * 10) / 10
+      )
       dateLabel.push(
         typeof item.date === "undefined" ? "" : DateUtil.getMD(item.date)
       )
     }
-    
+
     // グラフ表示テスト用コード
     // dateLabel = []
     // data = []
@@ -211,7 +217,7 @@ export default class App extends Vue {
         {
           label: "精度",
           data: data,
-          backgroundColor: this.$vuetify.theme.themes.light.primary 
+          backgroundColor: this.$vuetify.theme.themes.light.primary,
         },
       ],
     }
