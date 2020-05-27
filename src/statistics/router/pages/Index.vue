@@ -57,6 +57,24 @@
           class="ma-2"
         ></AccuracyChart>
       </v-skeleton-loader>
+      <v-skeleton-loader
+        :loading="loading"
+        transition="scale-transition"
+        height="300"
+        type="article"
+        class="ma-2"
+      >
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="ma-1">
+              {{ $t("message.statistics_reset_date_title") }}
+            </v-list-item-title>
+            <v-list-item-subtitle class="ma-1">
+              {{ totalStatisticsResetDate }}
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-skeleton-loader>
     </v-card>
   </div>
 </template>
@@ -125,6 +143,10 @@ export default class App extends Vue {
 
   public get totalWrongCount(): number {
     return this.totalStatistics.wrongCount
+  }
+
+  public get totalStatisticsResetDate(): string {
+    return (typeof this.totalStatistics.date==="undefined" ? "" : this.totalStatistics.date.toLocaleString())
   }
 
   private styles_: {} = {}
