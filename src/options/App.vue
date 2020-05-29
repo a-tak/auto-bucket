@@ -117,7 +117,7 @@ export default class App extends Vue {
   private values_: Tag[] = []
   private snackbarDisplay_: boolean = false
   private snackbarText_: string = ""
-  private bodymaxlength_: number = 100
+  private bodymaxlength_: number = 0
   private snackTop_: boolean = true
   public get snackTop(): boolean {
     return this.snackTop_
@@ -139,7 +139,7 @@ export default class App extends Vue {
   private set bodymaxlength(v: number) {
     this.bodymaxlength_ = v
   }
-  private logDeletePastHour_: number = 24 * 3
+  private logDeletePastHour_: number = 0
   public get logDeletePastHour(): number {
     return this.logDeletePastHour_
   }
@@ -196,12 +196,14 @@ export default class App extends Vue {
     )) as {
       body_max_length: number
     }).body_max_length
+    if (typeof this.bodymaxlength_ === "undefined") { this.bodymaxlength_ = 100 }
 
     this.logDeletePastHour_ = ((await browser.storage.sync.get(
       "log_delete_past_hour"
     )) as {
       log_delete_past_hour: number
     }).log_delete_past_hour
+    if (typeof this.logDeletePastHour_ === "undefined") { this.logDeletePastHour_ = 72 }
 
     this.tags_ = tags
     for (const tag of tags) {

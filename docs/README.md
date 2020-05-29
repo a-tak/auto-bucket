@@ -10,7 +10,7 @@ A Thunderbird extension that automatically sorts emails into several buckets (ta
 
 1. Add a classification tag to Thunderbird and restart Thunderbird
 2. Select the tag used for classification from the add-on settings and restart Thunderbird
-3. Right-click the email to learn which tag to assign
+3. Let's learn which tag to assign from AutoBucket in the menu displayed by right-clicking the email
 4. After classifying some, right click or shortcut to judge mail. AutoBucket automatically classifies and tags according to the learning content.
 5. If you find a wrong email in the classification, please let us know again. Classification accuracy will improve from the next time.
 

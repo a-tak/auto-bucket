@@ -18,8 +18,16 @@ export default class backgroud {
   private todayStatistics: StatisticsLog = StatisticsUtil.getInitialObj()
 
   constructor() {
-    // イベント
-    // browser.browserAction.onClicked.addListener(this.executeClassifficate)
+    browser.runtime.onInstalled.addListener(async ({ reason }) => {
+      switch (reason) {
+        case "install":
+          {
+            const url = browser.runtime.getURL(browser.i18n.getMessage("homepage"));
+            await browser.tabs.create({ url });
+          }
+          break;
+      }
+    })
     browser.commands.onCommand.addListener((command) => {
       switch (command) {
         case "all-classificate":
