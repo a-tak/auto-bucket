@@ -120,11 +120,11 @@ export default class StatisticsUtil {
     await this.listStatistics(async (keyname, log) => {
       ret.push(log)
     })
+
     const retSorted: StatisticsLog[] = ret.sort((a, b): number => {
       const aDate = typeof a.date === "undefined" ? new Date(0) : a.date
       const bDate = typeof b.date === "undefined" ? new Date(0) : b.date
-
-      return aDate.getDate() - bDate.getDate()
+      return aDate.getTime() - bDate.getTime()
     })
 
     return retSorted
