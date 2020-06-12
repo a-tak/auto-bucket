@@ -1,0 +1,10 @@
+version: "3"
+services: 
+    node:
+        image: node:13.13.0
+        working_dir: /mnt
+        volumes:
+            - .:/mnt
+        ports:
+            - 8080:8080
+        command: yarn serve
