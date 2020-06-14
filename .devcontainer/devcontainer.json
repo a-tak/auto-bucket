@@ -28,7 +28,7 @@
     "octref.vetur",
     "esbenp.prettier-vscode",
     "ms-azuretools.vscode-docker"
-  ]
+  ],
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
@@ -40,7 +40,7 @@
   // "shutdownAction": "none",
 
   // Uncomment the next line to run commands after the container is created - for example installing curl.
-  // "postCreateCommand": "apt-get update && apt-get install -y curl",
+  "postCreateCommand": "npm install && git remote add origin https://github.com/a-tak/auto-bucket.git"
 
   // Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
   // "remoteUser": "vscode"
