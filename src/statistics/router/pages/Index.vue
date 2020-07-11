@@ -4,7 +4,7 @@
     <v-skeleton-loader
       :loading="loading"
       transition="scale-transition"
-      height="300"
+      height="200"
       type="article"
       class="ma-2"
     >
@@ -45,7 +45,7 @@
       <v-skeleton-loader
         :loading="loading"
         transition="scale-transition"
-        height="300"
+        height="250"
         type="article"
         class="ma-2"
       >
@@ -53,14 +53,14 @@
           :chartData="accuracyData"
           :chartOptions="accuracyOptions"
           :styles="styles"
-          :height="150"
+          :height="100"
           class="ma-2"
         ></AccuracyChart>
       </v-skeleton-loader>
       <v-skeleton-loader
         :loading="loading"
         transition="scale-transition"
-        height="300"
+        height="150"
         type="article"
         class="ma-2"
       >
@@ -80,52 +80,52 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator"
-import AccuracyChart from "../../components/AccuracyChart.vue"
-import StatisticsUtil from "../../../lib/StatisticsUtil"
-import StatisticsLog from "../../../models/StatisticsLog"
-import DateUtil from "../../../lib/DateUtil"
-import Chart, { ChartOptions } from "chart.js"
+import { Component, Vue } from "vue-property-decorator";
+import AccuracyChart from "../../components/AccuracyChart.vue";
+import StatisticsUtil from "../../../lib/StatisticsUtil";
+import StatisticsLog from "../../../models/StatisticsLog";
+import DateUtil from "../../../lib/DateUtil";
+import Chart, { ChartOptions } from "chart.js";
 
 @Component({
   components: {
-    AccuracyChart,
-  },
+    AccuracyChart
+  }
 })
 export default class App extends Vue {
   // コストラクタで非同期処理で変数初期化してもコンパイル通らないので仕方なくundefined無視
-  private accuracyData_: {} = {}
+  private accuracyData_: {} = {};
   public get accuracyData(): {} {
-    return this.accuracyData_
+    return this.accuracyData_;
   }
 
   public get accuracyOptions(): ChartOptions {
     const ret: ChartOptions = {
       responsive: true,
       legend: {
-        display: false,
+        display: false
       },
       scales: {
         yAxes: [
           {
             ticks: {
               min: 0,
-              max: 100,
-            },
-          },
-        ],
-      },
-    }
+              max: 100
+            }
+          }
+        ]
+      }
+    };
 
-    return ret
+    return ret;
   }
 
   private totalStatistics: StatisticsLog = {
     totalCount: 0,
-    wrongCount: 0,
-  }
+    wrongCount: 0
+  };
   public get totalAccurancy(): number {
-    if (this.totalStatistics.totalCount === 0) return 0
+    if (this.totalStatistics.totalCount === 0) return 0;
 
     return (
       // 第一位で四捨五入するにはこうするしかないらしい…
@@ -136,68 +136,68 @@ export default class App extends Vue {
           10
       ) /
         10
-    )
+    );
   }
 
   public get totalJudgeCount(): number {
-    return this.totalStatistics.totalCount
+    return this.totalStatistics.totalCount;
   }
 
   public get totalWrongCount(): number {
-    return this.totalStatistics.wrongCount
+    return this.totalStatistics.wrongCount;
   }
 
   public get totalStatisticsResetDate(): string {
     return typeof this.totalStatistics.date === "undefined"
       ? ""
-      : this.totalStatistics.date.toLocaleString()
+      : this.totalStatistics.date.toLocaleString();
   }
 
-  private styles_: {} = {}
+  private styles_: {} = {};
   public get styles(): {} {
-    return this.styles_
+    return this.styles_;
   }
   public set styles(v: {}) {
-    this.styles_ = v
+    this.styles_ = v;
   }
 
-  private loading_: boolean = true
+  private loading_: boolean = true;
   public get loading(): boolean {
-    return this.loading_
+    return this.loading_;
   }
 
   private mounted() {
-    this.Initialize()
+    this.Initialize();
 
     this.styles_ = {
-      position: "relative",
-    }
+      position: "relative"
+    };
   }
 
   private async Initialize() {
-    const promises: Promise<void>[] = []
-    promises.push(this.loadStatistics())
-    promises.push(this.loadTotalStatistics())
+    const promises: Promise<void>[] = [];
+    promises.push(this.loadStatistics());
+    promises.push(this.loadTotalStatistics());
 
-    await Promise.all(promises)
-    this.loading_ = false
+    await Promise.all(promises);
+    this.loading_ = false;
   }
 
   private async loadTotalStatistics() {
-    this.totalStatistics = await StatisticsUtil.loadTotalStatistics()
+    this.totalStatistics = await StatisticsUtil.loadTotalStatistics();
   }
 
   private async loadStatistics() {
-    let data: number[] = []
-    let dateLabel: string[] = []
-    const items: StatisticsLog[] = await StatisticsUtil.getListStatistics()
+    let data: number[] = [];
+    let dateLabel: string[] = [];
+    const items: StatisticsLog[] = await StatisticsUtil.getListStatistics();
     for (const item of items) {
       data.push(
         100 - Math.round((item.wrongCount / item.totalCount) * 100 * 10) / 10
-      )
+      );
       dateLabel.push(
         typeof item.date === "undefined" ? "" : DateUtil.getMD(item.date)
-      )
+      );
     }
 
     // グラフ表示テスト用コード
@@ -217,16 +217,16 @@ export default class App extends Vue {
         {
           label: "精度",
           data: data,
-          backgroundColor: this.$vuetify.theme.themes.light.primary,
-        },
-      ],
-    }
+          backgroundColor: "rgba(128, 203, 196, 0.5)"
+        }
+      ]
+    };
   }
 }
 
 interface LineData {
-  labels: string[]
-  data: number[]
+  labels: string[];
+  data: number[];
 }
 </script>
 
