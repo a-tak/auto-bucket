@@ -8,3 +8,9 @@ declare namespace browser.storage.sync {
     // https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/API/storage/StorageArea/clear
     function clear(): Promise<void>
 }
+declare namespace browser.tabs {
+    type activeInfo = {
+        tabId: number
+        windowId: number
+    }
+}
