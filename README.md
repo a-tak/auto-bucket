@@ -45,18 +45,21 @@ Addonとして公開する場合は同じバージョンはアップし直せな
 
 ## リリース
 
-1. package.jsonのバージョンを変更
-2. コミットしてgithubにプッシュ
-3. タグをつける
-4. githubにプッシュ(タグをフォロー)
-5. githubでタグをリリースへ
+1. ブランチをプッシュ
+2. GitHubでプルリクエスト作成しマージ
+3. masterをプル
+4. package.jsonのバージョンを変更
+5. コミットしてgithubにプッシュ
+6. タグをつける
+7. githubにプッシュ(タグをフォロー)
+8. githubでタグをリリースへ
    1. プルリクエストの説明を抜粋してリリースの説明を作る
-6. ソースをダウンロード
-7. ビルド ```npm run build```
-8. distの中をzip化 ```npm run build-zip```
-9.  https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/submit/ へアップロード
-10. ソースもアップロード
-11. アップ完了後、各国語毎に説明を入れるページが表示さるのでgithubのリリースの説明を貼り付け
+9. ソースをダウンロード
+10. ビルド ```npm run build```
+11. distの中をzip化 ```npm run build-zip```
+12. https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/submit/ へアップロード
+13. ソースもアップロード
+14. アップ完了後、各国語毎に説明を入れるページが表示さるのでgithubのリリースの説明を貼り付け
 
 ## Linter
 
