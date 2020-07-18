@@ -53,7 +53,9 @@ export default class backgroud {
       }
     })
 
-    // browser.messages.onNewMailReceived.addListener((folder, messages) => {})
+    browser.messages.onNewMailReceived.addListener((folder, messages) => {
+      this.executeNewMailClassificate(messages)
+    })
 
     // ベイジアンフィルター初期化
     this.classifier_ = new BayesianClassifier()
@@ -353,6 +355,10 @@ export default class backgroud {
 
   private async executeClassificate() {
     await this.classificateMain(await browser.mailTabs.getSelectedMessages())
+  }
+
+  private async executeNewMailClassificate(messages: browser.messages.MessageList) {
+    await this.classificateMain(messages)
   }
 
   private async classificateMain(
