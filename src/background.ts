@@ -22,12 +22,15 @@ export default class backgroud {
       switch (reason) {
         case "install":
           {
-            const url = browser.runtime.getURL(browser.i18n.getMessage("homepage"));
-            await browser.tabs.create({ url });
+            const url = browser.runtime.getURL(
+              browser.i18n.getMessage("homepage")
+            )
+            await browser.tabs.create({ url })
           }
-          break;
+          break
       }
     })
+
     browser.commands.onCommand.addListener((command) => {
       switch (command) {
         case "all-classificate":
@@ -49,6 +52,8 @@ export default class backgroud {
           throw new Error("not shortcut define")
       }
     })
+
+    // browser.messages.onNewMailReceived.addListener((folder, messages) => {})
 
     // ベイジアンフィルター初期化
     this.classifier_ = new BayesianClassifier()
@@ -87,7 +92,7 @@ export default class backgroud {
 
     StatisticsUtil.removeOldStatistics()
     StatisticsUtil.removeOldReLearnLog()
-    
+
     // 学習モデルの整理
     this.garbageCollectionLearnModel()
     // 古いログの削除
@@ -347,15 +352,21 @@ export default class backgroud {
   }
 
   private async executeClassificate() {
+    await this.classificateMain(await browser.mailTabs.getSelectedMessages())
+  }
+
+  private async classificateMain(
+    messages: browser.messages.MessageList
+  ): Promise<void> {
     // 本日統計情報読み込み
     const logDate = new Date()
     this.todayStatistics = await StatisticsUtil.loadStatsitics(logDate)
 
-    const generator = this.listMessages(
-      await browser.mailTabs.getSelectedMessages()
-    )
-    const promises: Promise<void>[] = []
+    const generator = this.listMessages(messages)
+
+    // メール毎に処理
     let result = generator.next()
+    const promises: Promise<void>[] = []
     while (!(await result).done) {
       const message = (await result).value
       // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
