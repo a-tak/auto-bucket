@@ -1,6 +1,6 @@
 {
   "name": "autobucket",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Thunderbird auto classification web extension",
   "author": "A-tak <hoge+git@a-tak.com>",
   "scripts": {
