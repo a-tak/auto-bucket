@@ -40,7 +40,7 @@
       "description": "__MSG_classificateDescription__"
     },
     "view-log": {
-      "suggested_key": { "default": "Alt+Shift+V", "windows": "Ctrl+Shift+V", "linux": "Ctrl+Alt+V" },
+      "suggested_key": { "default": "Alt+Shift+V", "windows": "Ctrl+Shift+V", "linux": "Ctrl+Shift+V" },
       "description": "__MSG_viewLogDescription__"
     },
     "statsitics": {
