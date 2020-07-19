@@ -25,10 +25,8 @@
 ## ショートカットキー
 
 * ショートカットキーは拡張機能管理画面の右上の歯車アイコンから変更できます
-
 ![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting1.jpg)
 ![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting2.jpg)
-
 * 各OS毎のショートカットの初期設定は以下の通りです
 
 ### ショートカット(Windows初期設定)

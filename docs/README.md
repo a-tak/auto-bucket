@@ -25,10 +25,8 @@ A Thunderbird extension that automatically sorts emails into several buckets (ta
 ## Shortcut
 
 * You can change the shortcut key from the gear icon on the upper right of the extension management screen.
-
 ![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting1.jpg)
 ![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting2.jpg)
-
 * The default settings of shortcuts for each OS are as follows.
 
 ### Default Shortcut (Windows default)
