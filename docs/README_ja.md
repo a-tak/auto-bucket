@@ -20,7 +20,16 @@
 * 分類した内容に応じてメールをフォルダに振り分けたい場合は、Thunderbirdのメッセージフィルタ機能で振り分けの設定をしてください。
 * AutoBucketはメールフィルタ機能の実行はしません。私がWeb Extensionの仕様からメールフィルタ機能の実行方法を見つけられなかったためです。自動でメールフィルタ機能を実行したい場合は、メールフィルタ機能の定期的な実行機能を使ってください。
 
-## ショートカット(Windows)
+## ショートカットキー
+
+* ショートカットキーは拡張機能管理画面の右上の歯車アイコンから変更できます
+
+![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting1.jpg)
+![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting2.jpg)
+
+* 各OS毎のショートカットの初期設定は以下の通りです
+
+### ショートカット(Windows初期設定)
 
 | 機能 | キー |
 |-----|------|
@@ -30,7 +39,7 @@
 |統計情報表示|Ctrl + Shift + S|
 
 
-## ショートカット(Mac)
+### ショートカット(Mac初期設定)
 
 | 機能 | キー |
 |-----|------|
@@ -39,4 +48,12 @@
 |判定ログ表示|Option + Shift + V|
 |統計情報表示|Option + Shift + S|
 
+### ショートカット(Linux初期設定)
+
+| 機能 | キー |
+|-----|------|
+|一括メール判定|Alt + Shift + B|
+|メール判定|Alt + Shift + C|
+|判定ログ表示|Ctrl + Shift + V|
+|統計情報表示|Alt + Shift + S|
 

@@ -20,7 +20,16 @@ A Thunderbird extension that automatically sorts emails into several buckets (ta
 * If you want to sort the mails into folders according to the classified contents, please set the sorting with the message filter function of Thunderbird.
 * AutoBucket does not execute the mail filter function. This is because I could not find a way to execute the mail filter function from the Web Extension specifications. If you want to execute the mail filter function automatically, please use the regular execution function of the mail filter function.
 
-## Shortcut (Windows)
+## Shortcut
+
+* You can change the shortcut key from the gear icon on the upper right of the extension management screen.
+
+![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting1.jpg)
+![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting2.jpg)
+
+* The default settings of shortcuts for each OS are as follows.
+
+### Default Shortcut (Windows default)
 
 | Function | Key |
 |-----|------|
@@ -30,7 +39,7 @@ A Thunderbird extension that automatically sorts emails into several buckets (ta
 |Statistical information|Ctrl + Shift + S|
 
 
-## Shortcut (Mac)
+### Default Shortcut (Mac default)
 
 | Function | Key |
 |-----|------|
@@ -38,3 +47,12 @@ A Thunderbird extension that automatically sorts emails into several buckets (ta
 |Email judgment|Option + Shift + C|
 |Judgment log display|Option + Shift + V|
 |Statistical information|Option + Shift + S|
+
+### Default Shortcut (Linux default)
+
+| Function | Key |
+|-----|------|
+|Batch email judgment|Alt + Shift + B|
+|Email judgment|Alt + Shift + C|
+|Judgment log display|Ctrl + Shift + V|
+|Statistical information|Alt + Shift + S|
