@@ -10,8 +10,8 @@ A Thunderbird extension that automatically sorts emails into several buckets (ta
 
 1. Add a classification tag to Thunderbird and restart Thunderbird
 2. Select the tag used for classification from the add-on settings and restart Thunderbird
-![](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting1.jpg)
-![](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting2.jpg)
+[![](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting1.jpg)](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting1.jpg)
+[![](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting2.jpg)](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting2.jpg)
 3. Let's learn which tag to assign from AutoBucket in the menu displayed by right-clicking the email
 4. After classifying some, right click or shortcut to judge mail. AutoBucket automatically classifies and tags according to the learning content.
 5. If you find a wrong email in the classification, please let us know again. Classification accuracy will improve from the next time.
@@ -25,8 +25,8 @@ A Thunderbird extension that automatically sorts emails into several buckets (ta
 ## Shortcut
 
 * You can change the shortcut key from the gear icon on the upper right of the extension management screen.
-![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting1.jpg)
-![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting2.jpg)
+[![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting1.jpg)](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting1.jpg)
+[![](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting2.jpg)](https://github.com/a-tak/auto-bucket/raw/master/docs/shortcut-setting2.jpg)
 * The default settings of shortcuts for each OS are as follows.
 
 ### Default Shortcut (Windows default)
