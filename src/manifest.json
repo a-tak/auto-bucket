@@ -16,7 +16,7 @@
     }
   },
   "default_locale": "en",
-  "permissions": ["messagesRead", "menus", "storage", "accountsRead"],
+  "permissions": ["messagesRead", "menus", "storage", "accountsRead", "notifications"],
   "browser_action": {
     "default_icon": "icons/icon_48.png",
     "default_title": "AutoBucket",

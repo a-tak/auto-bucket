@@ -19,7 +19,20 @@ export default class backgroud {
   /** 設定読み込み済みフラグ */
   private settingLoaded_: boolean = false
 
+  static readonly NOTIFY_ID_NOT_SET: string = "notset"
+
   constructor() {
+    browser.notifications.onClicked.addListener((notificateionId) => {
+      switch (notificateionId) {
+        case backgroud.NOTIFY_ID_NOT_SET:
+          {
+            browser.runtime.openOptionsPage()
+          }
+          this.noticeClearNotSetting()
+          break
+      }
+    })
+
     browser.runtime.onInstalled.addListener(async ({ reason }) => {
       switch (reason) {
         case "install":
@@ -260,7 +273,10 @@ export default class backgroud {
 
   private async executeAllClassificate() {
     // 設定の読み込みが完了していない場合は、処理を続行しない
-    if (this.settingLoaded_ === false) return
+    if (this.settingLoaded_ === false) {
+      this.noticeNotSetting()
+      return
+    } 
 
     // 本日統計情報読み込み
     const logDate = new Date()
@@ -381,8 +397,10 @@ export default class backgroud {
     messages: browser.messages.MessageList
   ): Promise<void> {
     // 設定の読み込みが完了していない場合は、処理を続行しない
-    if (this.settingLoaded_ === false) return
-
+    if (this.settingLoaded_ === false) {
+      this.noticeNotSetting()
+      return
+    } 
     // 本日統計情報読み込み
     const logDate = new Date()
     this.todayStatistics_ = await StatisticsUtil.loadStatsitics(logDate)
@@ -408,7 +426,10 @@ export default class backgroud {
 
   private async executeViewLog() {
     // 設定の読み込みが完了していない場合は、処理を続行しない
-    if (this.settingLoaded_ === false) return
+    if (this.settingLoaded_ === false) {
+      this.noticeNotSetting()
+      return
+    } 
 
     this.showLogViewer(
       await (await browser.mailTabs.getSelectedMessages()).messages[0]
@@ -773,7 +794,21 @@ export default class backgroud {
 
     await browser.messages.update(messageId, newProp)
   }
+
+  private noticeNotSetting(): void {
+    browser.notifications.create(backgroud.NOTIFY_ID_NOT_SET ,{
+      type: "basic",
+      title: "AutoBucket",
+      iconUrl: browser.extension.getURL("icons/icon_48.png"),
+      message: browser.i18n.getMessage("infoNotSetting")
+    })
+  }
+
+  private noticeClearNotSetting(): void {
+    browser.notifications.clear(backgroud.NOTIFY_ID_NOT_SET)
+  }
 }
+
 
 /**
  * objectで戻ってくるscoreメソッド用に型定義
