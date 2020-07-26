@@ -87,6 +87,10 @@ export default class backgroud {
       this.bodymaxlength_ = maxLengthObj.body_max_length
     }
 
+    // タグ設定読み込み
+    // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
+    this.tags_ = await TagUtil.load()
+
     // objectで保存されているのでタイプアサーションで型を指定している
     const resultObj = (await browser.storage.sync.get("data")) as {
       data: object
@@ -96,10 +100,6 @@ export default class backgroud {
     } else {
       this.classifier_.data = resultObj.data
     }
-
-    // タグ設定読み込み
-    // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
-    this.tags_ = await TagUtil.load()
 
     StatisticsUtil.removeOldStatistics()
     StatisticsUtil.removeOldReLearnLog()
