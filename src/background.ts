@@ -1,5 +1,5 @@
 import "webextension-polyfill"
-import { BayesianClassifier } from "simple-statistics"
+import { BayesianClassifier, max } from "simple-statistics"
 import Segmenter from "tiny-segmenter"
 import TagUtil from "./lib/TagUtil"
 import Tag from "./models/Tag"
@@ -17,7 +17,7 @@ export default class backgroud {
   private totalStatistics_: StatisticsLog = StatisticsUtil.getInitialObj()
   private todayStatistics_: StatisticsLog = StatisticsUtil.getInitialObj()
   /** 設定読み込み済みフラグ */
-  private settingLoaded_ : boolean = false
+  private settingLoaded_: boolean = false
 
   constructor() {
     browser.runtime.onInstalled.addListener(async ({ reason }) => {
@@ -73,6 +73,20 @@ export default class backgroud {
    * 設定の読み込み
    */
   private async loadSetting(): Promise<void> {
+    // 本文の処理サイズ上限読み込み
+    const maxLengthObj = (await browser.storage.sync.get(
+      "body_max_length"
+    )) as {
+      body_max_length?: number | undefined
+    }
+
+    if (typeof maxLengthObj.body_max_length === "undefined") {
+      // 未設定であれば、初期設定完了前と見直して抜ける
+      return
+    } else {
+      this.bodymaxlength_ = maxLengthObj.body_max_length
+    }
+
     // objectで保存されているのでタイプアサーションで型を指定している
     const resultObj = (await browser.storage.sync.get("data")) as {
       data: object
@@ -87,13 +101,6 @@ export default class backgroud {
     // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
     this.tags_ = await TagUtil.load()
 
-    // 本文の処理サイズ上限読み込み
-    this.bodymaxlength_ = ((await browser.storage.sync.get(
-      "body_max_length"
-    )) as {
-      body_max_length: number
-    }).body_max_length
-
     StatisticsUtil.removeOldStatistics()
     StatisticsUtil.removeOldReLearnLog()
 
@@ -105,7 +112,6 @@ export default class backgroud {
     await this.loadStatistics()
     // 設定読み込み完了フラグ オン
     this.settingLoaded_ = true
-
   }
 
   private async loadStatistics() {
@@ -365,7 +371,9 @@ export default class backgroud {
     await this.classificateMain(await browser.mailTabs.getSelectedMessages())
   }
 
-  private async executeNewMailClassificate(messages: browser.messages.MessageList) {
+  private async executeNewMailClassificate(
+    messages: browser.messages.MessageList
+  ) {
     await this.classificateMain(messages)
   }
 
@@ -581,7 +589,9 @@ export default class backgroud {
     message: browser.messages.MessageHeader
   ): Promise<Array<string>> {
     if (this.bodymaxlength_ == undefined) {
-      throw new Error("bodymaxlength_ property not set. The settings may not be loaded yet.")
+      throw new Error(
+        "bodymaxlength_ property not set. The settings may not be loaded yet."
+      )
     }
     // メールをとりあえず本文だけを対象にする
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
