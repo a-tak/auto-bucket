@@ -57,6 +57,10 @@ export default class backgroud {
       this.executeNewMailClassificate(messages)
     })
 
+    browser.storage.onChanged.addListener((changes, areaName) => {
+      
+    })
+
     // ベイジアンフィルター初期化
     this.classifier_ = new BayesianClassifier()
 
