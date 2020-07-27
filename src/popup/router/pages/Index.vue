@@ -13,9 +13,9 @@
         <v-btn text color="accent" @click="openStatistics">{{
           $t("message.statistics_btn_label")
         }}</v-btn>
-        <!-- <v-btn text color="accent" @click="openOption">{{
+        <v-btn text color="accent" @click="openOption">{{
           $t("message.option_btn_label")
-        }}</v-btn> -->
+        }}</v-btn>
       </v-card-actions>
     </v-card>
   </div>
@@ -37,8 +37,6 @@ export default class App extends Vue {
   }
 
   private openOption() {
-    // Thunderbird 77以降でしか実装されていないらしいので、今は未使用
-    // https://www.thunderbird.net/en-US/thunderbird/77.0beta/releasenotes/
     browser.runtime.openOptionsPage()
   }
 }

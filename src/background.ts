@@ -1,5 +1,5 @@
 import "webextension-polyfill"
-import { BayesianClassifier } from "simple-statistics"
+import { BayesianClassifier, max } from "simple-statistics"
 import Segmenter from "tiny-segmenter"
 import TagUtil from "./lib/TagUtil"
 import Tag from "./models/Tag"
@@ -14,10 +14,25 @@ export default class backgroud {
   private classifier_: BayesianClassifier
   private tags_: Tag[] = []
   private bodymaxlength_: number = 100
-  private totalStatistics: StatisticsLog = StatisticsUtil.getInitialObj()
-  private todayStatistics: StatisticsLog = StatisticsUtil.getInitialObj()
+  private totalStatistics_: StatisticsLog = StatisticsUtil.getInitialObj()
+  private todayStatistics_: StatisticsLog = StatisticsUtil.getInitialObj()
+  /** 設定読み込み済みフラグ */
+  private settingLoaded_: boolean = false
+
+  static readonly NOTIFY_ID_NOT_SET: string = "notset"
 
   constructor() {
+    browser.notifications.onClicked.addListener((notificateionId) => {
+      switch (notificateionId) {
+        case backgroud.NOTIFY_ID_NOT_SET:
+          {
+            browser.runtime.openOptionsPage()
+          }
+          this.noticeClearNotSetting()
+          break
+      }
+    })
+
     browser.runtime.onInstalled.addListener(async ({ reason }) => {
       switch (reason) {
         case "install":
@@ -75,6 +90,24 @@ export default class backgroud {
    * 設定の読み込み
    */
   private async loadSetting(): Promise<void> {
+    // 本文の処理サイズ上限読み込み
+    const maxLengthObj = (await browser.storage.sync.get(
+      "body_max_length"
+    )) as {
+      body_max_length?: number | undefined
+    }
+
+    if (typeof maxLengthObj.body_max_length === "undefined") {
+      // 未設定であれば、初期設定完了前と見直して抜ける
+      return
+    } else {
+      this.bodymaxlength_ = maxLengthObj.body_max_length
+    }
+
+    // タグ設定読み込み
+    // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
+    this.tags_ = await TagUtil.load()
+
     // objectで保存されているのでタイプアサーションで型を指定している
     const resultObj = (await browser.storage.sync.get("data")) as {
       data: object
@@ -85,17 +118,6 @@ export default class backgroud {
       this.classifier_.data = resultObj.data
     }
 
-    // タグ設定読み込み
-    // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
-    this.tags_ = await TagUtil.load()
-
-    // 本文の処理サイズ上限読み込み
-    this.bodymaxlength_ = ((await browser.storage.sync.get(
-      "body_max_length"
-    )) as {
-      body_max_length: number
-    }).body_max_length
-
     StatisticsUtil.removeOldStatistics()
     StatisticsUtil.removeOldReLearnLog()
 
@@ -105,10 +127,12 @@ export default class backgroud {
     this.deleteOldJudgeLog()
     // 統計読み込み
     await this.loadStatistics()
+    // 設定読み込み完了フラグ オン
+    this.settingLoaded_ = true
   }
 
   private async loadStatistics() {
-    this.totalStatistics = await StatisticsUtil.loadTotalStatistics()
+    this.totalStatistics_ = await StatisticsUtil.loadTotalStatistics()
   }
 
   private async deleteOldJudgeLog() {
@@ -252,9 +276,15 @@ export default class backgroud {
   }
 
   private async executeAllClassificate() {
+    // 設定の読み込みが完了していない場合は、処理を続行しない
+    if (this.settingLoaded_ === false) {
+      this.noticeNotSetting()
+      return
+    } 
+
     // 本日統計情報読み込み
     const logDate = new Date()
-    this.todayStatistics = await StatisticsUtil.loadStatsitics(logDate)
+    this.todayStatistics_ = await StatisticsUtil.loadStatsitics(logDate)
 
     // 現在アクティブなタブのメール一覧を取得
     const mailTabs = await browser.mailTabs.query({
@@ -325,8 +355,8 @@ export default class backgroud {
   }
 
   private async saveStatistcs(logDate: Date) {
-    StatisticsUtil.saveTotalStatistics(this.totalStatistics)
-    StatisticsUtil.saveStatistics(this.todayStatistics, logDate)
+    StatisticsUtil.saveTotalStatistics(this.totalStatistics_)
+    StatisticsUtil.saveStatistics(this.todayStatistics_, logDate)
   }
 
   /**
@@ -336,7 +366,7 @@ export default class backgroud {
   private async executeLearn(tag: Tag) {
     // 本日統計情報読み込み
     const logDate = new Date()
-    this.todayStatistics = await StatisticsUtil.loadStatsitics(logDate)
+    this.todayStatistics_ = await StatisticsUtil.loadStatsitics(logDate)
 
     const generator = this.listMessages(
       await browser.mailTabs.getSelectedMessages()
@@ -361,16 +391,23 @@ export default class backgroud {
     await this.classificateMain(await browser.mailTabs.getSelectedMessages())
   }
 
-  private async executeNewMailClassificate(messages: browser.messages.MessageList) {
+  private async executeNewMailClassificate(
+    messages: browser.messages.MessageList
+  ) {
     await this.classificateMain(messages)
   }
 
   private async classificateMain(
     messages: browser.messages.MessageList
   ): Promise<void> {
+    // 設定の読み込みが完了していない場合は、処理を続行しない
+    if (this.settingLoaded_ === false) {
+      this.noticeNotSetting()
+      return
+    } 
     // 本日統計情報読み込み
     const logDate = new Date()
-    this.todayStatistics = await StatisticsUtil.loadStatsitics(logDate)
+    this.todayStatistics_ = await StatisticsUtil.loadStatsitics(logDate)
 
     const generator = this.listMessages(messages)
 
@@ -392,6 +429,12 @@ export default class backgroud {
   }
 
   private async executeViewLog() {
+    // 設定の読み込みが完了していない場合は、処理を続行しない
+    if (this.settingLoaded_ === false) {
+      this.noticeNotSetting()
+      return
+    } 
+
     this.showLogViewer(
       await (await browser.mailTabs.getSelectedMessages()).messages[0]
     )
@@ -505,8 +548,8 @@ export default class backgroud {
     if (previousTag != "") {
       // 過去に一度再学習したメールであれば誤判定回数は二重に増やさない
       if ((await StatisticsUtil.isReLearned(message)) === false) {
-        this.totalStatistics.wrongCount += 1
-        this.todayStatistics.wrongCount += 1
+        this.totalStatistics_.wrongCount += 1
+        this.todayStatistics_.wrongCount += 1
       }
       //再学習ログを残す
       const log: ReLearnLog = {
@@ -570,6 +613,11 @@ export default class backgroud {
   private async getTargetMessage(
     message: browser.messages.MessageHeader
   ): Promise<Array<string>> {
+    if (this.bodymaxlength_ == undefined) {
+      throw new Error(
+        "bodymaxlength_ property not set. The settings may not be loaded yet."
+      )
+    }
     // メールをとりあえず本文だけを対象にする
     // 複数パート(HTMLメールなど)に分かれていたらすべてのパートを対象にする
     const messagePart = await browser.messages.getFull(message.id)
@@ -744,13 +792,27 @@ export default class backgroud {
 
     // 統計情報更新
     if (isReLearn === false) {
-      this.totalStatistics.totalCount += 1
-      this.todayStatistics.totalCount += 1
+      this.totalStatistics_.totalCount += 1
+      this.todayStatistics_.totalCount += 1
     }
 
     await browser.messages.update(messageId, newProp)
   }
+
+  private noticeNotSetting(): void {
+    browser.notifications.create(backgroud.NOTIFY_ID_NOT_SET ,{
+      type: "basic",
+      title: "AutoBucket",
+      iconUrl: browser.extension.getURL("icons/icon_48.png"),
+      message: browser.i18n.getMessage("infoNotSetting")
+    })
+  }
+
+  private noticeClearNotSetting(): void {
+    browser.notifications.clear(backgroud.NOTIFY_ID_NOT_SET)
+  }
 }
+
 
 /**
  * objectで戻ってくるscoreメソッド用に型定義

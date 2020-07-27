@@ -23,6 +23,22 @@ declare namespace browser.storage {
       newValue: any
     }
   }
+declare namespace browser.notifications {
+  // https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/API/notifications/create
+  function create(id: string, options: NotificationOptions): Promise<string>
+  function clear(id: string): Promise<boolean>
+
+  type NotificationOptions = {
+    type: string
+    message: string
+    title: string
+    iconUrl?: string
+  }
+}
+declare namespace browser.notifications.onClicked {
+  function addListener(callback: (notificationId: string) => void): void
+}
+
 declare namespace browser.tabs {
   type activeInfo = {
     tabId: number
