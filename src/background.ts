@@ -1,5 +1,5 @@
 import "webextension-polyfill"
-import { BayesianClassifier, max } from "simple-statistics"
+import { BayesianClassifier} from "simple-statistics"
 import Segmenter from "tiny-segmenter"
 import TagUtil from "./lib/TagUtil"
 import Tag from "./models/Tag"
