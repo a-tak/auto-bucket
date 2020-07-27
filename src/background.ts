@@ -73,7 +73,9 @@ export default class backgroud {
     })
 
     browser.storage.onChanged.addListener((changes, areaName) => {
-      
+      if (areaName === "sync") {
+        console.log(changes)
+      }
     })
 
     // ベイジアンフィルター初期化

@@ -14,7 +14,7 @@ declare namespace browser.storage.onChanged {
     callback: (
       changes: { [key: string]: StorageChange },
       areaName: string
-    ) => {}
+    ) => void
   ): void
 }
 declare namespace browser.storage {
