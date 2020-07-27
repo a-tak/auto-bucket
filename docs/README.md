@@ -9,7 +9,7 @@ A Thunderbird extension that automatically sorts emails into several buckets (ta
 ## Basic usage
 
 1. Add a classification tag to Thunderbird and restart Thunderbird
-2. Select the tag used for classification from the add-on settings and restart Thunderbird
+2. Select the tag used for classification from the add-on settings
 [![](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting1.jpg)](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting1.jpg)
 [![](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting2.jpg)](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting2.jpg)
 3. Let's learn which tag to assign from AutoBucket in the menu displayed by right-clicking the email
