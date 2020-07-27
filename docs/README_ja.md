@@ -9,7 +9,7 @@
 ## 基本的な使い方
 
 1. 分類用のタグをThunderbirdに追加してThunderbirdを再起動します
-2. アドオンの設定から分類に使用するタグを選択します
+2. アドオンの設定から分類に使用するタグを選択して、保存ボタンを押します
 [![](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting1.jpg)](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting1.jpg)
 [![](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting2.jpg)](https://github.com/a-tak/auto-bucket/raw/master/docs/initial-setting2.jpg)
 3. メールを右クリックして、AutoBucketのメニューからどのタグに割り当てるか学習させます
