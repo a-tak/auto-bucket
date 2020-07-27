@@ -72,6 +72,10 @@ export default class backgroud {
       this.executeNewMailClassificate(messages)
     })
 
+    browser.storage.onChanged.addListener((changes, areaName) => {
+      this.storageChangedHook(changes, areaName)
+    })
+
     // ベイジアンフィルター初期化
     this.classifier_ = new BayesianClassifier()
 
@@ -82,10 +86,32 @@ export default class backgroud {
     })
   }
 
+  private async storageChangedHook(
+    changes: { [key: string]: browser.storage.StorageChange },
+    areaName: String
+  ): Promise<void> {
+    if (areaName === "sync") {
+      if ("body_max_length" in changes) {
+        if ((await this.loadMaxLengthSetting()) === false) {
+          // 通常、未設定状態に変更することはないので、それを検知したら例外
+          throw new Error("Changed body_max_length property to undefined.")
+        }
+      }
+    } else if ("tags" in changes) {
+      if ((await this.loadTagSetting()) === false) {
+        // 通常、未設定状態に変更することはないので、それを検知したら例外
+        throw new Error("Changed tag property to undefined.")
+      }
+      // メニュー再生成
+      this.createMenu()
+    }
+  }
+
   /**
-   * 設定の読み込み
+   * 本文処理上限設定の読み込み
+   * @returns 初期設定が未完了の場合はfalseを返す
    */
-  private async loadSetting(): Promise<void> {
+  private async loadMaxLengthSetting(): Promise<boolean> {
     // 本文の処理サイズ上限読み込み
     const maxLengthObj = (await browser.storage.sync.get(
       "body_max_length"
@@ -95,14 +121,37 @@ export default class backgroud {
 
     if (typeof maxLengthObj.body_max_length === "undefined") {
       // 未設定であれば、初期設定完了前と見直して抜ける
-      return
+      return false
     } else {
       this.bodymaxlength_ = maxLengthObj.body_max_length
     }
+    return true
+  }
 
+  /**
+   * タグ設定の読み込み
+   * @returns 初期設定が未完了の場合はfalseを返す(現状は常にtrueを応答)
+   */
+  private async loadTagSetting(): Promise<boolean> {
     // タグ設定読み込み
     // TODO: 可能であればcategories_廃止してtags_の管理で統一する(可能であれば。そのままでもいい気もしている。)
     this.tags_ = await TagUtil.load()
+    return true
+  }
+
+  /**
+   * 設定の読み込み
+   */
+  private async loadSetting(): Promise<void> {
+    // 本文の処理サイズ上限読み込み
+    if ((await this.loadMaxLengthSetting()) === false) {
+      return
+    }
+
+    // タグ設定読み込み
+    if ((await this.loadTagSetting()) === false) {
+      return
+    }
 
     // objectで保存されているのでタイプアサーションで型を指定している
     const resultObj = (await browser.storage.sync.get("data")) as {
@@ -211,44 +260,46 @@ export default class backgroud {
      * 右クリックメニュー作成
      */
 
-    for (const tag of this.tags_) {
-      if (tag.useClassification) {
-        browser.menus.create({
-          id: "doLearn" + tag.key,
-          title: browser.i18n.getMessage("learnMenu", tag.name),
-          contexts: ["message_list"],
-          onclick: async () => {
-            this.executeLearn(tag)
-          },
-        })
+    browser.menus.removeAll().then(() => {
+      for (const tag of this.tags_) {
+        if (tag.useClassification) {
+          browser.menus.create({
+            id: "doLearn" + tag.key,
+            title: browser.i18n.getMessage("learnMenu", tag.name),
+            contexts: ["message_list"],
+            onclick: async () => {
+              this.executeLearn(tag)
+            },
+          })
+        }
       }
-    }
 
-    browser.menus.create({
-      id: "all_classificate",
-      title: browser.i18n.getMessage("allClassificateMenu"),
-      contexts: ["message_list"],
-      onclick: async () => {
-        this.executeAllClassificate()
-      },
-    })
+      browser.menus.create({
+        id: "all_classificate",
+        title: browser.i18n.getMessage("allClassificateMenu"),
+        contexts: ["message_list"],
+        onclick: async () => {
+          this.executeAllClassificate()
+        },
+      })
 
-    browser.menus.create({
-      id: "classificate",
-      title: browser.i18n.getMessage("classificateMenu"),
-      contexts: ["message_list"],
-      onclick: async () => {
-        this.executeClassificate()
-      },
-    })
+      browser.menus.create({
+        id: "classificate",
+        title: browser.i18n.getMessage("classificateMenu"),
+        contexts: ["message_list"],
+        onclick: async () => {
+          this.executeClassificate()
+        },
+      })
 
-    browser.menus.create({
-      id: "view_log",
-      title: browser.i18n.getMessage("viewLogMenu"),
-      contexts: ["message_list"],
-      onclick: async () => {
-        this.executeViewLog()
-      },
+      browser.menus.create({
+        id: "view_log",
+        title: browser.i18n.getMessage("viewLogMenu"),
+        contexts: ["message_list"],
+        onclick: async () => {
+          this.executeViewLog()
+        },
+      })
     })
   }
 
@@ -276,7 +327,7 @@ export default class backgroud {
     if (this.settingLoaded_ === false) {
       this.noticeNotSetting()
       return
-    } 
+    }
 
     // 本日統計情報読み込み
     const logDate = new Date()
@@ -400,7 +451,7 @@ export default class backgroud {
     if (this.settingLoaded_ === false) {
       this.noticeNotSetting()
       return
-    } 
+    }
     // 本日統計情報読み込み
     const logDate = new Date()
     this.todayStatistics_ = await StatisticsUtil.loadStatsitics(logDate)
@@ -429,7 +480,7 @@ export default class backgroud {
     if (this.settingLoaded_ === false) {
       this.noticeNotSetting()
       return
-    } 
+    }
 
     this.showLogViewer(
       await (await browser.mailTabs.getSelectedMessages()).messages[0]
@@ -796,11 +847,11 @@ export default class backgroud {
   }
 
   private noticeNotSetting(): void {
-    browser.notifications.create(backgroud.NOTIFY_ID_NOT_SET ,{
+    browser.notifications.create(backgroud.NOTIFY_ID_NOT_SET, {
       type: "basic",
       title: "AutoBucket",
       iconUrl: browser.extension.getURL("icons/icon_48.png"),
-      message: browser.i18n.getMessage("infoNotSetting")
+      message: browser.i18n.getMessage("infoNotSetting"),
     })
   }
 
@@ -808,7 +859,6 @@ export default class backgroud {
     browser.notifications.clear(backgroud.NOTIFY_ID_NOT_SET)
   }
 }
-
 
 /**
  * objectで戻ってくるscoreメソッド用に型定義
