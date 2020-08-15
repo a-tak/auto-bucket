@@ -1,79 +1,83 @@
-const webpack = require('webpack');
-const ejs = require('ejs');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const ExtensionReloader = require('webpack-extension-reloader');
-const { VueLoaderPlugin } = require('vue-loader');
-const { version } = require('./package.json');
+const webpack = require("webpack")
+const ejs = require("ejs")
+const MiniCssExtractPlugin = require("mini-css-extract-plugin")
+const CopyPlugin = require("copy-webpack-plugin")
+const ExtensionReloader = require("webpack-extension-reloader")
+const { VueLoaderPlugin } = require("vue-loader")
+const { version } = require("./package.json")
 
 const config = {
   mode: process.env.NODE_ENV,
-  context: __dirname + '/src',
+  context: __dirname + "/src",
   entry: {
-    background: './background.ts',
-    'popup/popup': './popup/popup.ts',
-    'options/options': './options/options.ts',
-    'logviewer/logviewer': './logviewer/logviewer.ts',
-    'statistics/statistics': './statistics/statistics.ts',
+    background: "./background.ts",
+    "popup/popup": "./popup/popup.ts",
+    "options/options": "./options/options.ts",
+    "logviewer/logviewer": "./logviewer/logviewer.ts",
+    "statistics/statistics": "./statistics/statistics.ts",
   },
   output: {
-    path: __dirname + '/dist',
-    filename: '[name].js',
+    path: __dirname + "/dist",
+    filename: "[name].js",
   },
   resolve: {
-    extensions: ['.js', '.ts', '.vue'],
+    extensions: [".js", ".ts", ".vue"],
   },
   module: {
     rules: [
       {
-        test:  /\.ts$/,
+        test: /\.ts$/,
         // TypeScript をコンパイルする
         use: [
           {
             loader: "ts-loader",
             options: {
-              appendTsSuffixTo: [/\.vue$/]
-            }
-          }
-        ]
+              appendTsSuffixTo: [/\.vue$/],
+            },
+          },
+        ],
       },
       {
         test: /\.vue$/,
-        loader: 'vue-loader',
+        loader: "vue-loader",
       },
       {
         test: /\.js$/,
-        loader: 'babel-loader',
+        loader: "babel-loader",
         exclude: /node_modules/,
       },
       {
         test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
       {
         test: /\.scss$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
       },
       {
         test: /\.sass$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader?indentedSyntax'],
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          "sass-loader?indentedSyntax",
+        ],
       },
       {
         test: /\.(png|jpg|jpeg|gif|svg|ico)$/,
-        loader: 'file-loader',
+        loader: "file-loader",
         options: {
-          name: '[path][name].[ext]',
-          outputPath: '/images/',
+          name: "[path][name].[ext]",
+          outputPath: "/images/",
           emitFile: true,
           esModule: false,
         },
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'file-loader',
+        loader: "file-loader",
         options: {
-          name: '[path][name].[ext]',
-          outputPath: '/fonts/',
+          name: "[path][name].[ext]",
+          outputPath: "/fonts/",
           emitFile: true,
           esModule: false,
         },
@@ -82,59 +86,100 @@ const config = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      global: 'window',
+      global: "window",
     }),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
-      filename: '[name].css',
+      filename: "[name].css",
     }),
-    new CopyPlugin([
-      { from: 'icons', to: 'icons', ignore: ['icon.xcf'] },
-      { from: 'popup/popup.html', to: 'popup/popup.html', transform: transformHtml },
-      { from: 'options/options.html', to: 'options/options.html', transform: transformHtml },
-      { from: 'logviewer/logviewer.html', to: 'logviewer/logviewer.html', transform: transformHtml },
-      { from: 'statistics/statistics.html', to: 'statistics/statistics.html', transform: transformHtml },
-      { from: '_locales', to: '_locales', transform: transformHtml },
-      {
-        from: 'manifest.json',
-        to: 'manifest.json',
-        transform: content => {
-          const jsonContent = JSON.parse(content);
-          jsonContent.version = version;
-
-          if (config.mode === 'development') {
-            jsonContent['content_security_policy'] = "script-src 'self' 'unsafe-eval'; object-src 'self'";
-          }
-
-          return JSON.stringify(jsonContent, null, 2);
+    new CopyPlugin({
+      patterns: [
+        { from: "icons", to: "icons", globOptions: { ignore: ["icon.xcf"] } },
+        {
+          from: "popup/popup.html",
+          to: "popup/popup.html",
+          transform: transformHtml,
         },
-      },
-    ]),
-  ],
-};
+        {
+          from: "options/options.html",
+          to: "options/options.html",
+          transform: transformHtml,
+        },
+        {
+          from: "logviewer/logviewer.html",
+          to: "logviewer/logviewer.html",
+          transform: transformHtml,
+        },
+        {
+          from: "statistics/statistics.html",
+          to: "statistics/statistics.html",
+          transform: transformHtml,
+        },
+        { from: "_locales", to: "_locales", transform: transformHtml },
+        {
+          from: "manifest.json",
+          to: "manifest.json",
+          transform: (content) => {
+            const jsonContent = JSON.parse(content)
+            jsonContent.version = version
 
-if (config.mode === 'production') {
+            if (config.mode === "development") {
+              jsonContent["content_security_policy"] =
+                "script-src 'self' 'unsafe-eval'; object-src 'self'"
+            }
+
+            return JSON.stringify(jsonContent, null, 2)
+          },
+        },
+      ],
+    }),
+    // new CopyPlugin([
+    //   { from: 'icons', to: 'icons', ignore: ['icon.xcf'] },
+    //   { from: 'popup/popup.html', to: 'popup/popup.html', transform: transformHtml },
+    //   { from: 'options/options.html', to: 'options/options.html', transform: transformHtml },
+    //   { from: 'logviewer/logviewer.html', to: 'logviewer/logviewer.html', transform: transformHtml },
+    //   { from: 'statistics/statistics.html', to: 'statistics/statistics.html', transform: transformHtml },
+    //   { from: '_locales', to: '_locales', transform: transformHtml },
+    //   {
+    //     from: 'manifest.json',
+    //     to: 'manifest.json',
+    //     transform: content => {
+    //       const jsonContent = JSON.parse(content);
+    //       jsonContent.version = version;
+
+    //       if (config.mode === 'development') {
+    //         jsonContent['content_security_policy'] = "script-src 'self' 'unsafe-eval'; object-src 'self'";
+    //       }
+
+    //       return JSON.stringify(jsonContent, null, 2);
+    //     },
+    //   },
+    // ]),
+  ],
+}
+
+if (config.mode === "production") {
   config.plugins = (config.plugins || []).concat([
     new webpack.DefinePlugin({
-      'process.env': {
+      "process.env": {
         NODE_ENV: '"production"',
       },
     }),
-  ]);
+  ])
 }
 
-if (process.env.HMR === 'true') {
+if (process.env.HMR === "true") {
   config.plugins = (config.plugins || []).concat([
     new ExtensionReloader({
-      manifest: __dirname + '/src/manifest.json',
+      manifest: __dirname + "/src/manifest.json",
     }),
-  ]);
+  ])
 }
 
 function transformHtml(content) {
   return ejs.render(content.toString(), {
     ...process.env,
-  });
+  })
 }
 
-module.exports = config;
+module.exports = config
