@@ -1,13 +1,18 @@
 import StatisticsLog from "@/models/StatisticsLog"
 import msgUtil from "./MessageUtil"
 import ReLearnLog from "@/models/ReLearnLog"
+import pMap from "p-map"
+import { StorageObj } from "./StorageUtil"
+import StorageUtil from "./StorageUtil"
 
 export default class StatisticsUtil {
   static readonly STATISTICS_LOG_PREFIX = "__stat_"
   static readonly RE_LEARN_LOG_PREFIX = "__relog_"
   static readonly TOTAL_STATISTICS_KEY: string = "statistics"
   static readonly DELETE_STATISTICS_PAST_DAY: number = 30
-  static readonly DELETE_RE_LEARN_LOG_PAST_DAY: number = 30
+  static readonly DELETE_RE_LEARN_LOG_PAST_DAY: number = 0
+  /** 再学習ログの並行処理数 */
+  static readonly DELETE_RE_LEARN_LOG_CONCURRENCY: number = 10
 
   public static async loadTotalStatistics(): Promise<StatisticsLog> {
     const result = (await browser.storage.sync.get(
@@ -88,7 +93,7 @@ export default class StatisticsUtil {
   /**
    * 古い日付の統計データを削除する
    */
-  public static async removeOldStatistics() {
+  public static async removeOldStatistics(setting: StorageObj) {
     const nowDate = new Date()
     const deleteDate = this.DELETE_STATISTICS_PAST_DAY
 
@@ -100,26 +105,34 @@ export default class StatisticsUtil {
           await browser.storage.sync.remove(keyName)
         }
       }
-    })
+    }, setting)
   }
 
   /**
    * 日付毎の統計情報をすべて削除する
    */
   public static async removeAllStatistics() {
+    const setting = await StorageUtil.getStorageAll()
     this.listStatistics(async (keyName) => {
       await browser.storage.sync.remove(keyName)
-    })
+    }, setting)
+  }
+
+  public static async getListStatisticsFromStorage(): Promise<StatisticsLog[]> {
+    const setting = await StorageUtil.getStorageAll()
+    return await this.getListStatistics(setting)
   }
 
   /**
    * 日付昇順にソートした統計オブジェクトの配列を返す
    */
-  public static async getListStatistics(): Promise<StatisticsLog[]> {
+  public static async getListStatistics(
+    setting: StorageObj
+  ): Promise<StatisticsLog[]> {
     const ret: StatisticsLog[] = []
     await this.listStatistics(async (keyname, log) => {
       ret.push(log)
-    })
+    }, setting)
 
     const retSorted: StatisticsLog[] = ret.sort((a, b): number => {
       const aDate = typeof a.date === "undefined" ? new Date(0) : a.date
@@ -144,13 +157,9 @@ export default class StatisticsUtil {
    * @param callback 統計オブジェクト毎に行いたい処理を指定
    */
   public static async listStatistics(
-    callback: (keyName: string, log: StatisticsLog) => Promise<void>
+    callback: (keyName: string, log: StatisticsLog) => Promise<void>,
+    setting: StorageObj
   ) {
-    // まずsettingが名前インデックス付きであることを定義
-    const setting = (await browser.storage.sync.get(null)) as {
-      [keyname: string]: object
-    }
-
     const ret: StatisticsLog[] = []
     for (const item in setting) {
       // キーの先頭文字でログであることを判断。他の設定で同様のキーを作ると誤動作する。
@@ -205,28 +214,38 @@ export default class StatisticsUtil {
   /**
    * 古い日付の再学習ログデータを削除する
    */
-  public static async removeOldReLearnLog() {
+  public static async removeOldReLearnLog(setting: StorageObj) {
     const nowDate = new Date()
     const deleteDate = this.DELETE_RE_LEARN_LOG_PAST_DAY
 
-    this.listReLearnLog(async (keyName, log) => {
+    const keys: string[] = []
+    await this.listReLearnLog(async (keyName, log) => {
       if (typeof log.date != "undefined") {
         const dateDiff =
           (nowDate.getTime() - log.date.getTime()) / (1000 * 60 * 60 * 24)
         if (dateDiff > deleteDate) {
-          browser.storage.sync.remove(keyName)
+          keys.push(keyName)
         }
       }
-    })
+    }, setting)
+    // 負荷を抑えるために非同期処理の並行処理数を制限する
+    await pMap(
+      keys,
+      async (keyName) => {
+        browser.storage.sync.remove(keyName)
+      },
+      { concurrency: this.DELETE_RE_LEARN_LOG_CONCURRENCY }
+    )
   }
 
   /**
    * 再学習ログデータをすべて削除する
    */
   public static async removeAllReLearnLog() {
+    const setting = await StorageUtil.getStorageAll()
     this.listReLearnLog(async (keyName) => {
       browser.storage.sync.remove(keyName)
-    })
+    }, setting)
   }
 
   /**
@@ -234,13 +253,9 @@ export default class StatisticsUtil {
    * @param callback 再学習ログ毎に行いたい処理を指定
    */
   public static async listReLearnLog(
-    callback: (keyName: string, log: ReLearnLog) => Promise<void>
+    callback: (keyName: string, log: ReLearnLog) => Promise<void>,
+    setting: StorageObj
   ) {
-    // まずsettingが名前インデックス付きであることを定義
-    const setting = (await browser.storage.sync.get(null)) as {
-      [keyname: string]: object
-    }
-
     const ret: ReLearnLog[] = []
     for (const item in setting) {
       // キーの先頭文字でログであることを判断。他の設定で同様のキーを作ると誤動作する。
