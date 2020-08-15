@@ -1,5 +1,5 @@
 import "webextension-polyfill"
-import { BayesianClassifier} from "simple-statistics"
+import { BayesianClassifier } from "simple-statistics"
 import Segmenter from "tiny-segmenter"
 import TagUtil from "./lib/TagUtil"
 import Tag from "./models/Tag"
@@ -90,6 +90,7 @@ export default class backgroud {
     changes: { [key: string]: browser.storage.StorageChange },
     areaName: String
   ): Promise<void> {
+
     if (areaName === "sync") {
       if ("body_max_length" in changes) {
         if ((await this.loadMaxLengthSetting()) === false) {
@@ -97,13 +98,14 @@ export default class backgroud {
           throw new Error("Changed body_max_length property to undefined.")
         }
       }
-    } else if ("tags" in changes) {
-      if ((await this.loadTagSetting()) === false) {
-        // 通常、未設定状態に変更することはないので、それを検知したら例外
-        throw new Error("Changed tag property to undefined.")
+      if ("tags" in changes) {
+        if ((await this.loadTagSetting()) === false) {
+          // 通常、未設定状態に変更することはないので、それを検知したら例外
+          throw new Error("Changed tag property to undefined.")
+        }
+        // メニュー再生成
+        this.createMenu()
       }
-      // メニュー再生成
-      this.createMenu()
     }
   }
 
