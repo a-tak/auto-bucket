@@ -1,13 +1,16 @@
 import StatisticsLog from "@/models/StatisticsLog"
 import msgUtil from "./MessageUtil"
 import ReLearnLog from "@/models/ReLearnLog"
+import pMap from "p-map"
 
 export default class StatisticsUtil {
   static readonly STATISTICS_LOG_PREFIX = "__stat_"
   static readonly RE_LEARN_LOG_PREFIX = "__relog_"
   static readonly TOTAL_STATISTICS_KEY: string = "statistics"
   static readonly DELETE_STATISTICS_PAST_DAY: number = 30
-  static readonly DELETE_RE_LEARN_LOG_PAST_DAY: number = 30
+  static readonly DELETE_RE_LEARN_LOG_PAST_DAY: number = 0
+  /** 再学習ログの並行処理数 */
+  static readonly DELETE_RE_LEARN_LOG_CONCURRENCY: number = 10
 
   public static async loadTotalStatistics(): Promise<StatisticsLog> {
     const result = (await browser.storage.sync.get(
@@ -209,15 +212,24 @@ export default class StatisticsUtil {
     const nowDate = new Date()
     const deleteDate = this.DELETE_RE_LEARN_LOG_PAST_DAY
 
-    this.listReLearnLog(async (keyName, log) => {
+    const keys: string[] = []
+    await this.listReLearnLog(async (keyName, log) => {
       if (typeof log.date != "undefined") {
         const dateDiff =
           (nowDate.getTime() - log.date.getTime()) / (1000 * 60 * 60 * 24)
         if (dateDiff > deleteDate) {
-          browser.storage.sync.remove(keyName)
+          keys.push(keyName)
         }
       }
     })
+    // 負荷を抑えるために非同期処理の並行処理数を制限する
+    await pMap(
+      keys,
+      async (keyName) => {
+        browser.storage.sync.remove(keyName)
+      },
+      { concurrency: this.DELETE_RE_LEARN_LOG_CONCURRENCY }
+    )
   }
 
   /**
