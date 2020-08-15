@@ -133,28 +133,6 @@ const config = {
         },
       ],
     }),
-    // new CopyPlugin([
-    //   { from: 'icons', to: 'icons', ignore: ['icon.xcf'] },
-    //   { from: 'popup/popup.html', to: 'popup/popup.html', transform: transformHtml },
-    //   { from: 'options/options.html', to: 'options/options.html', transform: transformHtml },
-    //   { from: 'logviewer/logviewer.html', to: 'logviewer/logviewer.html', transform: transformHtml },
-    //   { from: 'statistics/statistics.html', to: 'statistics/statistics.html', transform: transformHtml },
-    //   { from: '_locales', to: '_locales', transform: transformHtml },
-    //   {
-    //     from: 'manifest.json',
-    //     to: 'manifest.json',
-    //     transform: content => {
-    //       const jsonContent = JSON.parse(content);
-    //       jsonContent.version = version;
-
-    //       if (config.mode === 'development') {
-    //         jsonContent['content_security_policy'] = "script-src 'self' 'unsafe-eval'; object-src 'self'";
-    //       }
-
-    //       return JSON.stringify(jsonContent, null, 2);
-    //     },
-    //   },
-    // ]),
   ],
 }
 
