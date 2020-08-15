@@ -190,7 +190,7 @@ export default class App extends Vue {
   private async loadStatistics() {
     let data: number[] = [];
     let dateLabel: string[] = [];
-    const items: StatisticsLog[] = await StatisticsUtil.getListStatistics();
+    const items: StatisticsLog[] = await StatisticsUtil.getListStatisticsFromStorage();
     for (const item of items) {
       data.push(
         100 - Math.round((item.wrongCount / item.totalCount) * 100 * 10) / 10

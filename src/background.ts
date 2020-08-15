@@ -8,6 +8,8 @@ import MessageUtil from "./lib/MessageUtil"
 import TotalScore from "./models/TotalScore"
 import StatisticsLog from "./models/StatisticsLog"
 import StatisticsUtil from "./lib/StatisticsUtil"
+import { StorageObj } from "./lib/StorageUtil"
+import StorageUtil from "./lib/StorageUtil"
 import ReLearnLog from "./models/ReLearnLog"
 import pMap from "p-map"
 
@@ -94,7 +96,6 @@ export default class backgroud {
     changes: { [key: string]: browser.storage.StorageChange },
     areaName: String
   ): Promise<void> {
-
     if (areaName === "sync") {
       if ("body_max_length" in changes) {
         if ((await this.loadMaxLengthSetting()) === false) {
@@ -168,14 +169,14 @@ export default class backgroud {
     } else {
       this.classifier_.data = resultObj.data
     }
-
-    await StatisticsUtil.removeOldStatistics()
-    await StatisticsUtil.removeOldReLearnLog()
+    const setting = await StorageUtil.getStorageAll()
+    await StatisticsUtil.removeOldStatistics(setting)
+    await StatisticsUtil.removeOldReLearnLog(setting)
 
     // 学習モデルの整理
     this.garbageCollectionLearnModel()
     // 古いログの削除
-    await this.deleteOldJudgeLog()
+    await this.deleteOldJudgeLog(setting)
     // 統計読み込み
     await this.loadStatistics()
     // 設定読み込み完了フラグ オン
@@ -186,7 +187,7 @@ export default class backgroud {
     this.totalStatistics_ = await StatisticsUtil.loadTotalStatistics()
   }
 
-  private async deleteOldJudgeLog() {
+  private async deleteOldJudgeLog(setting: StorageObj) {
     // 設定読み込み
     let deleteHour = ((await browser.storage.sync.get(
       "log_delete_past_hour"
@@ -197,10 +198,7 @@ export default class backgroud {
       // デフォルトでは3日前のログは削除する
       deleteHour = 24 * 3
     }
-    // まずsettingが名前インデックス付きであることを定義
-    const setting = (await browser.storage.sync.get(null)) as {
-      [keyname: string]: object
-    }
+
     const nowDate = new Date()
     const keys: string[] = []
     for (const item in setting) {
@@ -221,9 +219,8 @@ export default class backgroud {
       async (keyName) => {
         browser.storage.sync.remove(keyName)
       },
-      { concurrency: backgroud.DELETE_OLD_JUDGE_LOG_CONCURRENCY}
+      { concurrency: backgroud.DELETE_OLD_JUDGE_LOG_CONCURRENCY }
     )
-
   }
 
   /**
