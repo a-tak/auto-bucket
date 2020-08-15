@@ -9,8 +9,12 @@ import TotalScore from "./models/TotalScore"
 import StatisticsLog from "./models/StatisticsLog"
 import StatisticsUtil from "./lib/StatisticsUtil"
 import ReLearnLog from "./models/ReLearnLog"
+import pMap from "p-map"
 
 export default class backgroud {
+  /** 再学習ログの並行処理数 */
+  static readonly DELETE_OLD_JUDGE_LOG_CONCURRENCY: number = 10
+
   private classifier_: BayesianClassifier
   private tags_: Tag[] = []
   private bodymaxlength_: number = 100
@@ -165,13 +169,13 @@ export default class backgroud {
       this.classifier_.data = resultObj.data
     }
 
-    StatisticsUtil.removeOldStatistics()
-    StatisticsUtil.removeOldReLearnLog()
+    await StatisticsUtil.removeOldStatistics()
+    await StatisticsUtil.removeOldReLearnLog()
 
     // 学習モデルの整理
     this.garbageCollectionLearnModel()
     // 古いログの削除
-    this.deleteOldJudgeLog()
+    await this.deleteOldJudgeLog()
     // 統計読み込み
     await this.loadStatistics()
     // 設定読み込み完了フラグ オン
@@ -198,6 +202,7 @@ export default class backgroud {
       [keyname: string]: object
     }
     const nowDate = new Date()
+    const keys: string[] = []
     for (const item in setting) {
       // キーの先頭文字でログであることを判断。他の設定で同様のキーを作ると誤動作する。
       if (item.indexOf("__log_", 0) === 0) {
@@ -207,10 +212,18 @@ export default class backgroud {
         const hourdiff =
           (nowDate.getTime() - logDate.getTime()) / (1000 * 60 * 60)
         if (hourdiff > deleteHour) {
-          browser.storage.sync.remove(item)
+          keys.push(item)
         }
       }
     }
+    await pMap(
+      keys,
+      async (keyName) => {
+        browser.storage.sync.remove(keyName)
+      },
+      { concurrency: backgroud.DELETE_OLD_JUDGE_LOG_CONCURRENCY}
+    )
+
   }
 
   /**
