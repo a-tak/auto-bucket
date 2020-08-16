@@ -221,7 +221,7 @@ export default class backgroud {
     await pMap(
       keys,
       async (keyName) => {
-        browser.storage.sync.remove(keyName)
+        await browser.storage.sync.remove(keyName)
       },
       { concurrency: backgroud.DELETE_OLD_JUDGE_LOG_CONCURRENCY }
     )

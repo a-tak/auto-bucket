@@ -232,7 +232,7 @@ export default class StatisticsUtil {
     await pMap(
       keys,
       async (keyName) => {
-        browser.storage.sync.remove(keyName)
+        await browser.storage.sync.remove(keyName)
       },
       { concurrency: this.DELETE_RE_LEARN_LOG_CONCURRENCY }
     )
