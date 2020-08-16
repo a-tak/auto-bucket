@@ -20,6 +20,8 @@ export default class backgroud {
   static readonly JUDGE_MSG_POOL_COUNT: number = 20
   /** メール判定の並行処理数 プールしているメールヘッダに対しての判定処理を並列で行う数 負荷やメモリに影響 */
   static readonly JUDGE_MSG_QUEUE_COUNT: number = 5
+  static readonly LEARN_POOL_COUNT: number = 12
+  static readonly LEARN_MSG_QUEUE_COUNT: number = 3
 
   private classifier_: BayesianClassifier
   private tags_: Tag[] = []
@@ -359,7 +361,6 @@ export default class backgroud {
     const messageList = await browser.messages.list(folder)
 
     await this.classificateMain(messageList)
-
   }
 
   private async subAllClassificate(message: browser.messages.MessageHeader) {
@@ -421,18 +422,46 @@ export default class backgroud {
       await browser.mailTabs.getSelectedMessages()
     )
     let result = generator.next()
-    const promises: Promise<void>[] = []
+
+    let messageAndKeys: {
+      message: browser.messages.MessageHeader
+      tagKey: string
+    }[] = []
     while (!(await result).done) {
       const message = (await result).value
       // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
       if (typeof message != "undefined") {
-        promises.push(this.doLearn(message, tag.key))
+        messageAndKeys.push({ message: message, tagKey: tag.key })
       }
+
+      // 何件か取得したらキューに入れて処理開始し、プールしたメッセージはクリアして続行する
+      // メモリ使用量増大を防ぐためキューが空になるまで待つ
+      if (messageAndKeys.length >= backgroud.LEARN_POOL_COUNT) {
+        await pMap(
+          messageAndKeys,
+          async (messageAndKey) => {
+            await this.doLearn(messageAndKey.message, messageAndKey.tagKey)
+          },
+          { concurrency: backgroud.LEARN_MSG_QUEUE_COUNT }
+        )
+        // プールしたメッセージクリア
+        messageAndKeys = []
+      }
+
       result = generator.next()
     }
 
-    // 処理待ち
-    await Promise.all(promises)
+    // 残りを処理
+    await pMap(
+      messageAndKeys,
+      async (messageAndKey) => {
+        await this.doLearn(messageAndKey.message, messageAndKey.tagKey)
+      },
+      { concurrency: backgroud.LEARN_MSG_QUEUE_COUNT }
+    )
+    // プールしたメッセージクリア
+    messageAndKeys = []
+
     this.saveStatistcs(logDate)
   }
 
@@ -469,9 +498,9 @@ export default class backgroud {
       if (typeof message != "undefined") {
         messages.push(message)
       }
-      
+
       // 何件か取得したらキューに入れて処理開始し、プールしたメッセージはクリアして続行する
-      // メモリ使用量増大を防ぐためキューが空になるまで待つ　
+      // メモリ使用量増大を防ぐためキューが空になるまで待つ
       if (messages.length >= backgroud.JUDGE_MSG_POOL_COUNT) {
         await pMap(
           messages,
@@ -485,7 +514,6 @@ export default class backgroud {
       }
 
       result = generator.next()
-
     }
 
     // 残りを処理
@@ -498,7 +526,7 @@ export default class backgroud {
     )
     // プールしたメッセージクリア
     messages = []
-    
+
     this.saveStatistcs(logDate)
   }
 
