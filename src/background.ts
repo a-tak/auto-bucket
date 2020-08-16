@@ -16,6 +16,10 @@ import pMap from "p-map"
 export default class backgroud {
   /** 再学習ログの並行処理数 */
   static readonly DELETE_OLD_JUDGE_LOG_CONCURRENCY: number = 10
+  /** メール判定の対象ヘッダをプールする数 ここに指定したメールヘッダ分のメモリが必要になる */
+  static readonly JUDGE_MSG_POOL_COUNT: number = 20
+  /** メール判定の並行処理数 プールしているメールヘッダに対しての判定処理を並列で行う数 負荷やメモリに影響 */
+  static readonly JUSGE_MSG_QUEUE_COUNT: number = 5
 
   private classifier_: BayesianClassifier
   private tags_: Tag[] = []
@@ -355,20 +359,45 @@ export default class backgroud {
     const messageList = await browser.messages.list(folder)
     const generator = this.listMessages(messageList)
 
+    let messages: browser.messages.MessageHeader[] = []
     // メール毎に処理
     let result = generator.next()
-    const promises: Promise<void>[] = []
     while (!(await result).done) {
       const message = (await result).value
       // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
       if (typeof message != "undefined") {
-        // 非同期処理待たずにメールを処理
-        promises.push(this.subAllClassificate(message))
+        messages.push(message)
       }
+      
+      // 何件か取得したらキューに入れて処理開始し、プールしたメッセージはクリアして続行する
+      // メモリ使用量増大を防ぐためキューが空になるまで待つ　
+      if (messages.length >= backgroud.JUDGE_MSG_POOL_COUNT) {
+        await pMap(
+          messages,
+          async (message) => {
+            await this.subAllClassificate(message)
+          },
+          { concurrency: backgroud.JUSGE_MSG_QUEUE_COUNT }
+        )
+        // プールしたメッセージクリア
+        messages = []
+      }
+
       result = generator.next()
+
     }
-    // 処理待ち
-    await Promise.all(promises)
+
+    // 残りを処理
+    await pMap(
+      messages,
+      async (message) => {
+        await this.subAllClassificate(message)
+      },
+      { concurrency: backgroud.JUSGE_MSG_QUEUE_COUNT }
+    )
+    // プールしたメッセージクリア
+    messages = []
+
     this.saveStatistcs(logDate)
   }
 
