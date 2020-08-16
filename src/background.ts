@@ -19,7 +19,7 @@ export default class backgroud {
   /** メール判定の対象ヘッダをプールする数 ここに指定したメールヘッダ分のメモリが必要になる */
   static readonly JUDGE_MSG_POOL_COUNT: number = 20
   /** メール判定の並行処理数 プールしているメールヘッダに対しての判定処理を並列で行う数 負荷やメモリに影響 */
-  static readonly JUSGE_MSG_QUEUE_COUNT: number = 5
+  static readonly JUDGE_MSG_QUEUE_COUNT: number = 5
 
   private classifier_: BayesianClassifier
   private tags_: Tag[] = []
@@ -478,7 +478,7 @@ export default class backgroud {
           async (message) => {
             await this.subAllClassificate(message)
           },
-          { concurrency: backgroud.JUSGE_MSG_QUEUE_COUNT }
+          { concurrency: backgroud.JUDGE_MSG_QUEUE_COUNT }
         )
         // プールしたメッセージクリア
         messages = []
@@ -494,7 +494,7 @@ export default class backgroud {
       async (message) => {
         await this.subAllClassificate(message)
       },
-      { concurrency: backgroud.JUSGE_MSG_QUEUE_COUNT }
+      { concurrency: backgroud.JUDGE_MSG_QUEUE_COUNT }
     )
     // プールしたメッセージクリア
     messages = []
