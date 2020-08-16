@@ -357,48 +357,9 @@ export default class backgroud {
     if (mailTabs.length === 0) return
     const folder = mailTabs[0].displayedFolder
     const messageList = await browser.messages.list(folder)
-    const generator = this.listMessages(messageList)
 
-    let messages: browser.messages.MessageHeader[] = []
-    // メール毎に処理
-    let result = generator.next()
-    while (!(await result).done) {
-      const message = (await result).value
-      // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
-      if (typeof message != "undefined") {
-        messages.push(message)
-      }
-      
-      // 何件か取得したらキューに入れて処理開始し、プールしたメッセージはクリアして続行する
-      // メモリ使用量増大を防ぐためキューが空になるまで待つ　
-      if (messages.length >= backgroud.JUDGE_MSG_POOL_COUNT) {
-        await pMap(
-          messages,
-          async (message) => {
-            await this.subAllClassificate(message)
-          },
-          { concurrency: backgroud.JUSGE_MSG_QUEUE_COUNT }
-        )
-        // プールしたメッセージクリア
-        messages = []
-      }
+    await this.classificateMain(messageList)
 
-      result = generator.next()
-
-    }
-
-    // 残りを処理
-    await pMap(
-      messages,
-      async (message) => {
-        await this.subAllClassificate(message)
-      },
-      { concurrency: backgroud.JUSGE_MSG_QUEUE_COUNT }
-    )
-    // プールしたメッセージクリア
-    messages = []
-
-    this.saveStatistcs(logDate)
   }
 
   private async subAllClassificate(message: browser.messages.MessageHeader) {
@@ -486,7 +447,7 @@ export default class backgroud {
   }
 
   private async classificateMain(
-    messages: browser.messages.MessageList
+    messageList: browser.messages.MessageList
   ): Promise<void> {
     // 設定の読み込みが完了していない場合は、処理を続行しない
     if (this.settingLoaded_ === false) {
@@ -497,22 +458,47 @@ export default class backgroud {
     const logDate = new Date()
     this.todayStatistics_ = await StatisticsUtil.loadStatsitics(logDate)
 
-    const generator = this.listMessages(messages)
+    const generator = this.listMessages(messageList)
 
+    let messages: browser.messages.MessageHeader[] = []
     // メール毎に処理
     let result = generator.next()
-    const promises: Promise<void>[] = []
     while (!(await result).done) {
       const message = (await result).value
       // ジェネレーターはundefinedが返る場合もあるので戻ってきた型を見る必要がある
       if (typeof message != "undefined") {
-        promises.push(this.classificationMessage(message))
+        messages.push(message)
       }
+      
+      // 何件か取得したらキューに入れて処理開始し、プールしたメッセージはクリアして続行する
+      // メモリ使用量増大を防ぐためキューが空になるまで待つ　
+      if (messages.length >= backgroud.JUDGE_MSG_POOL_COUNT) {
+        await pMap(
+          messages,
+          async (message) => {
+            await this.subAllClassificate(message)
+          },
+          { concurrency: backgroud.JUSGE_MSG_QUEUE_COUNT }
+        )
+        // プールしたメッセージクリア
+        messages = []
+      }
+
       result = generator.next()
+
     }
 
-    // 処理待ち
-    await Promise.all(promises)
+    // 残りを処理
+    await pMap(
+      messages,
+      async (message) => {
+        await this.subAllClassificate(message)
+      },
+      { concurrency: backgroud.JUSGE_MSG_QUEUE_COUNT }
+    )
+    // プールしたメッセージクリア
+    messages = []
+    
     this.saveStatistcs(logDate)
   }
 
