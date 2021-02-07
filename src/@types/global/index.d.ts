@@ -8,6 +8,12 @@ declare namespace browser.storage.sync {
   // https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/API/storage/StorageArea/clear
   function clear(): Promise<void>
 }
+declare namespace browser.storage.local {
+  function get(setting: object | string | Array<string> | null): Promise<object>
+  function set(setting: object): Promise<void>
+  function remove(key: string | string[]): Promise<void>
+  function clear(): Promise<void>
+}
 declare namespace browser.storage.onChanged {
   // https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/API/storage/onChanged
   function addListener(
