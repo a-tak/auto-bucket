@@ -91,18 +91,54 @@ export default class backgroud {
     // ベイジアンフィルター初期化
     this.classifier_ = new BayesianClassifier()
 
-    // モデル読み込み
-    this.loadSetting().then(() => {
-      // メニュー作成
-      this.createMenu()
+    // DB移行確認
+    this.upgradeDb().then(() => {
+      // モデル読み込み
+      this.loadSetting().then(() => {
+        // メニュー作成
+        this.createMenu()
+      })
     })
+  }
+
+  /**
+   * 必要に応じてローカルストレージに移行する
+   */
+  private async upgradeDb() {
+    // 試しにMaxLengthObjをみて値が取れるか確認
+    let maxLengthObj = (await browser.storage.local.get(
+      "body_max_length"
+    )) as {
+      body_max_length?: number | undefined
+    }
+    if (typeof maxLengthObj.body_max_length === "undefined") {
+      // localストレージが無ければSyncを確認
+      maxLengthObj = (await browser.storage.sync.get(
+        "body_max_length"
+      )) as {
+        body_max_length?: number | undefined
+      }
+      if (typeof maxLengthObj.body_max_length === "undefined") {
+        // Syncストレージにも無ければ完全新規なのでなにもせずに抜ける
+        return
+      } else {
+        // Syncデータをlocalストレージに移行
+        try {
+          const settings = await StorageUtil.getSyncStorageAll()
+          await StorageUtil.setLocalStorageAll(settings)
+          await StorageUtil.clearSyncStorageAll()
+        } catch (error) {
+          throw new Error("DB Upgrade Error: " + error) 
+        }
+      }
+    }
   }
 
   private async storageChangedHook(
     changes: { [key: string]: browser.storage.StorageChange },
     areaName: String
   ): Promise<void> {
-    if (areaName === "sync") {
+    if (areaName === "local") {
       if ("body_max_length" in changes) {
         if ((await this.loadMaxLengthSetting()) === false) {
           // 通常、未設定状態に変更することはないので、それを検知したら例外
@@ -126,7 +162,7 @@ export default class backgroud {
    */
   private async loadMaxLengthSetting(): Promise<boolean> {
     // 本文の処理サイズ上限読み込み
-    const maxLengthObj = (await browser.storage.sync.get(
+    const maxLengthObj = (await browser.storage.local.get(
       "body_max_length"
     )) as {
       body_max_length?: number | undefined
@@ -167,7 +203,7 @@ export default class backgroud {
     }
 
     // objectで保存されているのでタイプアサーションで型を指定している
-    const resultObj = (await browser.storage.sync.get("data")) as {
+    const resultObj = (await browser.storage.local.get("data")) as {
       data: object
     }
     if (resultObj.data == undefined) {
@@ -195,7 +231,7 @@ export default class backgroud {
 
   private async deleteOldJudgeLog(setting: StorageObj) {
     // 設定読み込み
-    let deleteHour = ((await browser.storage.sync.get(
+    let deleteHour = ((await browser.storage.local.get(
       "log_delete_past_hour"
     )) as {
       log_delete_past_hour: number
@@ -223,7 +259,7 @@ export default class backgroud {
     await pMap(
       keys,
       async (keyName) => {
-        await browser.storage.sync.remove(keyName)
+        await browser.storage.local.remove(keyName)
       },
       { concurrency: backgroud.DELETE_OLD_JUDGE_LOG_CONCURRENCY }
     )
@@ -267,7 +303,7 @@ export default class backgroud {
   }
 
   private async saveSetting(): Promise<void> {
-    await browser.storage.sync.set({
+    await browser.storage.local.set({
       data: this.classifier_.data,
       totalCount: this.classifier_.totalCount,
     })
@@ -544,7 +580,7 @@ export default class backgroud {
 
   async showLogViewer(messageHeader: browser.messages.MessageHeader) {
     // 一旦ストレージにmessageを保存しログ画面でそれを取り出す
-    await browser.storage.sync.set({
+    await browser.storage.local.set({
       logTarget: messageHeader,
     })
 

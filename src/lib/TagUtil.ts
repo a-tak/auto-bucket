@@ -11,7 +11,7 @@ export default class TagUtil {
    */
   public static async load(): Promise<Tag[]> {
     const tags: Tag[] = []
-    const resultObj = (await browser.storage.sync.get("tags")) as {
+    const resultObj = (await browser.storage.local.get("tags")) as {
       tags: string[]
     }
 
@@ -53,7 +53,7 @@ export default class TagUtil {
       tagArray.push(tag.key)
     }
 
-    await browser.storage.sync.set({
+    await browser.storage.local.set({
       tags: tagArray,
     })
   }
