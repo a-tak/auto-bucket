@@ -1,4 +1,4 @@
-export default class StatisticsUtil {
+export default class StorageUtil {
   /**
    * ストレージから全設定データを取得する
    */
