@@ -5,5 +5,4 @@ services:
     working_dir: /mnt
     volumes:
       - .:/mnt
-    ports:
-      - 8080:8080
+      

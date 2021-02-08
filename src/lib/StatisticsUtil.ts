@@ -15,7 +15,7 @@ export default class StatisticsUtil {
   static readonly DELETE_RE_LEARN_LOG_CONCURRENCY: number = 10
 
   public static async loadTotalStatistics(): Promise<StatisticsLog> {
-    const result = (await browser.storage.sync.get(
+    const result = (await browser.storage.local.get(
       this.TOTAL_STATISTICS_KEY
     )) as {
       statistics: StatisticsLogObj
@@ -33,13 +33,13 @@ export default class StatisticsUtil {
       value.date = new Date()
     }
     const obj = this.toStatistcsObj(value)
-    await browser.storage.sync.set({
+    await browser.storage.local.set({
       [this.TOTAL_STATISTICS_KEY]: obj,
     })
   }
 
   public static async removeTotalStatistics() {
-    await browser.storage.sync.remove(this.TOTAL_STATISTICS_KEY)
+    await browser.storage.local.remove(this.TOTAL_STATISTICS_KEY)
   }
 
   /**
@@ -50,7 +50,7 @@ export default class StatisticsUtil {
   public static async loadStatsitics(date: Date): Promise<StatisticsLog> {
     const keyname = this.STATISTICS_LOG_PREFIX + date.toDateString()
 
-    let result = (await browser.storage.sync.get(keyname)) as {
+    let result = (await browser.storage.local.get(keyname)) as {
       [keyname: string]: StatisticsLogObj
     }
 
@@ -85,7 +85,7 @@ export default class StatisticsUtil {
   public static async saveStatistics(statLog: StatisticsLog, date: Date) {
     const obj = this.toStatistcsObj(statLog)
     const keyname = this.STATISTICS_LOG_PREFIX + date.toDateString()
-    await browser.storage.sync.set({
+    await browser.storage.local.set({
       [keyname]: obj,
     })
   }
@@ -102,7 +102,7 @@ export default class StatisticsUtil {
         const dateDiff =
           (nowDate.getTime() - log.date.getTime()) / (1000 * 60 * 60 * 24)
         if (dateDiff > deleteDate) {
-          await browser.storage.sync.remove(keyName)
+          await browser.storage.local.remove(keyName)
         }
       }
     }, setting)
@@ -114,7 +114,7 @@ export default class StatisticsUtil {
   public static async removeAllStatistics() {
     const setting = await StorageUtil.getStorageAll()
     this.listStatistics(async (keyName) => {
-      await browser.storage.sync.remove(keyName)
+      await browser.storage.local.remove(keyName)
     }, setting)
   }
 
@@ -194,7 +194,7 @@ export default class StatisticsUtil {
   ): Promise<ReLearnLog | undefined> {
     const messageId: string = await msgUtil.getMailMessageId(message)
     const keyname: string = this.RE_LEARN_LOG_PREFIX + messageId
-    const ret = (await browser.storage.sync.get(keyname)) as {
+    const ret = (await browser.storage.local.get(keyname)) as {
       [kenyname: string]: ReLearnLogObj
     }
     const rellog: ReLearnLog | undefined = this.toReLearnLog(ret[keyname])
@@ -208,7 +208,7 @@ export default class StatisticsUtil {
   public static async saveReLearnLog(log: ReLearnLog) {
     const messageId = log.messageId
     const keyname = this.RE_LEARN_LOG_PREFIX + messageId
-    await browser.storage.sync.set({ [keyname]: this.toReLearnObj(log) })
+    await browser.storage.local.set({ [keyname]: this.toReLearnObj(log) })
   }
 
   /**
@@ -232,7 +232,7 @@ export default class StatisticsUtil {
     await pMap(
       keys,
       async (keyName) => {
-        await browser.storage.sync.remove(keyName)
+        await browser.storage.local.remove(keyName)
       },
       { concurrency: this.DELETE_RE_LEARN_LOG_CONCURRENCY }
     )
@@ -244,7 +244,7 @@ export default class StatisticsUtil {
   public static async removeAllReLearnLog() {
     const setting = await StorageUtil.getStorageAll()
     this.listReLearnLog(async (keyName) => {
-      browser.storage.sync.remove(keyName)
+      browser.storage.local.remove(keyName)
     }, setting)
   }
 

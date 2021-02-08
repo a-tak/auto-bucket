@@ -65,13 +65,13 @@ export default class LogEntry {
       throw new Error("Not set classifiedTag")
 
     const keyname = "__log_" + this.id
-    await browser.storage.sync.set({ [keyname]: this })
+    await browser.storage.local.set({ [keyname]: this })
   }
 
   public async load(): Promise<boolean> {
     if (this.id_ == "" || this.id_ == undefined) throw new Error("Not set id")
     const keyname = "__log_" + this.id
-    const log = (await browser.storage.sync.get(keyname)) as {
+    const log = (await browser.storage.local.get(keyname)) as {
       [kenyname: string]: LogEntry
     }
     const entry = log[keyname]

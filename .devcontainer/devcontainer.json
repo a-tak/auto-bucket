@@ -41,7 +41,7 @@
   // "shutdownAction": "none",
 
   // Uncomment the next line to run commands after the container is created - for example installing curl.
-  "postCreateCommand": "npm install && git remote add origin https://github.com/a-tak/auto-bucket.git && git branch --set-upstream-to=origin/master master"
+  "postCreateCommand": "/bin/bash postCreateCommand.sh"
 
   // Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
   // "remoteUser": "vscode"

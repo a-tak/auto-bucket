@@ -191,14 +191,14 @@ export default class App extends Vue {
     this.values_ = []
 
     const tags = await TagUtil.load()
-    this.bodymaxlength_ = ((await browser.storage.sync.get(
+    this.bodymaxlength_ = ((await browser.storage.local.get(
       "body_max_length"
     )) as {
       body_max_length: number
     }).body_max_length
     if (typeof this.bodymaxlength_ === "undefined") { this.bodymaxlength_ = 100 }
 
-    this.logDeletePastHour_ = ((await browser.storage.sync.get(
+    this.logDeletePastHour_ = ((await browser.storage.local.get(
       "log_delete_past_hour"
     )) as {
       log_delete_past_hour: number
@@ -229,11 +229,11 @@ export default class App extends Vue {
 
     TagUtil.save(this.values_).then(() => {
       // 学習対象の上限サイズ保存
-      browser.storage.sync.set({
+      browser.storage.local.set({
         body_max_length: this.bodymaxlength_,
       })
       // ログ保持期間の保存
-      browser.storage.sync.set({
+      browser.storage.local.set({
         log_delete_past_hour: this.logDeletePastHour_,
       })
 
@@ -259,8 +259,8 @@ export default class App extends Vue {
   }
 
   private clearLearn() {
-    browser.storage.sync.remove("data")
-    browser.storage.sync.remove("totalCount")
+    browser.storage.local.remove("data")
+    browser.storage.local.remove("totalCount")
 
     // タイムアウトリセットするため一度消す
     this.snackTop_ = false
@@ -284,7 +284,7 @@ export default class App extends Vue {
   }
 
   private clearSetting() {
-    browser.storage.sync.clear()
+    browser.storage.local.clear()
 
     // タイムアウトリセットするため一度消す
     this.snackTop_ = false

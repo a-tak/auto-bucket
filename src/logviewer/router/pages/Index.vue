@@ -245,7 +245,7 @@ export default class App extends Vue {
   }
 
   private async getTargetMessage(): Promise<browser.messages.MessageHeader> {
-    const header = (await browser.storage.sync.get("logTarget")) as
+    const header = (await browser.storage.local.get("logTarget")) as
       | undefined
       | {
           logTarget: browser.messages.MessageHeader

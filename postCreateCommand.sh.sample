@@ -1,0 +1,7 @@
+#!/bin/bash
+
+npm install
+git remote add origin https://github.com/xxxx/auto-bucket.git
+git branch --set-upstream-to=origin/master master
+git config --global user.email "xxxx@xxxx.com"
+git config --global user.name "xxxx"
