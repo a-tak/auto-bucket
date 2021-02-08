@@ -57,3 +57,18 @@
 |判定ログ表示|Ctrl + Shift + V|
 |統計情報表示|Alt + Shift + S|
 
+## バージョン1.1.7以前をお使いだった方へ
+
+バージョン1.2.0からデータの保存先をSyncストレージ領域からLocalストレージ領域へ変更しました。
+理由としては、Syncストレージ領域はデータを削除してもdeletedフラグが設定されるだけで実際のデータは削除されず蓄積され続けることが分かったからです。
+その結果、Thunderbirdの起動に時間がかかるようになっていました。
+
+今回の変更で起動時に遅くなる問題は解決しましたが、Syncストレージにはdeletedフラグがついたデータが残っています。これについて特に動作上の問題はありませんが、データが残り続けることが気になる方は以下の方法で過去のデータを削除することが出来ます。
+ただし、Thunderbirdのデータベースを直接編集するため十分な注意を払うようお願いします。
+
+1. DB Browserをダウンロードする https://sqlitebrowser.org/
+2. Thunderbirdを終了する
+3. Thunderbirdの対象のプロファイルが保存されているフォルダに存在する `storage-sync.sqlite` を DB Browserで開く
+4. `SQL実行` タブで `delete from collection_data where collection_name = 'default/autobacket@a-tak.com' and record  like '%"_status":"deleted"%'` を実行する
+
+これで作業完了です。
