@@ -27,15 +27,8 @@ const config = {
     rules: [
       {
         test: /\.ts$/,
-        // TypeScript をコンパイルする
-        use: [
-          {
-            loader: "ts-loader",
-            options: {
-              appendTsSuffixTo: [/\.vue$/],
-            },
-          },
-        ],
+        use: "ts-loader",
+        exclude: /node_modules/,
       },
       {
         test: /\.vue$/,

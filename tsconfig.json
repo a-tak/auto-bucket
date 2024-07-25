@@ -1,13 +1,18 @@
 {
   "compilerOptions": {
-    "typeRoots": ["node_modules/@types", "node_modules/thunderbird-web-ext-types"],
-    "target": "esnext",
-    "module": "esnext",
+    "typeRoots": [
+      "node_modules/@types",
+      "node_modules/thunderbird-web-ext-types"
+    ],
+    "target": "ES6",
+    "module": "commonjs",
     "strict": true,
     "jsx": "preserve",
     "importHelpers": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
@@ -15,16 +20,11 @@
     "resolveJsonModule": true,
     "noImplicitThis": true,
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "src/**/*.ts",
@@ -33,7 +33,5 @@
     "tests/**/*.ts",
     "tests/**/*.tsx"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

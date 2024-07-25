@@ -13,30 +13,42 @@ import StorageUtil from "./lib/StorageUtil"
 import ReLearnLog from "./models/ReLearnLog"
 import pMap from "p-map"
 
-export default class backgroud {
+export default class background {
   /** 再学習ログの並行処理数 */
-  static readonly DELETE_OLD_JUDGE_LOG_CONCURRENCY: number = 10
+  static DELETE_OLD_JUDGE_LOG_CONCURRENCY: number
   /** メール判定の対象ヘッダをプールする数 ここに指定したメールヘッダ分のメモリが必要になる */
-  static readonly JUDGE_MSG_POOL_COUNT: number = 20
+  static JUDGE_MSG_POOL_COUNT: number
   /** メール判定の並行処理数 プールしているメールヘッダに対しての判定処理を並列で行う数 負荷やメモリに影響 */
-  static readonly JUDGE_MSG_QUEUE_COUNT: number = 5
-  static readonly LEARN_POOL_COUNT: number = 12
-  static readonly LEARN_MSG_QUEUE_COUNT: number = 3
+  static JUDGE_MSG_QUEUE_COUNT: number
+  static LEARN_POOL_COUNT: number
+  static LEARN_MSG_QUEUE_COUNT: number
 
   private classifier_: BayesianClassifier
   private tags_: Tag[] = []
-  private bodymaxlength_: number = 100
-  private totalStatistics_: StatisticsLog = StatisticsUtil.getInitialObj()
-  private todayStatistics_: StatisticsLog = StatisticsUtil.getInitialObj()
+  private bodymaxlength_: number
+  private totalStatistics_: StatisticsLog
+  private todayStatistics_: StatisticsLog
   /** 設定読み込み済みフラグ */
-  private settingLoaded_: boolean = false
+  private settingLoaded_: boolean
 
   static readonly NOTIFY_ID_NOT_SET: string = "notset"
 
   constructor() {
+    background.DELETE_OLD_JUDGE_LOG_CONCURRENCY = 10
+    background.JUDGE_MSG_POOL_COUNT = 20
+    background.JUDGE_MSG_QUEUE_COUNT = 5
+    background.LEARN_POOL_COUNT = 12
+    background.LEARN_MSG_QUEUE_COUNT = 3
+
+    this.classifier_ = new BayesianClassifier()
+    this.bodymaxlength_ = 100
+    this.totalStatistics_ = StatisticsUtil.getInitialObj()
+    this.todayStatistics_ = StatisticsUtil.getInitialObj()
+    this.settingLoaded_ = false
+
     browser.notifications.onClicked.addListener((notificateionId) => {
       switch (notificateionId) {
-        case backgroud.NOTIFY_ID_NOT_SET:
+        case background.NOTIFY_ID_NOT_SET:
           {
             browser.runtime.openOptionsPage()
           }
@@ -106,16 +118,12 @@ export default class backgroud {
    */
   private async upgradeDb() {
     // 試しにMaxLengthObjをみて値が取れるか確認
-    let maxLengthObj = (await browser.storage.local.get(
-      "body_max_length"
-    )) as {
+    let maxLengthObj = (await browser.storage.local.get("body_max_length")) as {
       body_max_length?: number | undefined
     }
     if (typeof maxLengthObj.body_max_length === "undefined") {
       // localストレージが無ければSyncを確認
-      maxLengthObj = (await browser.storage.sync.get(
-        "body_max_length"
-      )) as {
+      maxLengthObj = (await browser.storage.sync.get("body_max_length")) as {
         body_max_length?: number | undefined
       }
       if (typeof maxLengthObj.body_max_length === "undefined") {
@@ -128,7 +136,7 @@ export default class backgroud {
           await StorageUtil.setLocalStorageAll(settings)
           await StorageUtil.clearSyncStorageAll()
         } catch (error) {
-          throw new Error("DB Upgrade Error: " + error) 
+          throw new Error("DB Upgrade Error: " + error)
         }
       }
     }
@@ -231,11 +239,11 @@ export default class backgroud {
 
   private async deleteOldJudgeLog(setting: StorageObj) {
     // 設定読み込み
-    let deleteHour = ((await browser.storage.local.get(
-      "log_delete_past_hour"
-    )) as {
-      log_delete_past_hour: number
-    }).log_delete_past_hour
+    let deleteHour = (
+      (await browser.storage.local.get("log_delete_past_hour")) as {
+        log_delete_past_hour: number
+      }
+    ).log_delete_past_hour
     if (typeof deleteHour === "undefined") {
       // デフォルトでは3日前のログは削除する
       deleteHour = 24 * 3
@@ -261,7 +269,7 @@ export default class backgroud {
       async (keyName) => {
         await browser.storage.local.remove(keyName)
       },
-      { concurrency: backgroud.DELETE_OLD_JUDGE_LOG_CONCURRENCY }
+      { concurrency: background.DELETE_OLD_JUDGE_LOG_CONCURRENCY }
     )
   }
 
@@ -472,13 +480,13 @@ export default class backgroud {
 
       // 何件か取得したらキューに入れて処理開始し、プールしたメッセージはクリアして続行する
       // メモリ使用量増大を防ぐためキューが空になるまで待つ
-      if (messageAndKeys.length >= backgroud.LEARN_POOL_COUNT) {
+      if (messageAndKeys.length >= background.LEARN_POOL_COUNT) {
         await pMap(
           messageAndKeys,
           async (messageAndKey) => {
             await this.doLearn(messageAndKey.message, messageAndKey.tagKey)
           },
-          { concurrency: backgroud.LEARN_MSG_QUEUE_COUNT }
+          { concurrency: background.LEARN_MSG_QUEUE_COUNT }
         )
         // プールしたメッセージクリア
         messageAndKeys = []
@@ -493,7 +501,7 @@ export default class backgroud {
       async (messageAndKey) => {
         await this.doLearn(messageAndKey.message, messageAndKey.tagKey)
       },
-      { concurrency: backgroud.LEARN_MSG_QUEUE_COUNT }
+      { concurrency: background.LEARN_MSG_QUEUE_COUNT }
     )
     // プールしたメッセージクリア
     messageAndKeys = []
@@ -537,13 +545,13 @@ export default class backgroud {
 
       // 何件か取得したらキューに入れて処理開始し、プールしたメッセージはクリアして続行する
       // メモリ使用量増大を防ぐためキューが空になるまで待つ
-      if (messages.length >= backgroud.JUDGE_MSG_POOL_COUNT) {
+      if (messages.length >= background.JUDGE_MSG_POOL_COUNT) {
         await pMap(
           messages,
           async (message) => {
             await this.subAllClassificate(message)
           },
-          { concurrency: backgroud.JUDGE_MSG_QUEUE_COUNT }
+          { concurrency: background.JUDGE_MSG_QUEUE_COUNT }
         )
         // プールしたメッセージクリア
         messages = []
@@ -558,7 +566,7 @@ export default class backgroud {
       async (message) => {
         await this.subAllClassificate(message)
       },
-      { concurrency: backgroud.JUDGE_MSG_QUEUE_COUNT }
+      { concurrency: background.JUDGE_MSG_QUEUE_COUNT }
     )
     // プールしたメッセージクリア
     messages = []
@@ -574,7 +582,9 @@ export default class backgroud {
     }
 
     this.showLogViewer(
-      await (await browser.mailTabs.getSelectedMessages()).messages[0]
+      await (
+        await browser.mailTabs.getSelectedMessages()
+      ).messages[0]
     )
   }
 
@@ -938,7 +948,7 @@ export default class backgroud {
   }
 
   private noticeNotSetting(): void {
-    browser.notifications.create(backgroud.NOTIFY_ID_NOT_SET, {
+    browser.notifications.create(background.NOTIFY_ID_NOT_SET, {
       type: "basic",
       title: "AutoBucket",
       iconUrl: browser.extension.getURL("icons/icon_48.png"),
@@ -947,7 +957,7 @@ export default class backgroud {
   }
 
   private noticeClearNotSetting(): void {
-    browser.notifications.clear(backgroud.NOTIFY_ID_NOT_SET)
+    browser.notifications.clear(background.NOTIFY_ID_NOT_SET)
   }
 }
 
@@ -981,6 +991,6 @@ const ContentType = {
   PlainText: "text/plain",
   Html: "text/html",
 }
-type ContentType = typeof ContentType[keyof typeof ContentType]
+type ContentType = (typeof ContentType)[keyof typeof ContentType]
 
-const obj = new backgroud()
+const obj = new background()

@@ -1,6 +1,6 @@
 {
   "name": "autobucket",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Thunderbird auto classification web extension",
   "author": "A-tak <hoge+git@a-tak.com>",
   "scripts": {
@@ -29,16 +29,17 @@
     "webextension-polyfill": "^0.6.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.13",
-    "@babel/plugin-proposal-class-properties": "^7.12.13",
+    "@babel/core": "^7.24.9",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-proposal-decorators": "^7.12.13",
     "@babel/plugin-proposal-optional-chaining": "^7.12.13",
-    "@babel/preset-env": "^7.12.13",
+    "@babel/preset-env": "^7.24.8",
+    "@babel/preset-typescript": "^7.24.7",
     "@babel/runtime-corejs3": "^7.12.13",
     "@types/chart.js": "^2.9.30",
     "archiver": "^5.2.0",
     "babel-eslint": "^10.0.3",
-    "babel-loader": "^8.2.2",
+    "babel-loader": "^8.3.0",
     "copy-webpack-plugin": "^6.4.1",
     "core-js": "^3.8.3",
     "cross-env": "^7.0.3",
