@@ -4,10 +4,10 @@
   "description": "Thunderbird auto classification web extension",
   "author": "A-tak <hoge+git@a-tak.com>",
   "scripts": {
-    "build": "cross-env NODE_ENV=production webpack --hide-modules",
+    "build": "cross-env NODE_ENV=production webpack",
     "lint": "eslint --ext .js,.vue src",
     "build-zip": "node scripts/build-zip.js",
-    "build:dev": "cross-env NODE_ENV=development webpack --hide-modules",
+    "build:dev": "cross-env NODE_ENV=development webpack",
     "prettier": "prettier \"src/**/*.{js,vue}\"",
     "prettier:write": "npm run prettier -- --write",
     "watch": "npm run build -- --watch",
@@ -64,6 +64,7 @@
     "pretty-quick": "^3.1.0",
     "sass": "^1.32.6",
     "sass-loader": "^10.1.1",
+    "source-map-loader": "^5.0.0",
     "thunderbird-web-ext-types": "^1.0.0",
     "ts-loader": "^8.0.15",
     "typescript": "^4.1.3",
@@ -72,9 +73,8 @@
     "vue-template-compiler": "^2.6.12",
     "vuetify-loader": "^1.7.2",
     "web-ext-types": "^3.2.1",
-    "webpack": "^4.46.0",
-    "webpack-cli": "^3.3.12",
-    "webpack-extension-reloader": "^1.1.0"
+    "webpack": "^5.93.0",
+    "webpack-cli": "^5.1.4"
   },
   "engines": {
     "node": ">=10"

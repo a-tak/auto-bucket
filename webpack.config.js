@@ -1,14 +1,15 @@
+const path = require("path")
 const webpack = require("webpack")
-const ejs = require("ejs")
+const { VueLoaderPlugin } = require("vue-loader")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const CopyPlugin = require("copy-webpack-plugin")
-const ExtensionReloader = require("webpack-extension-reloader")
-const { VueLoaderPlugin } = require("vue-loader")
-const { version } = require("./package.json")
+const ejs = require("ejs")
+const version = require("./package.json").version
 
 const config = {
-  mode: process.env.NODE_ENV,
-  context: __dirname + "/src",
+  mode: process.env.NODE_ENV || "development",
+  context: path.resolve(__dirname, "src"),
+  devtool: "source-map", // ソースマップを有効にする
   entry: {
     background: "./background.ts",
     "popup/popup": "./popup/popup.ts",
@@ -17,8 +18,10 @@ const config = {
     "statistics/statistics": "./statistics/statistics.ts",
   },
   output: {
-    path: __dirname + "/dist",
+    path: path.resolve(__dirname, "dist"),
     filename: "[name].js",
+    sourceMapFilename: "[name].[contenthash].js.map",
+    publicPath: "/",
   },
   resolve: {
     extensions: [".js", ".ts", ".vue"],
@@ -75,7 +78,15 @@ const config = {
           esModule: false,
         },
       },
+      {
+        test: /\.js$/,
+        enforce: "pre",
+        use: ["source-map-loader"],
+      },
     ],
+  },
+  optimization: {
+    minimize: false, // Minifyを無効にする
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -127,6 +138,9 @@ const config = {
       ],
     }),
   ],
+  stats: {
+    modules: false, // モジュールの表示を制御
+  },
 }
 
 if (config.mode === "production") {
@@ -135,14 +149,6 @@ if (config.mode === "production") {
       "process.env": {
         NODE_ENV: '"production"',
       },
-    }),
-  ])
-}
-
-if (process.env.HMR === "true") {
-  config.plugins = (config.plugins || []).concat([
-    new ExtensionReloader({
-      manifest: __dirname + "/src/manifest.json",
     }),
   ])
 }
