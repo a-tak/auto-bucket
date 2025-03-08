@@ -106,16 +106,12 @@ export default class backgroud {
    */
   private async upgradeDb() {
     // 試しにMaxLengthObjをみて値が取れるか確認
-    let maxLengthObj = (await browser.storage.local.get(
-      "body_max_length"
-    )) as {
+    let maxLengthObj = (await browser.storage.local.get("body_max_length")) as {
       body_max_length?: number | undefined
     }
     if (typeof maxLengthObj.body_max_length === "undefined") {
       // localストレージが無ければSyncを確認
-      maxLengthObj = (await browser.storage.sync.get(
-        "body_max_length"
-      )) as {
+      maxLengthObj = (await browser.storage.sync.get("body_max_length")) as {
         body_max_length?: number | undefined
       }
       if (typeof maxLengthObj.body_max_length === "undefined") {
@@ -128,7 +124,7 @@ export default class backgroud {
           await StorageUtil.setLocalStorageAll(settings)
           await StorageUtil.clearSyncStorageAll()
         } catch (error) {
-          throw new Error("DB Upgrade Error: " + error) 
+          throw new Error("DB Upgrade Error: " + error)
         }
       }
     }
@@ -231,11 +227,11 @@ export default class backgroud {
 
   private async deleteOldJudgeLog(setting: StorageObj) {
     // 設定読み込み
-    let deleteHour = ((await browser.storage.local.get(
-      "log_delete_past_hour"
-    )) as {
-      log_delete_past_hour: number
-    }).log_delete_past_hour
+    let deleteHour = (
+      (await browser.storage.local.get("log_delete_past_hour")) as {
+        log_delete_past_hour: number
+      }
+    ).log_delete_past_hour
     if (typeof deleteHour === "undefined") {
       // デフォルトでは3日前のログは削除する
       deleteHour = 24 * 3
@@ -574,7 +570,9 @@ export default class backgroud {
     }
 
     this.showLogViewer(
-      await (await browser.mailTabs.getSelectedMessages()).messages[0]
+      await (
+        await browser.mailTabs.getSelectedMessages()
+      ).messages[0]
     )
   }
 
@@ -657,17 +655,23 @@ export default class backgroud {
    */
   async doLearn(message: browser.messages.MessageHeader, category: string) {
     const words = await this.getTargetMessage(message)
+
+    // まず現在のモデルでの判定結果を確認
+    let currentCategory = await this.judgeClassification(message)
+
+    // 既に意図したカテゴリと一致していれば学習をスキップ、一致していない場合のみ学習を実行
     let relearn: number = 0
-    do {
-      relearn += 1
-      for (const word of words) {
-        // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
-        this.classifier_.train({ word: word }, category)
-      }
-    } while (
-      // 再度判定して指定したタグとして判定されるまで繰り返し学習する
-      (await this.judgeClassification(message)) != category
-    )
+    if (currentCategory !== category) {
+      do {
+        relearn += 1
+        for (const word of words) {
+          // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
+          this.classifier_.train({ word: word }, category)
+        }
+        // 再度判定して指定したタグとして判定されるか確認
+        currentCategory = await this.judgeClassification(message)
+      } while (currentCategory !== category)
+    }
 
     // 現在の分類タグを待避
     const previousTag = await this.getClassificateTag(message)
@@ -981,6 +985,6 @@ const ContentType = {
   PlainText: "text/plain",
   Html: "text/html",
 }
-type ContentType = typeof ContentType[keyof typeof ContentType]
+type ContentType = (typeof ContentType)[keyof typeof ContentType]
 
 const obj = new backgroud()
