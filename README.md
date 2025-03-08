@@ -96,3 +96,4 @@ addons-linter web-ext-artifacts/autobucket-1.0.zip
 
 - Thunderbird で拡張機能のページの右上歯車アイコンから `アドオンをデバッグ`
 - zip を指定
+- Thunderbird 側でこの状態のままだと zip を作り直しても生成されないので削除して zip は作り直すこと
