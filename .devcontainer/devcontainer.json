@@ -25,10 +25,11 @@
   "extensions": [
     "yzhang.markdown-all-in-one",
     "eamodio.gitlens",
-    "octref.vetur",
     "esbenp.prettier-vscode",
     "ms-azuretools.vscode-docker",
-    "ryu1kn.partial-diff"
+    "ryu1kn.partial-diff",
+    "saoudrizwan.claude-dev",
+    "Vue.volar"
   ],
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
