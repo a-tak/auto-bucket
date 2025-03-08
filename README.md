@@ -2,16 +2,16 @@
 
 ![](docs/github-open-graph.png)
 
- Thunderbird用ベイジアンフィルターによる自動メール分類拡張機能
+Thunderbird 用ベイジアンフィルターによる自動メール分類拡張機能
 
-## Thunderdアドオンページ
+## Thunderd アドオンページ
 
 https://addons.thunderbird.net/ja/thunderbird/addon/autobucket/
 
 ## GitHub Pages
 
-* https://a-tak.github.io/auto-bucket/ (English)
-* https://a-tak.github.io/auto-bucket/README_ja (日本語)
+- https://a-tak.github.io/auto-bucket/ (English)
+- https://a-tak.github.io/auto-bucket/README_ja (日本語)
 
 ## ブログ
 
@@ -37,29 +37,29 @@ npm i
 
 ```
 npm run build
-npm run build-zip 
+npm run build-zip
 ```
 
-Addonとして公開する場合は同じバージョンはアップし直せないので、package.jsonのバージョンを変えること
-(manifest.jsonのバージョンはpackage.jsonのバージョンで書き換えられる)
+Addon として公開する場合は同じバージョンはアップし直せないので、package.json のバージョンを変えること
+(manifest.json のバージョンは package.json のバージョンで書き換えられる)
 
 ## リリース
 
 1. ブランチをプッシュ
-2. GitHubでプルリクエスト作成しマージ
-3. masterをプル
-4. package.jsonのバージョンを変更
-5. コミットしてgithubにプッシュ
+2. GitHub でプルリクエスト作成しマージ
+3. master をプル
+4. package.json のバージョンを変更
+5. コミットして github にプッシュ
 6. タグをつける
-7. githubにプッシュ(タグをフォロー)
-8. githubでタグをリリースへ
+7. github にプッシュ(タグをフォロー)
+8. github でタグをリリースへ
    1. プルリクエストの説明を抜粋してリリースの説明を作る
 9. ソースをダウンロード
-10. ビルド ```npm run build```
-11. distの中をzip化 ```npm run build-zip```
+10. ビルド `npm run build`
+11. dist の中を zip 化 `npm run build-zip`
 12. https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/submit/ へアップロード
 13. ソースもアップロード
-14. アップ完了後、各国語毎に説明を入れるページが表示さるのでgithubのリリースの説明を貼り付け
+14. アップ完了後、各国語毎に説明を入れるページが表示さるので github のリリースの説明を貼り付け
 
 ## セキュリティーアップデート手順
 
@@ -67,16 +67,16 @@ Addonとして公開する場合は同じバージョンはアップし直せな
 
 1. ブランチ作成
 1. マイナーバージョンアップ適用
-    ```
-    npm update
-    ```
+   ```
+   npm update
+   ```
 1. 一旦コミット
-2. メジャーアップデートが残るので確認して一つずつ適用
-    ```
-    npm outdate
-    npm install パッケージ名@latest
-    ```
-3. 動作確認して問題なければコミット & プッシュ
+1. メジャーアップデートが残るので確認して一つずつ適用
+   ```
+   npm outdate
+   npm install パッケージ名@latest
+   ```
+1. 動作確認して問題なければコミット & プッシュ
 
 ## Linter
 
@@ -91,3 +91,8 @@ npm install -g addons-linter
 ```bash
 addons-linter web-ext-artifacts/autobucket-1.0.zip
 ```
+
+## デバッグ方法
+
+- Thunderbird で拡張機能のページの右上歯車アイコンから `アドオンをデバッグ`
+- zip を指定
