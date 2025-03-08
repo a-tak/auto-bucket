@@ -32,14 +32,27 @@
           <v-select
             v-model="values_"
             :items="tags_"
-            attach
             chips
             :label="$t('message.classificate_tag_label')"
             multiple
             :hint="$t('message.classificate_tag_hint')"
             persistent-hint
+            :menu-props="{ maxHeight: 400 }"
+            item-text="text"
+            return-object
             class="ma-3 pa-2"
-          ></v-select>
+          >
+            <template v-slot:selection="{ item }">
+              <v-chip>{{ item.text }}</v-chip>
+            </template>
+            <template v-slot:item="{ item, attrs, on }">
+              <v-list-item v-bind="attrs" v-on="on">
+                <v-list-item-content>
+                  <v-list-item-title>{{ item.text }}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-select>
           <v-text-field
             class="ma-3 pa-2"
             v-model="bodymaxlength_"
@@ -191,19 +204,23 @@ export default class App extends Vue {
     this.values_ = []
 
     const tags = await TagUtil.load()
-    this.bodymaxlength_ = ((await browser.storage.local.get(
-      "body_max_length"
-    )) as {
-      body_max_length: number
-    }).body_max_length
-    if (typeof this.bodymaxlength_ === "undefined") { this.bodymaxlength_ = 100 }
+    this.bodymaxlength_ = (
+      (await browser.storage.local.get("body_max_length")) as {
+        body_max_length: number
+      }
+    ).body_max_length
+    if (typeof this.bodymaxlength_ === "undefined") {
+      this.bodymaxlength_ = 100
+    }
 
-    this.logDeletePastHour_ = ((await browser.storage.local.get(
-      "log_delete_past_hour"
-    )) as {
-      log_delete_past_hour: number
-    }).log_delete_past_hour
-    if (typeof this.logDeletePastHour_ === "undefined") { this.logDeletePastHour_ = 72 }
+    this.logDeletePastHour_ = (
+      (await browser.storage.local.get("log_delete_past_hour")) as {
+        log_delete_past_hour: number
+      }
+    ).log_delete_past_hour
+    if (typeof this.logDeletePastHour_ === "undefined") {
+      this.logDeletePastHour_ = 72
+    }
 
     this.tags_ = tags
     for (const tag of tags) {
