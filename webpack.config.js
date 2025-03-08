@@ -30,6 +30,9 @@ const config = {
         // TypeScript をコンパイルする
         use: [
           {
+            loader: "babel-loader",
+          },
+          {
             loader: "ts-loader",
             options: {
               appendTsSuffixTo: [/\.vue$/],
