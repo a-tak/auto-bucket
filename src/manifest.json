@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "AutoBucket",
-  "version": "0.0.0",
+  "version": "1.2.2",
   "author": "A-tak",
   "description": "__MSG_extensionDescription__",
   "homepage_url": "__MSG_homepage__",
@@ -40,19 +40,35 @@
   },
   "commands": {
     "all-classificate": {
-      "suggested_key": { "default": "Alt+Shift+B", "windows": "Ctrl+B", "linux": "Alt+Shift+B" },
+      "suggested_key": {
+        "default": "Alt+Shift+B",
+        "windows": "Ctrl+B",
+        "linux": "Alt+Shift+B"
+      },
       "description": "__MSG_allClassificateDescription__"
     },
     "classificate": {
-      "suggested_key": { "default": "Alt+Shift+C", "windows": "Ctrl+Shift+C", "linux": "Alt+Shift+C"},
+      "suggested_key": {
+        "default": "Alt+Shift+C",
+        "windows": "Ctrl+Shift+C",
+        "linux": "Alt+Shift+C"
+      },
       "description": "__MSG_classificateDescription__"
     },
     "view-log": {
-      "suggested_key": { "default": "Alt+Shift+V", "windows": "Ctrl+Shift+V", "linux": "Ctrl+Shift+V" },
+      "suggested_key": {
+        "default": "Alt+Shift+V",
+        "windows": "Ctrl+Shift+V",
+        "linux": "Ctrl+Shift+V"
+      },
       "description": "__MSG_viewLogDescription__"
     },
     "statsitics": {
-      "suggested_key": { "default": "Alt+Shift+S", "windows": "Ctrl+Shift+S", "linux": "Alt+Shift+S" },
+      "suggested_key": {
+        "default": "Alt+Shift+S",
+        "windows": "Ctrl+Shift+S",
+        "linux": "Alt+Shift+S"
+      },
       "description": "__MSG_statisticsDescription__"
     }
   }
