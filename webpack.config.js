@@ -2,7 +2,6 @@ const webpack = require("webpack")
 const ejs = require("ejs")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const CopyPlugin = require("copy-webpack-plugin")
-const ExtensionReloader = require("webpack-extension-reloader")
 const { VueLoaderPlugin } = require("vue-loader")
 const { version } = require("./package.json")
 
@@ -19,6 +18,7 @@ const config = {
   output: {
     path: __dirname + "/dist",
     filename: "[name].js",
+    publicPath: "/",
   },
   resolve: {
     extensions: [".js", ".ts", ".vue"],
@@ -146,13 +146,14 @@ if (config.mode === "production") {
   ])
 }
 
-if (process.env.HMR === "true") {
-  config.plugins = (config.plugins || []).concat([
-    new ExtensionReloader({
-      manifest: __dirname + "/src/manifest.json",
-    }),
-  ])
-}
+// HMR機能は現在無効化されています
+// if (process.env.HMR === "true") {
+//   config.plugins = (config.plugins || []).concat([
+//     new ExtensionReloader({
+//       manifest: __dirname + "/src/manifest.json",
+//     }),
+//   ])
+// }
 
 function transformHtml(content) {
   return ejs.render(content.toString(), {
