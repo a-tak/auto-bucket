@@ -40,7 +40,8 @@
             :menu-props="{ maxHeight: 400 }"
             item-text="text"
             return-object
-            class="ma-3 pa-2"
+            append-icon=""
+            class="ma-3 pa-2 custom-select"
           >
             <template v-slot:selection="{ item }">
               <v-chip>{{ item.text }}</v-chip>
@@ -318,5 +319,23 @@ export default class App extends Vue {
 <style scoped>
 p {
   font-size: 20px;
+}
+</style>
+
+<style>
+/* カスタムスタイルを追加して、アイコンフォントの問題を解決 */
+.custom-select .v-input__append-inner,
+.custom-select .v-input__prepend-inner {
+  display: none !important;
+}
+
+/* v-listのアイコンを非表示にする */
+.v-list-item__icon {
+  display: none !important;
+}
+
+/* v-selectのドロップダウンメニューのスタイル調整 */
+.v-select__selections {
+  flex-wrap: wrap;
 }
 </style>
