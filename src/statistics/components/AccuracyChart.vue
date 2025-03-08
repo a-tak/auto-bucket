@@ -6,7 +6,7 @@ import { Line, mixins } from "vue-chartjs"
 @Component({})
 export default class AccuracyChart extends Mixins(Line, mixins.reactiveProp) {
   // グラフ用のデータ
-  @Prop() public chartData!: Chart.ChartData
+  @Prop() public declare chartData: Chart.ChartData
 
   // 表示オプションなど
   @Prop() public chartOptions!: Chart.ChartOptions
