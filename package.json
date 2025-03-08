@@ -18,7 +18,7 @@
     "p-map": "^4.0.0",
     "simple-statistics": "^7.4.0",
     "tiny-segmenter": "^0.2.0",
-    "vue": "^2.6.12",
+    "vue": "^3.0.0",
     "vue-chartjs": "^3.5.1",
     "vue-class-component": "^7.2.6",
     "vue-i18n": "^8.22.4",
