@@ -199,13 +199,20 @@ export default class backgroud {
     }
 
     // objectで保存されているのでタイプアサーションで型を指定している
-    const resultObj = (await browser.storage.local.get("data")) as {
+    const resultObj = (await browser.storage.local.get([
+      "data",
+      "totalCount",
+    ])) as {
       data: object
+      totalCount: number
     }
     if (resultObj.data == undefined) {
       this.classifier_.data = {}
+      this.classifier_.totalCount = 0
     } else {
       this.classifier_.data = resultObj.data
+      // totalCountが保存されていれば読み込む、なければ0に初期化
+      this.classifier_.totalCount = resultObj.totalCount || 0
     }
     const setting = await StorageUtil.getStorageAll()
     await StatisticsUtil.removeOldStatistics(setting)
@@ -714,6 +721,25 @@ export default class backgroud {
     const totalScore: Score = {}
     const words = await this.getTargetMessage(message)
     const logEntry = new LogEntry()
+
+    // 一度も学習していない場合（totalCount = 0）は空のスコアを返す
+    if (this.classifier_.totalCount === 0) {
+      // ダミーの値を設定して、save()メソッドがエラーを出さないようにする
+      if (words.length > 0) {
+        logEntry.scoreEachWord[words[0]] = {
+          count: 0,
+          score: { dummy: 0 },
+        }
+      } else {
+        logEntry.scoreEachWord["dummy"] = {
+          count: 0,
+          score: { dummy: 0 },
+        }
+      }
+      logEntry.targetText = words
+      return { scoreTotal: [], logEntry: logEntry }
+    }
+
     for (const word of words) {
       // trainはプロパティと値のセットを引数に持つので、wordプロパティに単語をセットしてカテゴリを登録する
       // TODO: 現状、モデルに入っている分類名をそのままタグのkeyとして後続処理で使っている。
@@ -876,7 +902,11 @@ export default class backgroud {
     logEntry.id = await MessageUtil.getMailMessageId(message)
     logEntry.classifiedTag = tag
     logEntry.score = result.scoreTotal
-    await logEntry.save()
+
+    // タグが空でない場合のみログを保存する
+    if (tag !== "") {
+      await logEntry.save()
+    }
 
     return tag
   }
