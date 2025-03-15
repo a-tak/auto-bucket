@@ -19,3 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-------------------------------------------------------------------------------
+
+This software includes the following third-party components:
+
+// TinySegmenter 0.1 -- Super compact Japanese tokenizer in Javascript
+// (c) 2008 Taku Kudo <taku@chasen.org>
+// TinySegmenter is freely distributable under the terms of a new BSD licence.
+// For details, see http://chasen.org/~taku/software/TinySegmenter/LICENCE.txt

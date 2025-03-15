@@ -3,11 +3,24 @@ const ejs = require("ejs")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const CopyPlugin = require("copy-webpack-plugin")
 const { VueLoaderPlugin } = require("vue-loader")
+const TerserPlugin = require("terser-webpack-plugin")
 const { version } = require("./package.json")
 
 const config = {
   mode: process.env.NODE_ENV,
   context: __dirname + "/src",
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        extractComments: true,
+        terserOptions: {
+          output: {
+            comments: /@license|@preserve|Copyright|license|License|BSD/i,
+          },
+        },
+      }),
+    ],
+  },
   entry: {
     background: "./background.ts",
     "popup/popup": "./popup/popup.ts",
