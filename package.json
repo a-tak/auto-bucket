@@ -4,10 +4,10 @@
   "description": "Thunderbird auto classification web extension",
   "author": "A-tak <hoge+git@a-tak.com>",
   "scripts": {
-    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack",
+    "build": "cross-env NODE_ENV=production webpack",
     "lint": "eslint --ext .js,.vue src",
     "build-zip": "node scripts/build-zip.js",
-    "build:dev": "cross-env NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider webpack",
+    "build:dev": "cross-env NODE_ENV=development webpack",
     "prettier": "prettier \"src/**/*.{js,vue}\"",
     "prettier:write": "npm run prettier -- --write",
     "watch": "npm run build -- --watch",
