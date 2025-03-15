@@ -49,17 +49,18 @@ Addon として公開する場合は同じバージョンはアップし直せ�
 2. GitHub でプルリクエスト作成しマージ
 3. master をプル
 4. package.json のバージョンを変更
-5. コミットして github にプッシュ
-6. タグをつける
-7. github にプッシュ(タグをフォロー)(Git Push Tags?にしないといけない?)
-8. github でタグをリリースへ
+5. 同様に manifest.json のバージョンも合わせる
+6. コミットして github にプッシュ
+7. タグをつける
+8. github にプッシュ(タグをフォロー)(Git Push Tags?にしないといけない?)
+9. github でタグをリリースへ
    1. プルリクエストの説明を抜粋してリリースの説明を作る
-9. ソースをダウンロード
-10. ビルド `npm run build`
-11. dist の中を zip 化 `npm run build-zip`
-12. https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/submit/ へアップロード
-13. ソースもアップロード
-14. アップ完了後、各国語毎に説明を入れるページが表示さるので github のリリースの説明を貼り付け
+10. ソースをダウンロード
+11. ビルド `npm run build`
+12. dist の中を zip 化 `npm run build-zip`
+13. https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/submit/ へアップロード
+14. ソースもアップロード
+15. アップ完了後、各国語毎に説明を入れるページが表示さるので github のリリースの説明を貼り付け
 
 ## セキュリティーアップデート手順
 
