@@ -2,7 +2,6 @@ version: "3"
 services:
   node:
     build: .
-    working_dir: /mnt
+    working_dir: /workspace
     volumes:
-      - .:/mnt
-      
+      - .:/workspace
