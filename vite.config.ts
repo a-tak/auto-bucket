@@ -26,7 +26,7 @@ export default defineConfig({
     modulePreload: false,
     rollupOptions: {
       input: {
-        background: resolve(__dirname, "src/background.ts"),
+        background: resolve(__dirname, "src/background.html"),
         popup: resolve(__dirname, "src/popup/popup.html"),
         options: resolve(__dirname, "src/options/options.html"),
         statistics: resolve(__dirname, "src/statistics/statistics.html"),

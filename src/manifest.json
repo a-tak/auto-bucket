@@ -31,7 +31,7 @@
     "default_popup": "popup/popup.html"
   },
   "background": {
-    "scripts": ["background.js"]
+    "page": "background.html"
   },
   "options_ui": {
     "page": "options/options.html",
