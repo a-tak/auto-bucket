@@ -64,9 +64,11 @@ export default function OptionsPage() {
       showSnackbar(t("message.save_error_msg"))
       return
     }
-    setBodyMaxLength(Number(bodyMaxLengthStr))
-    setLogDeletePastHour(Number(logDeletePastHourStr))
-    await save()
+    const bodyLen = Number(bodyMaxLengthStr)
+    const logHour = Number(logDeletePastHourStr)
+    setBodyMaxLength(bodyLen)
+    setLogDeletePastHour(logHour)
+    await save(bodyLen, logHour)
     showSnackbar(t("message.save_msg"))
   }
 

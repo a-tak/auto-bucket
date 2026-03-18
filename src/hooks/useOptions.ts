@@ -32,13 +32,14 @@ export function useOptions() {
     initialize()
   }, [initialize])
 
-  const save = useCallback(async (): Promise<void> => {
-    await TagUtil.save(selectedTags)
-    await browser.storage.local.set({ body_max_length: bodyMaxLength })
-    await browser.storage.local.set({
-      log_delete_past_hour: logDeletePastHour,
-    })
-  }, [selectedTags, bodyMaxLength, logDeletePastHour])
+  const save = useCallback(
+    async (bodyLen: number, logHour: number): Promise<void> => {
+      await TagUtil.save(selectedTags)
+      await browser.storage.local.set({ body_max_length: bodyLen })
+      await browser.storage.local.set({ log_delete_past_hour: logHour })
+    },
+    [selectedTags]
+  )
 
   const cancel = useCallback(async (): Promise<void> => {
     await initialize()
