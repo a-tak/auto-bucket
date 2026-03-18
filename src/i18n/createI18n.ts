@@ -18,6 +18,7 @@ export function createI18n(translations: Messages) {
     lng: lang,
     fallbackLng: "en",
     interpolation: { escapeValue: false },
+    react: { useSuspense: false },
   })
 
   return instance
