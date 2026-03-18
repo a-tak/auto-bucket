@@ -49,9 +49,7 @@ export default class backgroud {
       switch (reason) {
         case "install":
           {
-            const url = browser.runtime.getURL(
-              browser.i18n.getMessage("homepage")
-            )
+            const url = browser.i18n.getMessage("homepage")
             await browser.tabs.create({ url })
           }
           break
