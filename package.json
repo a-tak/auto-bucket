@@ -38,8 +38,8 @@
     "pretty-quick": "^3.1.0",
     "thunderbird-web-ext-types": "^1.0.0",
     "typescript": "^5.3.0",
-    "vite": "^5.0.0",
-    "vite-plugin-static-copy": "^1.0.0"
+    "vite": "^8.0.8",
+    "vite-plugin-static-copy": "^4.0.1"
   },
   "engines": {
     "node": ">=18"
