@@ -42,7 +42,7 @@
     "vite-plugin-static-copy": "^4.1.1"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.12.0"
   },
   "husky": {
     "hooks": {
