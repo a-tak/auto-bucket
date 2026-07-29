@@ -4,6 +4,7 @@
   "description": "Thunderbird auto classification web extension",
   "author": "A-tak <hoge+git@a-tak.com>",
   "type": "module",
+  "license": "MIT",
   "scripts": {
     "build": "vite build",
     "build:dev": "vite build --mode development",
