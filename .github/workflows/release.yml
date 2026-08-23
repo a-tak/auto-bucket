@@ -1,0 +1,147 @@
+name: Build and submit release
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+concurrency:
+  group: autobucket-release-${{ github.event.release.tag_name || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      artifact-name: autobucket-release-${{ steps.release.outputs.version }}
+      addon-file: autobucket-v${{ steps.release.outputs.version }}.zip
+      source-file: autobucket-v${{ steps.release.outputs.version }}-source.zip
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
+
+    steps:
+      - name: Check out the release source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          lfs: true
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22.12.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate release metadata
+        id: release
+        run: npm run check:release
+
+      - name: Build release package
+        run: npm run build:release
+
+      - name: Lint the packaged extension
+        uses: kewisch/action-web-ext@84a13bb9e1b6108c43788ba091c41ca1dba6ad45 # v2
+        with:
+          cmd: lint
+          source: dist
+          channel: listed
+
+      - name: Create reviewer source archive
+        run: npm run build-source-zip
+
+      - name: Verify release archives
+        env:
+          ADDON_FILE: autobucket-v${{ steps.release.outputs.version }}.zip
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          SOURCE_FILE: autobucket-v${{ steps.release.outputs.version }}-source.zip
+          SOURCE_PREFIX: autobucket-v${{ steps.release.outputs.version }}-source
+        run: |
+          unzip -t "dist-zip/${ADDON_FILE}"
+          unzip -t "dist-zip/${SOURCE_FILE}"
+          unzip -Z1 "dist-zip/${ADDON_FILE}" | grep -qx manifest.json
+          unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/README.md"
+          unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/scripts/check-release.cjs"
+          unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/.github/workflows/release.yml"
+          unzip -p "dist-zip/${ADDON_FILE}" manifest.json | jq -e --arg version "${RELEASE_VERSION}" '.version == $version'
+          sha256sum "dist-zip/${ADDON_FILE}" "dist-zip/${SOURCE_FILE}" > dist-zip/SHA256SUMS.txt
+          git diff --exit-code
+
+      - name: Store release artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: autobucket-release-${{ steps.release.outputs.version }}
+          path: |
+            dist-zip/autobucket-v${{ steps.release.outputs.version }}.zip
+            dist-zip/autobucket-v${{ steps.release.outputs.version }}-source.zip
+            dist-zip/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish to GitHub and ATN
+    if: github.event_name == 'release' && github.event.release.prerelease == false
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: ${{ needs.build.outputs.artifact-name }}
+          path: dist-zip
+
+      - name: Attach artifacts to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "${RELEASE_TAG}" dist-zip/* --clobber
+
+      - name: Check ATN credentials
+        env:
+          ATN_API_KEY: ${{ secrets.ATN_API_KEY }}
+          ATN_API_SECRET: ${{ secrets.ATN_API_SECRET }}
+        run: |
+          if [[ -z "${ATN_API_KEY}" || -z "${ATN_API_SECRET}" ]]; then
+            echo "ATN_API_KEY and ATN_API_SECRET must be configured as GitHub Actions secrets." >&2
+            exit 1
+          fi
+
+      - name: Submit the extension to Thunderbird Add-ons
+        id: atn
+        uses: kewisch/action-web-ext@84a13bb9e1b6108c43788ba091c41ca1dba6ad45 # v2
+        with:
+          cmd: sign
+          source: dist-zip/${{ needs.build.outputs.addon-file }}
+          channel: listed
+          apiUrlPrefix: https://addons.thunderbird.net/api/v4
+          apiKey: ${{ secrets.ATN_API_KEY }}
+          apiSecret: ${{ secrets.ATN_API_SECRET }}
+          timeout: 900000
+
+      - name: Record the ATN follow-up
+        if: always()
+        env:
+          ATN_OUTCOME: ${{ steps.atn.outcome }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          SOURCE_FILE: ${{ needs.build.outputs.source-file }}
+        run: |
+          {
+            echo "## Thunderbird Add-ons submission"
+            echo
+            echo "- ATN upload outcome: ${ATN_OUTCOME}"
+            echo "- Release tag: ${RELEASE_TAG}"
+            echo "- Reviewer source archive: ${SOURCE_FILE}"
+            echo
+            echo "ATN API v4 cannot upload reviewer source code, localized release notes, or license metadata."
+            echo "Open the AutoBucket version in the ATN Developer Hub, attach the source archive from the GitHub release, add the release notes, and confirm the license before completing the submission."
+          } >> "${GITHUB_STEP_SUMMARY}"

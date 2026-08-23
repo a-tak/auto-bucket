@@ -6,11 +6,14 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
+    "check:release": "node scripts/check-release.cjs",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "build-zip": "node scripts/build-zip.cjs",
-    "watch": "vite build --watch",
-    "lint": "eslint src --ext .ts,.tsx"
+    "build-source-zip": "node scripts/build-source-zip.cjs",
+    "build:release": "npm run check:release && npm run typecheck && npm run build && npm run build-zip && npm run check:release -- --check-dist",
+    "typecheck": "tsc --noEmit",
+    "watch": "vite build --watch"
   },
   "dependencies": {
     "@emotion/react": "^11.11.0",

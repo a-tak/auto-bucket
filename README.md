@@ -19,48 +19,64 @@ https://a-tak.com/blog/tag/autobucket/
 
 ## ビルド環境準備(Build Environment)
 
-```bash
-# Macの場合
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-brew install nodebrew
-nodebrew install v13.13.0
-nodebrew use v13.13.0
-```
+- Node.js 22.12.0 以上
+- npm
 
 ```bash
-npm install -g @vue/cli
-npm install -g @vue/cli-init
-npm i
+npm ci
 ```
 
 ## ビルド(Build)
 
-```
+```bash
+npm run typecheck
 npm run build
 npm run build-zip
 ```
 
-Addon として公開する場合は同じバージョンはアップし直せないので、package.json のバージョンを変えること
-(manifest.json のバージョンは package.json のバージョンで書き換えられる)
+リリースと同じ検査・ビルド・ZIP 作成をまとめて実行する場合は、次のコマンドを使用します。
+
+```bash
+npm run build:release
+```
+
+成果物は `dist-zip/autobucket-v<version>.zip` に作成されます。審査用ソースからビルドする場合も、ソース ZIP を展開して `npm ci` と `npm run build:release` を実行してください。グローバルパッケージは不要です。
 
 ## リリース
 
-1. ブランチをプッシュ
-2. GitHub でプルリクエスト作成しマージ
-3. master をプル
-4. package.json のバージョンを変更
-5. 同様に manifest.json のバージョンも合わせる
-6. コミットして github にプッシュ
-7. タグをつける
-8. github にプッシュ(タグをフォロー)(Git Push Tags?にしないといけない?)
-9. github でタグをリリースへ
-   1. プルリクエストの説明を抜粋してリリースの説明を作る
-10. ソースをダウンロード
-11. ビルド `npm run build`
-12. dist の中を zip 化 `npm run build-zip`
-13. https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/submit/ へアップロード
-14. ソースもアップロード
-15. アップ完了後、各国語毎に説明を入れるページが表示さるので github のリリースの説明を貼り付け
+GitHub Release を公開すると、[GitHub Actions](.github/workflows/release.yml)が次の処理を実行します。
+
+1. GitHub Release のタグ、`package.json`、`package-lock.json`、`src/manifest.json`のバージョン一致を検査
+2. 型検査、Vite ビルド、WebExtension の lint を実行
+3. アドオン ZIP、審査用ソース ZIP、SHA-256 チェックサムを生成
+4. 生成物を GitHub Release へ添付
+5. アドオン ZIP を Thunderbird Add-ons（ATN）へ提出
+
+### 初回設定
+
+1. [Thunderbird Add-ons Developer Hub](https://addons.thunderbird.net/ja/developers/)で JWT API キーを発行
+2. GitHub リポジトリの `Settings` → `Secrets and variables` → `Actions` に次の Repository secrets を登録
+   - `ATN_API_KEY`: JWT issuer
+   - `ATN_API_SECRET`: JWT secret
+3. ATN の AutoBucket 登録情報に設定されているライセンスを確認
+
+API キーはリポジトリやローカルファイルへ保存しないでください。現在のリポジトリは MIT ライセンスです。ATN 側で別のライセンスが設定されている場合は、最初の自動提出前にどちらを正とするか決めて揃えてください。
+
+### 動作確認
+
+GitHub の `Actions` → `Build and submit release` → `Run workflow` から手動実行できます。手動実行はビルドと成果物検証だけを行い、ATN への提出や GitHub Release の変更は行いません。
+
+### 公開手順
+
+1. `package.json`、`package-lock.json`、`src/manifest.json`を同じ新バージョンへ更新
+2. `npm run build:release`が成功することを確認して master へマージ
+3. `vX.Y.Z`形式のタグ（例: `v1.3.0`）で GitHub Release を作成し、リリースノートを記入して公開
+4. `Build and submit release` workflow の完了を確認
+5. [ATN の AutoBucket 管理画面](https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/)で提出されたバージョンを開き、GitHub Release に添付された審査用ソース ZIP と各言語のリリースノートを登録
+
+ATN の API v4 は審査用ソース、リリースノート、ライセンス情報のアップロードに対応していないため、この 3 項目だけは管理画面での操作が残ります。プレリリースとして公開した GitHub Release は ATN へ提出されません。
+
+ATN では同じバージョンを再提出できません。workflow が提出処理中に失敗した場合は、ATN のバージョン一覧に登録済みか確認してから再実行してください。
 
 ## セキュリティーアップデート手順
 
@@ -81,16 +97,10 @@ Addon として公開する場合は同じバージョンはアップし直せ�
 
 ## Linter
 
-### インストール
+GitHub Actions ではビルド済みの `dist` に対して `web-ext lint` を実行します。ローカルでは型検査を次のコマンドで実行できます。
 
 ```bash
-npm install -g addons-linter
-```
-
-### 実行
-
-```bash
-addons-linter web-ext-artifacts/autobucket-1.0.zip
+npm run typecheck
 ```
 
 ## デバッグ方法
