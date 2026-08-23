@@ -59,7 +59,7 @@ GitHub Release を公開すると、[GitHub Actions](.github/workflows/release.y
 2. GitHub リポジトリの `Settings` → `Secrets and variables` → `Actions` に次の Repository secrets を登録
    - `ATN_API_KEY`: JWT issuer
    - `ATN_API_SECRET`: JWT secret
-3. ATN の AutoBucket 1.3.0 のライセンスを MIT に設定
+3. ATN の AutoBucket のライセンスを MIT に設定
 
 API キーはリポジトリやローカルファイルへ保存しないでください。AutoBucket のソースコードは MIT ライセンスです。同梱する第三者コンポーネントには各コンポーネント固有のライセンスが適用され、アドオン ZIP の `THIRD_PARTY_NOTICES.txt` に正確なバージョン、取得元、ライセンス本文を収録します。
 
