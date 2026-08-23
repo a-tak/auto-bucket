@@ -63,9 +63,11 @@ GitHub Release を公開すると、[GitHub Actions](.github/workflows/release.y
 
 API キーはリポジトリやローカルファイルへ保存しないでください。AutoBucket のソースコードは MIT ライセンスです。同梱する第三者コンポーネントには各コンポーネント固有のライセンスが適用され、アドオン ZIP の `THIRD_PARTY_NOTICES.txt` に正確なバージョン、取得元、ライセンス本文を収録します。
 
-### 動作確認
+### 動作確認と再実行
 
-GitHub の `Actions` → `Build and submit release` → `Run workflow` から手動実行できます。手動実行はビルドと成果物検証だけを行い、ATN への提出や GitHub Release の変更は行いません。
+GitHub リポジトリの `Actions` → `Build and submit release` → `Run workflow` から手動実行できます。`publish`を無効にした既定の手動実行は、ビルドと成果物検証だけを行い、ATN への提出や GitHub Release の変更は行いません。
+
+公開済み Release の処理を再実行する場合だけ、`release_tag`に既存タグを指定し、`publish`を有効にします。再実行前に、同じバージョンが ATN へ登録済みでないことを必ず確認してください。GitHub の `Pages build and deployment` は GitHub Pages 用であり、アドオンのリリース処理ではありません。
 
 ### 公開手順
 
@@ -73,9 +75,9 @@ GitHub の `Actions` → `Build and submit release` → `Run workflow` から手
 2. `npm run build:release`が成功することを確認して master へマージ
 3. `vX.Y.Z`形式のタグ（例: `v1.3.0`）で GitHub Release を作成し、リリースノートを記入して公開
 4. `Build and submit release` workflow の完了を確認
-5. [ATN の AutoBucket 管理画面](https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/)で提出されたバージョンを開き、ライセンスを MIT に設定し、GitHub Release に添付された審査用ソース ZIP と各言語のリリースノートを登録
+5. [ATN の AutoBucket 管理画面](https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/)で提出されたバージョンを開き、GitHub Release に添付された審査用ソース ZIP と各言語のリリースノートを登録
 
-ATN の API v4 は審査用ソース、リリースノート、ライセンス情報のアップロードに対応していないため、この 3 項目だけは管理画面での操作が残ります。プレリリースとして公開した GitHub Release は ATN へ提出されません。
+ATN の API v4 は審査用ソースとリリースノートのアップロードに対応していないため、この 2 項目だけは管理画面での操作が残ります。ライセンスは提出前に `Manage Authors & License` で MIT に設定します。プレリリースとして公開した GitHub Release は ATN へ提出されません。
 
 ATN では同じバージョンを再提出できません。workflow が提出処理中に失敗した場合は、ATN のバージョン一覧に登録済みか確認してから再実行してください。
 
