@@ -42,6 +42,22 @@ npm run build:release
 
 成果物は `dist-zip/autobucket-v<version>.zip` に作成されます。審査用ソースからビルドする場合も、ソース ZIP を展開して `npm ci` と `npm run build:release` を実行してください。グローバルパッケージは不要です。
 
+## テスト(Test)
+
+ユニットテストを一度実行する場合:
+
+```bash
+npm test
+```
+
+変更を監視してテストを繰り返す場合:
+
+```bash
+npm run test:watch
+```
+
+Pull Request と`master`への push では、GitHub Actions がユニットテスト、型検査、本番ビルドを実行します。リリース時も ATN へ提出する前にユニットテストを実行します。
+
 ## リリース
 
 GitHub Release を公開すると、[GitHub Actions](.github/workflows/release.yml)が次の処理を実行します。

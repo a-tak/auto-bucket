@@ -13,6 +13,8 @@
     "build-zip": "node scripts/build-zip.cjs",
     "build-source-zip": "node scripts/build-source-zip.cjs",
     "build:release": "npm run check:release && npm run typecheck && npm run build && npm run build-zip && npm run check:release -- --check-dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "watch": "vite build --watch"
   },
@@ -44,7 +46,8 @@
     "thunderbird-web-ext-types": "^1.0.0",
     "typescript": "^5.3.0",
     "vite": "^8.0.16",
-    "vite-plugin-static-copy": "^4.1.1"
+    "vite-plugin-static-copy": "^4.1.1",
+    "vitest": "^4.1.11"
   },
   "engines": {
     "node": ">=22.12.0"

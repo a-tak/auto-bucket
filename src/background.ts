@@ -12,6 +12,7 @@ import { StorageObj } from "./lib/StorageUtil"
 import StorageUtil from "./lib/StorageUtil"
 import ReLearnLog from "./models/ReLearnLog"
 import pMap from "p-map"
+import MailAddressUtil from "./lib/MailAddressUtil"
 
 export default class backgroud {
   /** 再学習ログの並行処理数 */
@@ -849,12 +850,7 @@ export default class backgroud {
   }
 
   private getMailAddress(mail: string): string {
-    if (mail.length === 0) return ""
-    let start = mail.lastIndexOf("<")
-
-    let end = mail.lastIndexOf(">")
-    if (end === -1) end = mail.length
-    return mail.slice(start + 1, end)
+    return MailAddressUtil.getMailAddress(mail)
   }
   /**
    * 指定されたアドレスのドメイン部分の学習対象文字列を返す
@@ -862,13 +858,7 @@ export default class backgroud {
    * @returns ドメイン部分。見つからない場合はundefined。
    */
   private getDomain(mail: string): string | undefined {
-    mail = this.getMailAddress(mail)
-    const ret = mail.split("@")
-    if ((ret.length = 2)) {
-      return ret[1]
-    } else {
-      return undefined
-    }
+    return MailAddressUtil.getDomain(mail)
   }
 
   /**

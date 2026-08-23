@@ -54,6 +54,9 @@ jobs:
         id: release
         run: npm run check:release
 
+      - name: Run unit tests
+        run: npm test
+
       - name: Build release package
         run: npm run build:release
 

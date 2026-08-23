@@ -97,7 +97,7 @@ export default class StatisticsUtil {
     const nowDate = new Date()
     const deleteDate = this.DELETE_STATISTICS_PAST_DAY
 
-    this.listStatistics(async (keyName, log) => {
+    await this.listStatistics(async (keyName, log) => {
       if (typeof log.date != "undefined") {
         const dateDiff =
           (nowDate.getTime() - log.date.getTime()) / (1000 * 60 * 60 * 24)
@@ -113,7 +113,7 @@ export default class StatisticsUtil {
    */
   public static async removeAllStatistics() {
     const setting = await StorageUtil.getStorageAll()
-    this.listStatistics(async (keyName) => {
+    await this.listStatistics(async (keyName) => {
       await browser.storage.local.remove(keyName)
     }, setting)
   }
@@ -166,7 +166,7 @@ export default class StatisticsUtil {
       if (item.indexOf(this.STATISTICS_LOG_PREFIX, 0) === 0) {
         // いけてないがここまでくるとオブジェクトの中にstatisticsメンバがあるのは間違いなのでasで指定して読み込む
         const log = this.toStatisticsLog(setting[item] as StatisticsLogObj)
-        callback(item, log)
+        await callback(item, log)
       }
     }
     return ret
@@ -243,8 +243,8 @@ export default class StatisticsUtil {
    */
   public static async removeAllReLearnLog() {
     const setting = await StorageUtil.getStorageAll()
-    this.listReLearnLog(async (keyName) => {
-      browser.storage.local.remove(keyName)
+    await this.listReLearnLog(async (keyName) => {
+      await browser.storage.local.remove(keyName)
     }, setting)
   }
 
@@ -265,7 +265,7 @@ export default class StatisticsUtil {
           setting[item] as ReLearnLogObj
         )
         if (typeof log != "undefined") {
-          callback(item, log)
+          await callback(item, log)
         }
       }
     }
