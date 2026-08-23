@@ -67,7 +67,14 @@ jobs:
           unzip -t "dist-zip/${ADDON_FILE}"
           unzip -t "dist-zip/${SOURCE_FILE}"
           unzip -Z1 "dist-zip/${ADDON_FILE}" | grep -qx manifest.json
+          unzip -Z1 "dist-zip/${ADDON_FILE}" | grep -qx LICENSE
+          unzip -Z1 "dist-zip/${ADDON_FILE}" | grep -qx THIRD_PARTY_NOTICES.txt
+          unzip -p "dist-zip/${ADDON_FILE}" THIRD_PARTY_NOTICES.txt | grep -q 'webextension-polyfill@'
+          unzip -p "dist-zip/${ADDON_FILE}" THIRD_PARTY_NOTICES.txt | grep -q 'Mozilla Public License Version 2.0'
           unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/README.md"
+          unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/LICENSE"
+          unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/THIRD_PARTY_NOTICES.txt"
+          unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/scripts/build-third-party-notices.cjs"
           unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/scripts/check-release.cjs"
           unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/.github/workflows/release.yml"
           unzip -p "dist-zip/${ADDON_FILE}" manifest.json | jq -e --arg version "${RELEASE_VERSION}" '.version == $version'

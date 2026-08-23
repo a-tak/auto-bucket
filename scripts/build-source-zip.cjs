@@ -7,6 +7,10 @@ const archiver = require("archiver")
 
 const PROJECT_ROOT = path.resolve(__dirname, "..")
 const DEST_DIR = path.join(PROJECT_ROOT, "dist-zip")
+const GENERATED_NOTICES = path.join(
+  PROJECT_ROOT,
+  "dist/THIRD_PARTY_NOTICES.txt"
+)
 const LFS_POINTER_HEADER = "version https://git-lfs.github.com/spec/v1"
 const ARCHIVE_DATE = new Date("1980-01-01T00:00:00.000Z")
 
@@ -68,6 +72,12 @@ const buildArchive = (files) => {
       )
     }
 
+    archive.append(fs.createReadStream(GENERATED_NOTICES), {
+      name: `${archivePrefix}/THIRD_PARTY_NOTICES.txt`,
+      date: ARCHIVE_DATE,
+      mode: 0o644,
+    })
+
     archive.finalize()
   })
 }
@@ -80,6 +90,12 @@ const main = async () => {
 
   if (missingFiles.length > 0) {
     throw new Error(`Tracked files are missing:\n${missingFiles.join("\n")}`)
+  }
+
+  if (!fs.existsSync(GENERATED_NOTICES)) {
+    throw new Error(
+      "dist/THIRD_PARTY_NOTICES.txt is missing. Run `npm run build:release` first."
+    )
   }
 
   const pointerFiles = files.filter((relativePath) =>

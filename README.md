@@ -48,9 +48,10 @@ GitHub Release を公開すると、[GitHub Actions](.github/workflows/release.y
 
 1. GitHub Release のタグ、`package.json`、`package-lock.json`、`src/manifest.json`のバージョン一致を検査
 2. 型検査、Vite ビルド、WebExtension の lint を実行
-3. アドオン ZIP、審査用ソース ZIP、SHA-256 チェックサムを生成
-4. 生成物を GitHub Release へ添付
-5. アドオン ZIP を Thunderbird Add-ons（ATN）へ提出
+3. AutoBucket の MIT ライセンスと第三者ライセンス通知を生成・検査
+4. アドオン ZIP、審査用ソース ZIP、SHA-256 チェックサムを生成
+5. 生成物を GitHub Release へ添付
+6. アドオン ZIP を Thunderbird Add-ons（ATN）へ提出
 
 ### 初回設定
 
@@ -58,9 +59,9 @@ GitHub Release を公開すると、[GitHub Actions](.github/workflows/release.y
 2. GitHub リポジトリの `Settings` → `Secrets and variables` → `Actions` に次の Repository secrets を登録
    - `ATN_API_KEY`: JWT issuer
    - `ATN_API_SECRET`: JWT secret
-3. ATN の AutoBucket 登録情報に設定されているライセンスを確認
+3. ATN の AutoBucket 1.3.0 のライセンスを MIT に設定
 
-API キーはリポジトリやローカルファイルへ保存しないでください。現在のリポジトリは MIT ライセンスです。ATN 側で別のライセンスが設定されている場合は、最初の自動提出前にどちらを正とするか決めて揃えてください。
+API キーはリポジトリやローカルファイルへ保存しないでください。AutoBucket のソースコードは MIT ライセンスです。同梱する第三者コンポーネントには各コンポーネント固有のライセンスが適用され、アドオン ZIP の `THIRD_PARTY_NOTICES.txt` に正確なバージョン、取得元、ライセンス本文を収録します。
 
 ### 動作確認
 
@@ -72,7 +73,7 @@ GitHub の `Actions` → `Build and submit release` → `Run workflow` から手
 2. `npm run build:release`が成功することを確認して master へマージ
 3. `vX.Y.Z`形式のタグ（例: `v1.3.0`）で GitHub Release を作成し、リリースノートを記入して公開
 4. `Build and submit release` workflow の完了を確認
-5. [ATN の AutoBucket 管理画面](https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/)で提出されたバージョンを開き、GitHub Release に添付された審査用ソース ZIP と各言語のリリースノートを登録
+5. [ATN の AutoBucket 管理画面](https://addons.thunderbird.net/ja/developers/addon/autobucket/versions/)で提出されたバージョンを開き、ライセンスを MIT に設定し、GitHub Release に添付された審査用ソース ZIP と各言語のリリースノートを登録
 
 ATN の API v4 は審査用ソース、リリースノート、ライセンス情報のアップロードに対応していないため、この 3 項目だけは管理画面での操作が残ります。プレリリースとして公開した GitHub Release は ATN へ提出されません。
 
