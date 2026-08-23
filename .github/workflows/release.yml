@@ -54,9 +54,6 @@ jobs:
         id: release
         run: npm run check:release
 
-      - name: Run unit tests
-        run: npm test
-
       - name: Build release package
         run: npm run build:release
 
@@ -89,6 +86,8 @@ jobs:
           unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/THIRD_PARTY_NOTICES.txt"
           unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/scripts/build-third-party-notices.cjs"
           unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/scripts/check-release.cjs"
+          unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/tests/LogEntry.test.ts"
+          unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/vitest.config.ts"
           unzip -Z1 "dist-zip/${SOURCE_FILE}" | grep -qx "${SOURCE_PREFIX}/.github/workflows/release.yml"
           unzip -p "dist-zip/${ADDON_FILE}" manifest.json | jq -e --arg version "${RELEASE_VERSION}" '.version == $version'
           sha256sum "dist-zip/${ADDON_FILE}" "dist-zip/${SOURCE_FILE}" > dist-zip/SHA256SUMS.txt

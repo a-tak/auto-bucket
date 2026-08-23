@@ -18,11 +18,11 @@ export default class LogEntry {
   public set logDate(v: Date) {
     this.logDate_ = v
   }
-  private totalScore_ : TotalScore[]
-  public get score() : TotalScore[] {
+  private totalScore_: TotalScore[]
+  public get score(): TotalScore[] {
     return this.totalScore_
   }
-  public set score(v : TotalScore[]) {
+  public set score(v: TotalScore[]) {
     this.totalScore_ = v
   }
   private scoreEachWord_: LogScore
@@ -88,7 +88,10 @@ export default class LogEntry {
     // ストレージにはクラス変数名で保存されている(このクラスのプロパティ名でアクセスしても取れないので注意)
     // TODO: JSON.parseとかでそのままデシリアライズできるのでは?
     this.classifiedTag_ = entry.classifiedTag_
-    this.logDate_ = entry.logDate_
+    this.logDate_ =
+      entry.logDate_ instanceof Date
+        ? new Date(entry.logDate_.getTime())
+        : new Date(entry.logDate_)
     this.scoreEachWord_ = entry.scoreEachWord_
     this.totalScore_ = entry.totalScore_
     this.targetText_ = entry.targetText_

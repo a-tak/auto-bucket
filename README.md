@@ -50,13 +50,20 @@ npm run build:release
 npm test
 ```
 
+カバレッジ閾値を含めて CI と同じ検査を実行する場合:
+
+```bash
+npm run test:coverage
+npm run typecheck:tests
+```
+
 変更を監視してテストを繰り返す場合:
 
 ```bash
 npm run test:watch
 ```
 
-Pull Request と`master`への push では、GitHub Actions がユニットテスト、型検査、本番ビルドを実行します。リリース時も ATN へ提出する前にユニットテストを実行します。
+Pull Request と`master`への push では、GitHub Actions がカバレッジ閾値付きユニットテスト、ソースとテストの型検査、本番ビルドを実行します。リリース時も ATN へ提出する前に同じカバレッジ閾値を検査します。
 
 ## リリース
 

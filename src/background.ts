@@ -13,6 +13,10 @@ import StorageUtil from "./lib/StorageUtil"
 import ReLearnLog from "./models/ReLearnLog"
 import pMap from "p-map"
 import MailAddressUtil from "./lib/MailAddressUtil"
+import InstallUtil from "./lib/InstallUtil"
+import ClassificationUtil from "./lib/ClassificationUtil"
+import MessageBodyUtil from "./lib/MessageBodyUtil"
+import LearnModelUtil, { ClassifierData } from "./lib/LearnModelUtil"
 
 export default class backgroud {
   /** 再学習ログの並行処理数 */
@@ -47,14 +51,7 @@ export default class backgroud {
     })
 
     browser.runtime.onInstalled.addListener(async ({ reason }) => {
-      switch (reason) {
-        case "install":
-          {
-            const url = browser.i18n.getMessage("homepage")
-            await browser.tabs.create({ url })
-          }
-          break
-      }
+      await InstallUtil.handleInstalled(reason)
     })
 
     browser.commands.onCommand.addListener((command) => {
@@ -273,35 +270,12 @@ export default class backgroud {
    * 事前にclassifier_.dataに整理対象の学習データとtags_にタグ情報をセットしておくこと
    */
   private async garbageCollectionLearnModel() {
-    const target = this.classifier_.data as ClassiffierObj
-
-    // 既に存在しないタグの学習結果は削除
-    for (const obj in target) {
-      if (
-        this.tags_.findIndex((tag) => {
-          if (obj == tag.key) {
-            if (tag.useClassification) {
-              return true
-            }
-          }
-          return false
-        }) == -1
-      ) {
-        // 見つからなかった
-        delete target[obj]
-      }
-    }
-
-    // トータルカウントを更新
-    let count = 0
-    for (const obj in target) {
-      for (const word in target[obj].word) {
-        count += target[obj].word[word]
-      }
-    }
-
-    this.classifier_.data = target
-    this.classifier_.totalCount = count
+    const model = LearnModelUtil.garbageCollect(
+      this.classifier_.data as ClassifierData,
+      this.tags_
+    )
+    this.classifier_.data = model.data
+    this.classifier_.totalCount = model.totalCount
   }
 
   private async saveSetting(): Promise<void> {
@@ -595,64 +569,7 @@ export default class backgroud {
   }
 
   private async getBodyMain(messagePart: browser.messages.MessagePart) {
-    let body = this.getBody(messagePart, ContentType.PlainText)
-    // プレーンテキストが無かった場合はHTMLを対象とする
-    if ((await body).length === 0) {
-      body = this.getBody(messagePart, ContentType.Html)
-    }
-    return body
-  }
-
-  /**
-   * メールの本文を取得する
-   * 再帰読み込みでbodyを検索する
-   * @param   {MessagePart} messagePart ThunderbirdのMessagePartオブジェクト
-   * @param contentType 取得対象のコンテンツタイプ
-   * @returns {string}                  メールのBody
-   */
-  private async getBody(
-    messagePart: browser.messages.MessagePart,
-    contentType: ContentType
-  ) {
-    let body = ""
-    if ("parts" in messagePart) {
-      for (var part of messagePart.parts) {
-        body = body + (await this.getBody(part, contentType))
-      }
-    }
-    // コンテンツタイプが一致するbodyがあれば処理
-    if ("body" in messagePart && messagePart.contentType === contentType) {
-      let result = messagePart.body
-      if (messagePart.contentType === ContentType.Html) {
-        // HTMLタグ除去
-        result = result.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g, " ")
-        // 半角空白削除(文字列で指定すると最初の一つしか置換しないので正規表現で)
-        result = result.replace(/&nbsp;/g, "")
-      }
-      // 記号と数字を削除する(0000-0FFF)
-      // サロゲートペアで表す文字列は一旦対応放置
-      // https://ja.wikipedia.org/wiki/Unicode一覧_0000-0FFF
-      result = result.replace(
-        /([\u0000-\u002f])|([\u003a-\u0040])|([\u005b-\u0060])|([\u007b-\u00bf])|([\u02b9-\u0362])|([\u0374-\u0375])|([\u037A-\u037E])|([\u0384-\u0385])|\u0387/g,
-        " "
-      )
-      // 記号と数字を削除する(2000-2FFF)
-      result = result.replace(
-        /([\u2000-\u203e])|([\u20dd-\u20f0])|([\u2190-\u27ff])|([\u2900-\u2e70])|([\u2ff0-\u2ffb])/g,
-        " "
-      )
-      // 記号と数字を削除する(3000-3FFF)
-      result = result.replace(/([\u3000-\u3040])|([\u3200-\u33ff])/g, " ")
-      // 記号と数字を削除する(F000-FFFF)
-      result = result.replace(
-        /([\ufe30-\ufe6b])|([\uff00-\uff0f])|([\uff1a-\uff20])|([\uff3b-\uff40])|([\uff5b-\uff65])/g,
-        " "
-      )
-
-      body = body + result
-    }
-
-    return body
+    return MessageBodyUtil.getBodyMain(messagePart)
   }
 
   /**
@@ -884,12 +801,13 @@ export default class backgroud {
     message: browser.messages.MessageHeader
   ): Promise<string> {
     const result = await this.scoring(message)
-    const tag = this.ranking(result.scoreTotal)
+    const sortedScores = ClassificationUtil.sortByScore(result.scoreTotal)
+    const tag = this.ranking(sortedScores)
     // ログに残す
     const logEntry = result.logEntry
     logEntry.id = await MessageUtil.getMailMessageId(message)
     logEntry.classifiedTag = tag
-    logEntry.score = result.scoreTotal
+    logEntry.score = sortedScores
 
     // タグが空でない場合のみログを保存する
     if (tag !== "") {
@@ -905,14 +823,7 @@ export default class backgroud {
    * @returns 最も高いスコアのタグ文字列を返す。スコアが何も指定されていない場合は0バイト文字列を返す。
    */
   private ranking(scores: TotalScore[]): string {
-    if (scores.length == 0) return ""
-
-    const sortedScore = scores.sort((a, b) => {
-      // 降順
-      return b.score - a.score
-    })
-
-    return sortedScore[0].category
+    return ClassificationUtil.ranking(scores)
   }
 
   /**
@@ -989,20 +900,5 @@ interface NewProperties {
   read: boolean
   tags: Array<string>
 }
-
-interface ClassiffierObj {
-  [key: string]: {
-    word: {
-      [key: string]: number
-    }
-  }
-}
-
-// ContentType引数用 ユニオン型
-const ContentType = {
-  PlainText: "text/plain",
-  Html: "text/html",
-}
-type ContentType = (typeof ContentType)[keyof typeof ContentType]
 
 const obj = new backgroud()

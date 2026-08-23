@@ -3,6 +3,7 @@ import type { ChartData, ChartOptions } from "chart.js"
 import StatisticsUtil from "../lib/StatisticsUtil"
 import StatisticsLog from "../models/StatisticsLog"
 import DateUtil from "../lib/DateUtil"
+import AccuracyUtil from "../lib/AccuracyUtil"
 
 export function useStatistics() {
   const [loading, setLoading] = useState(true)
@@ -30,14 +31,7 @@ export function useStatistics() {
     },
   }
 
-  const totalAccuracy =
-    totalStatistics.totalCount === 0
-      ? 0
-      : 100 -
-        Math.round(
-          (totalStatistics.wrongCount / totalStatistics.totalCount) * 100 * 10
-        ) /
-          10
+  const totalAccuracy = AccuracyUtil.calculate(totalStatistics)
 
   const totalStatisticsResetDate =
     typeof totalStatistics.date === "undefined"
@@ -56,9 +50,7 @@ export function useStatistics() {
       const data: number[] = []
       const dateLabel: string[] = []
       for (const item of items) {
-        data.push(
-          100 - Math.round((item.wrongCount / item.totalCount) * 100 * 10) / 10
-        )
+        data.push(AccuracyUtil.calculate(item))
         dateLabel.push(
           typeof item.date === "undefined" ? "" : DateUtil.getMD(item.date)
         )

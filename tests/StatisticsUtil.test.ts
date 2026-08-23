@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import StatisticsUtil from "@/lib/StatisticsUtil"
 
@@ -116,5 +116,84 @@ describe("StatisticsUtil", () => {
     await StatisticsUtil.removeAllStatistics()
 
     expect(removed).toEqual(["__stat_today"])
+  })
+})
+
+describe("StatisticsUtil persistence", () => {
+  const get = vi.fn()
+  const set = vi.fn()
+
+  beforeEach(() => {
+    vi.stubGlobal("browser", {
+      storage: { local: { get, set, remove: vi.fn() } },
+    })
+  })
+
+  it("saves and restores total statistics with an ISO date", async () => {
+    const date = new Date("2026-08-23T01:02:03.000Z")
+    const stored = {
+      date: date.toISOString(),
+      totalCount: 8,
+      wrongCount: 2,
+    }
+    get.mockResolvedValue({ statistics: stored })
+
+    await StatisticsUtil.saveTotalStatistics({
+      date,
+      totalCount: 8,
+      wrongCount: 2,
+    })
+    await expect(StatisticsUtil.loadTotalStatistics()).resolves.toEqual({
+      date,
+      totalCount: 8,
+      wrongCount: 2,
+    })
+
+    expect(set).toHaveBeenCalledWith({ statistics: stored })
+    expect(get).toHaveBeenCalledWith("statistics")
+  })
+
+  it("uses a date-specific key for daily statistics", async () => {
+    const date = new Date("2026-08-23T00:00:00.000Z")
+    const key = `__stat_${date.toDateString()}`
+    const stored = {
+      date: date.toISOString(),
+      totalCount: 4,
+      wrongCount: 1,
+    }
+    get.mockResolvedValue({ [key]: stored })
+
+    await StatisticsUtil.saveStatistics(
+      { date, totalCount: 4, wrongCount: 1 },
+      date
+    )
+    await expect(StatisticsUtil.loadStatsitics(date)).resolves.toEqual({
+      date,
+      totalCount: 4,
+      wrongCount: 1,
+    })
+
+    expect(set).toHaveBeenCalledWith({ [key]: stored })
+    expect(get).toHaveBeenCalledWith(key)
+  })
+
+  it("saves a re-learning log with an ISO date", async () => {
+    const date = new Date("2026-08-23T02:00:00.000Z")
+
+    await StatisticsUtil.saveReLearnLog({
+      messageId: "message-id",
+      date,
+      previousClassification: "tag-a",
+      changedClassification: "tag-b",
+    })
+
+    expect(set).toHaveBeenCalledWith({
+      "__relog_message-id": {
+        messageId: "message-id",
+        date: date.toISOString(),
+        previousClassification: "tag-a",
+        changedClassification: "tag-b",
+      },
+    })
   })
 })
