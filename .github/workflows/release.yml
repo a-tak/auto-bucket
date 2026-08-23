@@ -2,11 +2,21 @@ name: Build and submit release
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to build and publish (for example, v1.3.0)
+        required: false
+        type: string
+      publish:
+        description: Attach artifacts and submit to ATN
+        required: false
+        default: false
+        type: boolean
   release:
     types: [published]
 
 concurrency:
-  group: autobucket-release-${{ github.event.release.tag_name || github.ref }}
+  group: autobucket-release-${{ github.event.release.tag_name || inputs.release_tag || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -21,7 +31,7 @@ jobs:
       addon-file: autobucket-v${{ steps.release.outputs.version }}.zip
       source-file: autobucket-v${{ steps.release.outputs.version }}-source.zip
     env:
-      RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
+      RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag || '' }}
 
     steps:
       - name: Check out the release source
@@ -29,7 +39,7 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -94,7 +104,9 @@ jobs:
 
   publish:
     name: Publish to GitHub and ATN
-    if: github.event_name == 'release' && github.event.release.prerelease == false
+    if: >-
+      (github.event_name == 'release' && github.event.release.prerelease == false) ||
+      (github.event_name == 'workflow_dispatch' && inputs.publish == true && inputs.release_tag != '')
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -110,8 +122,8 @@ jobs:
       - name: Attach artifacts to the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "${RELEASE_TAG}" dist-zip/* --clobber
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+        run: gh release upload "${RELEASE_TAG}" dist-zip/* --clobber --repo "${GITHUB_REPOSITORY}"
 
       - name: Check ATN credentials
         env:
@@ -139,7 +151,7 @@ jobs:
         if: always()
         env:
           ATN_OUTCOME: ${{ steps.atn.outcome }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
           SOURCE_FILE: ${{ needs.build.outputs.source-file }}
         run: |
           {
