@@ -2,7 +2,7 @@
 
 const fs = require("node:fs")
 const path = require("node:path")
-const archiver = require("archiver")
+let ZipArchive
 
 const DEST_DIR = path.join(__dirname, "../dist")
 const DEST_ZIP_DIR = path.join(__dirname, "../dist-zip")
@@ -20,7 +20,7 @@ const extractExtensionData = () => {
 const buildZip = (src, dist, zipFilename) => {
   console.info(`Building ${zipFilename}...`)
 
-  const archive = archiver("zip", { zlib: { level: 9 } })
+  const archive = new ZipArchive({ zlib: { level: 9 } })
   const output = fs.createWriteStream(path.join(dist, zipFilename))
 
   return new Promise((resolve, reject) => {
@@ -67,6 +67,7 @@ const buildZip = (src, dist, zipFilename) => {
 }
 
 const main = async () => {
+  ;({ ZipArchive } = await import("archiver"))
   const { name, version } = extractExtensionData()
   const zipFilename = `${name}-v${version}.zip`
 
@@ -75,11 +76,11 @@ const main = async () => {
   }
 
   const builtManifest = JSON.parse(
-    fs.readFileSync(path.join(DEST_DIR, "manifest.json"), "utf8")
+    fs.readFileSync(path.join(DEST_DIR, "manifest.json"), "utf8"),
   )
   if (builtManifest.version !== version) {
     throw new Error(
-      `Version mismatch: package.json=${version}, dist/manifest.json=${builtManifest.version}`
+      `Version mismatch: package.json=${version}, dist/manifest.json=${builtManifest.version}`,
     )
   }
 

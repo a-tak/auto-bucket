@@ -16,7 +16,7 @@ export default class TagUtil {
     }
 
     // Thunderbirdのタグを読み込み
-    const headers = await browser.messages.listTags()
+    const headers = await browser.messages.tags.list()
     if (headers != undefined) {
       headers.forEach((header, index) => {
         let useClassification = false
@@ -31,7 +31,7 @@ export default class TagUtil {
       })
     }
 
-   return tags
+    return tags
   }
 
   /**

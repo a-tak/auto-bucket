@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { useOptions } from "@/hooks/useOptions"
 import { useSnackbar } from "@/hooks/useSnackbar"
+import Tag from "@/models/Tag"
 import OptionsPage from "@/options/pages/OptionsPage"
 
 vi.mock("@/hooks/useOptions", () => ({ useOptions: vi.fn() }))
@@ -49,6 +50,24 @@ describe("OptionsPage", () => {
   })
 
   afterEach(cleanup)
+
+  it("renders selected tags and allows removing them with the new MUI item API", async () => {
+    const user = userEvent.setup()
+    const alpha = new Tag(0, "tag-a", "Alpha", true)
+    const setSelectedTags = vi.fn()
+    vi.mocked(useOptions).mockReturnValue({
+      ...vi.mocked(useOptions)(),
+      tags: [alpha],
+      selectedTags: [alpha],
+      setSelectedTags,
+    })
+    render(<OptionsPage />)
+    expect(screen.getByText("Alpha")).toBeTruthy()
+    expect(screen.getByText("KByte")).toBeTruthy()
+    const deleteIcon = screen.getByTestId("CancelIcon")
+    await user.click(deleteIcon)
+    expect(setSelectedTags).toHaveBeenCalledWith([])
+  })
 
   it("rejects non-numeric values without saving", async () => {
     const user = userEvent.setup()

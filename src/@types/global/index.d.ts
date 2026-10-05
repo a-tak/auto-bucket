@@ -19,16 +19,16 @@ declare namespace browser.storage.onChanged {
   function addListener(
     callback: (
       changes: { [key: string]: StorageChange },
-      areaName: string
-    ) => void
+      areaName: string,
+    ) => void,
   ): void
 }
 declare namespace browser.storage {
-    type StorageChange = {
-      oldValue?: any
-      newValue: any
-    }
+  type StorageChange = {
+    oldValue?: any
+    newValue: any
   }
+}
 declare namespace browser.notifications {
   // https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/API/notifications/create
   function create(id: string, options: NotificationOptions): Promise<string>
@@ -50,4 +50,10 @@ declare namespace browser.tabs {
     tabId: number
     windowId: number
   }
+}
+
+// Thunderbird 121+; the published 1.0.0 declarations predate this namespace.
+// https://webextension-api.thunderbird.net/en/mv2/messages.tags.html#list
+declare namespace browser.messages.tags {
+  function list(): Promise<browser.messages.MessageTag[]>
 }

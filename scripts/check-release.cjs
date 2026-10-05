@@ -34,13 +34,13 @@ const version = packageJson.version
 
 if (!/^[0-9]+\.[0-9]+\.[0-9]+$/.test(version)) {
   failures.push(
-    `package.json release version must use X.Y.Z format: ${version}`
+    `package.json release version must use X.Y.Z format: ${version}`,
   )
 }
 
 if (manifest.version !== version) {
   failures.push(
-    `Version mismatch: package.json=${version}, src/manifest.json=${manifest.version}`
+    `Version mismatch: package.json=${version}, src/manifest.json=${manifest.version}`,
   )
 }
 
@@ -49,14 +49,14 @@ if (lockVersion !== version) {
   failures.push(
     `Version mismatch: package.json=${version}, package-lock.json=${
       lockVersion ?? "missing"
-    }`
+    }`,
   )
 }
 
 const releaseTag = process.env.RELEASE_TAG?.trim()
 if (releaseTag && releaseTag !== `v${version}`) {
   failures.push(
-    `Release tag mismatch: expected v${version}, received ${releaseTag}`
+    `Release tag mismatch: expected v${version}, received ${releaseTag}`,
   )
 }
 
@@ -64,7 +64,7 @@ if (CHECK_DIST) {
   const builtManifest = readJson("dist/manifest.json")
   if (builtManifest.version !== version) {
     failures.push(
-      `Version mismatch: package.json=${version}, dist/manifest.json=${builtManifest.version}`
+      `Version mismatch: package.json=${version}, dist/manifest.json=${builtManifest.version}`,
     )
   }
 
@@ -91,11 +91,25 @@ if (CHECK_DIST) {
       "missing"
     }`,
     "original TinySegmenter 0.1 BSD notice",
-    "html-parse-stringify@3.0.1",
-    "does not include a standalone license file",
     packageLock.packages?.["node_modules/webextension-polyfill"]?.integrity ??
       "missing webextension-polyfill integrity",
   ]
+
+  // Validate the currently installed production graph, not a removed transitive dependency.
+  for (const [packagePath, data] of Object.entries(
+    packageLock.packages ?? {},
+  )) {
+    if (!packagePath.startsWith("node_modules/") || data.dev === true) continue
+    const installedManifest = path.join(
+      PROJECT_ROOT,
+      packagePath,
+      "package.json",
+    )
+    if (data.optional === true && !fs.existsSync(installedManifest)) continue
+    const metadata = JSON.parse(fs.readFileSync(installedManifest, "utf8"))
+    requiredNoticeText.push(`${metadata.name}@${data.version}`)
+    if (data.integrity) requiredNoticeText.push(data.integrity)
+  }
 
   for (const requiredText of requiredNoticeText) {
     if (!thirdPartyNotices.includes(requiredText)) {
@@ -115,7 +129,7 @@ if (failures.length > 0) {
 console.info(
   `Release metadata OK: version=${version}${
     releaseTag ? `, tag=${releaseTag}` : ""
-  }`
+  }`,
 )
 
 if (process.env.GITHUB_OUTPUT) {

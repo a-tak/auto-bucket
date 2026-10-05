@@ -3,19 +3,19 @@
 const { execFileSync } = require("node:child_process")
 const fs = require("node:fs")
 const path = require("node:path")
-const archiver = require("archiver")
+let ZipArchive
 
 const PROJECT_ROOT = path.resolve(__dirname, "..")
 const DEST_DIR = path.join(PROJECT_ROOT, "dist-zip")
 const GENERATED_NOTICES = path.join(
   PROJECT_ROOT,
-  "dist/THIRD_PARTY_NOTICES.txt"
+  "dist/THIRD_PARTY_NOTICES.txt",
 )
 const LFS_POINTER_HEADER = "version https://git-lfs.github.com/spec/v1"
 const ARCHIVE_DATE = new Date("1980-01-01T00:00:00.000Z")
 
 const packageJson = JSON.parse(
-  fs.readFileSync(path.join(PROJECT_ROOT, "package.json"), "utf8")
+  fs.readFileSync(path.join(PROJECT_ROOT, "package.json"), "utf8"),
 )
 const archiveName = `${packageJson.name}-v${packageJson.version}-source.zip`
 const archivePrefix = `${packageJson.name}-v${packageJson.version}-source`
@@ -27,6 +27,13 @@ const getTrackedFiles = () =>
   })
     .split("\0")
     .filter(Boolean)
+    // Include the migrated hook in local review archives before it is staged.
+    .concat(
+      fs.existsSync(path.join(PROJECT_ROOT, ".husky/pre-commit"))
+        ? [".husky/pre-commit"]
+        : [],
+    )
+    .filter((file, index, files) => files.indexOf(file) === index)
 
 const isLfsPointer = (filePath) => {
   const descriptor = fs.openSync(filePath, "r")
@@ -46,7 +53,7 @@ const isLfsPointer = (filePath) => {
 const buildArchive = (files) => {
   const archivePath = path.join(DEST_DIR, archiveName)
   const output = fs.createWriteStream(archivePath)
-  const archive = archiver("zip", { zlib: { level: 9 } })
+  const archive = new ZipArchive({ zlib: { level: 9 } })
 
   return new Promise((resolve, reject) => {
     output.on("close", () => resolve(archivePath))
@@ -68,7 +75,7 @@ const buildArchive = (files) => {
           name: `${archivePrefix}/${relativePath}`,
           date: ARCHIVE_DATE,
           mode: 0o644,
-        }
+        },
       )
     }
 
@@ -83,9 +90,10 @@ const buildArchive = (files) => {
 }
 
 const main = async () => {
+  ;({ ZipArchive } = await import("archiver"))
   const files = getTrackedFiles()
   const missingFiles = files.filter(
-    (relativePath) => !fs.existsSync(path.join(PROJECT_ROOT, relativePath))
+    (relativePath) => !fs.existsSync(path.join(PROJECT_ROOT, relativePath)),
   )
 
   if (missingFiles.length > 0) {
@@ -94,18 +102,18 @@ const main = async () => {
 
   if (!fs.existsSync(GENERATED_NOTICES)) {
     throw new Error(
-      "dist/THIRD_PARTY_NOTICES.txt is missing. Run `npm run build:release` first."
+      "dist/THIRD_PARTY_NOTICES.txt is missing. Run `npm run build:release` first.",
     )
   }
 
   const pointerFiles = files.filter((relativePath) =>
-    isLfsPointer(path.join(PROJECT_ROOT, relativePath))
+    isLfsPointer(path.join(PROJECT_ROOT, relativePath)),
   )
   if (pointerFiles.length > 0) {
     throw new Error(
       `Git LFS files have not been downloaded:\n${pointerFiles.join(
-        "\n"
-      )}\nRun \`git lfs pull\` first.`
+        "\n",
+      )}\nRun \`git lfs pull\` first.`,
     )
   }
 

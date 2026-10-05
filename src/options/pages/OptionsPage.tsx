@@ -41,10 +41,10 @@ export default function OptionsPage() {
   } = useSnackbar()
 
   const [bodyMaxLengthStr, setBodyMaxLengthStr] = useState(
-    String(bodyMaxLength)
+    String(bodyMaxLength),
   )
   const [logDeletePastHourStr, setLogDeletePastHourStr] = useState(
-    String(logDeletePastHour)
+    String(logDeletePastHour),
   )
 
   useEffect(() => {
@@ -126,9 +126,9 @@ export default function OptionsPage() {
             options={tags}
             getOptionLabel={(option) => option.name}
             isOptionEqualToValue={(option, value) => option.key === value.key}
-            renderTags={(value, getTagProps) =>
+            renderValue={(value, getItemProps) =>
               value.map((option, index) => {
-                const tagProps = getTagProps({ index })
+                const { key: _key, ...tagProps } = getItemProps({ index })
                 return (
                   <Chip label={option.name} {...tagProps} key={option.key} />
                 )
@@ -155,10 +155,12 @@ export default function OptionsPage() {
                 : t("message.numeric_only_rule_error")
             }
             error={!isBodyMaxLengthValid}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">KByte</InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">KByte</InputAdornment>
+                ),
+              },
             }}
             sx={{ mb: 2 }}
           />
@@ -173,12 +175,14 @@ export default function OptionsPage() {
                 : t("message.numeric_only_rule_error")
             }
             error={!isLogDeletePastHourValid}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  {t("message.keep_log_hour_suffix")}
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {t("message.keep_log_hour_suffix")}
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </CardContent>

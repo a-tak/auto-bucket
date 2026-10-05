@@ -10,7 +10,7 @@ describe("TagUtil", () => {
 
   beforeEach(() => {
     vi.stubGlobal("browser", {
-      messages: { listTags },
+      messages: { tags: { list: listTags } },
       storage: { local: { get, set } },
     })
   })

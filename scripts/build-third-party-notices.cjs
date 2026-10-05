@@ -57,13 +57,13 @@ const buildFallbackLicense = (packageJson, declaredLicense) => {
 
   if (!ALLOWED_MISSING_LICENSE_FILES.has(packageIdentifier)) {
     throw new Error(
-      `${packageIdentifier} does not include a license file. Review the package before adding an exception.`
+      `${packageIdentifier} does not include a license file. Review the package before adding an exception.`,
     )
   }
 
   if (declaredLicense !== "MIT") {
     throw new Error(
-      `${packageIdentifier} declares ${declaredLicense} but does not include a license file`
+      `${packageIdentifier} declares ${declaredLicense} but does not include a license file`,
     )
   }
 
@@ -87,7 +87,13 @@ const main = () => {
   const packageEntries = Object.entries(packageLock.packages ?? {})
     .filter(
       ([packagePath, packageData]) =>
-        packagePath.startsWith("node_modules/") && packageData.dev !== true
+        packagePath.startsWith("node_modules/") &&
+        packageData.dev !== true &&
+        // Platform-specific optional packages may be absent on this host.
+        !(
+          packageData.optional === true &&
+          !fs.existsSync(path.join(PROJECT_ROOT, packagePath))
+        ),
     )
     .map(([packagePath, packageData]) => {
       const absolutePackagePath = path.join(PROJECT_ROOT, packagePath)
@@ -95,7 +101,7 @@ const main = () => {
 
       if (!fs.existsSync(packageJsonPath)) {
         throw new Error(
-          `${packagePath} is missing. Run \`npm ci\` before building notices.`
+          `${packagePath} is missing. Run \`npm ci\` before building notices.`,
         )
       }
 
@@ -105,7 +111,7 @@ const main = () => {
       const licenseFiles = fs
         .readdirSync(absolutePackagePath, { withFileTypes: true })
         .filter(
-          (entry) => entry.isFile() && LICENSE_FILE_PATTERN.test(entry.name)
+          (entry) => entry.isFile() && LICENSE_FILE_PATTERN.test(entry.name),
         )
         .map((entry) => entry.name)
         .sort((left, right) => left.localeCompare(right, "en"))
@@ -117,8 +123,8 @@ const main = () => {
               text: normalizeText(
                 fs.readFileSync(
                   path.join(absolutePackagePath, licenseFile),
-                  "utf8"
-                )
+                  "utf8",
+                ),
               ),
             }))
           : [
@@ -130,7 +136,7 @@ const main = () => {
 
       if (!packageData.resolved || !packageData.integrity) {
         throw new Error(
-          `${packageJson.name}@${packageJson.version} is missing resolved or integrity metadata in package-lock.json`
+          `${packageJson.name}@${packageJson.version} is missing resolved or integrity metadata in package-lock.json`,
         )
       }
 
@@ -163,7 +169,7 @@ const main = () => {
     const licenses = entry.licenseSections
       .map(
         (licenseSection) =>
-          `--- ${licenseSection.name} ---\n${licenseSection.text}`
+          `--- ${licenseSection.name} ---\n${licenseSection.text}`,
       )
       .join("\n\n")
 
@@ -197,16 +203,16 @@ const main = () => {
 
   fs.copyFileSync(
     path.join(PROJECT_ROOT, "LICENSE"),
-    path.join(DIST_DIR, "LICENSE")
+    path.join(DIST_DIR, "LICENSE"),
   )
   fs.writeFileSync(
     path.join(DIST_DIR, "THIRD_PARTY_NOTICES.txt"),
     notice,
-    "utf8"
+    "utf8",
   )
 
   console.info(
-    `Third-party notices OK: ${packageEntries.length} production package entries`
+    `Third-party notices OK: ${packageEntries.length} production package entries`,
   )
 }
 

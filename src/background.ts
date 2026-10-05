@@ -874,7 +874,7 @@ export default class backgroud {
     browser.notifications.create(backgroud.NOTIFY_ID_NOT_SET, {
       type: "basic",
       title: "AutoBucket",
-      iconUrl: browser.extension.getURL("icons/icon_48.png"),
+      iconUrl: browser.runtime.getURL("icons/icon_48.png"),
       message: browser.i18n.getMessage("infoNotSetting"),
     })
   }
